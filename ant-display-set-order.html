@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Display Set — A&T Signboard & Printing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0d1f3c; --red: #e63946; --red-dark: #c1121f; --red-bg: #fff0f1;
+  --white: #ffffff; --off: #f6f8fc; --border: #e3e7ef;
+  --t1: #0d1f3c; --t2: #5a6478; --t3: #9aa3b2;
+  --green: #16a34a; --green-bg: #edfdf4;
+  --sh-sm: 0 1px 4px rgba(13,31,60,.06);
+  --sh-md: 0 4px 20px rgba(13,31,60,.10);
+  --sh-lg: 0 8px 40px rgba(13,31,60,.13);
+  --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--t1); min-height: 100vh; line-height: 1.6; }
+
+/* Header */
+header {
+  background: var(--navy); padding: 0 2rem; height: 68px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 16px rgba(0,0,0,.28);
+}
+.logo-wrap { display: flex; align-items: center; gap: 11px; }
+.logo-icon { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; object-fit: cover; }
+.logo-text { display: flex; flex-direction: column; }
+.logo-name { font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: .04em; line-height: 1.1; }
+.logo-tagline { font-size: 0.65rem; font-weight: 400; color: rgba(255,255,255,.55); letter-spacing: .06em; text-transform: uppercase; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+  color: #fff; font-size: 0.8rem; font-weight: 500; padding: 7px 14px;
+  border-radius: 6px; text-decoration: none; cursor: pointer;
+  transition: background .2s;
+}
+.back-btn:hover { background: rgba(255,255,255,.18); }
+.wa-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: #25D366; color: #fff; font-size: 0.8rem; font-weight: 600;
+  padding: 8px 16px; border-radius: 6px; text-decoration: none;
+  transition: filter .2s;
+}
+.wa-btn:hover { filter: brightness(1.08); }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, #1a3560 100%);
+  padding: 3rem 2rem 2.5rem; text-align: center; color: #fff;
+}
+.hero-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(230,57,70,.18); border: 1px solid rgba(230,57,70,.35);
+  color: #ff8b91; font-size: 0.72rem; font-weight: 600;
+  padding: 5px 12px; border-radius: 20px; margin-bottom: 1rem;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+.hero h1 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); font-weight: 700; margin-bottom: .5rem; }
+.hero p { color: rgba(255,255,255,.6); font-size: 0.9rem; max-width: 480px; margin: 0 auto; }
+
+/* Step bar */
+.step-bar {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: .9rem 2rem; display: flex; justify-content: center;
+}
+.steps { display: flex; align-items: center; gap: 0; }
+.step { display: flex; align-items: center; gap: 8px; }
+.step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--border); color: var(--t2);
+  font-size: 0.72rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .3s;
+}
+.step-num.active { background: var(--red); color: #fff; }
+.step-num.done { background: var(--green); color: #fff; }
+.step-label { font-size: 0.8rem; font-weight: 500; color: var(--t2); }
+.step-label.active { color: var(--red); font-weight: 600; }
+.step-label.done { color: var(--green); }
+.step-sep { width: 32px; height: 1px; background: var(--border); margin: 0 6px; }
+
+/* Content */
+.content { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* Card */
+.card {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--sh-md);
+  margin-bottom: 1.5rem; overflow: hidden;
+}
+.card-head {
+  background: var(--navy); padding: 1rem 1.5rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.card-head-icon {
+  width: 32px; height: 32px; background: rgba(255,255,255,.12);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.card-head h2 { color: #fff; font-size: 0.95rem; font-weight: 600; }
+.card-body { padding: 1.5rem; }
+
+/* Product selector */
+.product-section { margin-bottom: 2rem; }
+.product-section-title {
+  font-size: 0.72rem; font-weight: 700; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 1rem; padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border);
+}
+.product-grid { display: grid; gap: 10px; }
+.product-grid.col-2 { grid-template-columns: 1fr 1fr; }
+.product-grid.col-1 { grid-template-columns: 1fr; }
+
+.prod-option {
+  border: 2px solid var(--border); border-radius: var(--r-md);
+  padding: 1rem 1.1rem; cursor: pointer;
+  transition: all .2s; background: #fff;
+  display: flex; align-items: flex-start; gap: 10px;
+  position: relative;
+}
+.prod-option:hover { border-color: #aab4c8; background: var(--off); }
+.prod-option.selected { border-color: var(--red); background: var(--red-bg); }
+.prod-option input[type="radio"] { display: none; }
+.prod-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--border); flex-shrink: 0; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.prod-option.selected .prod-check { border-color: var(--red); background: var(--red); }
+.prod-check::after { content:''; width:7px; height:7px; border-radius:50%; background:#fff; display:none; }
+.prod-option.selected .prod-check::after { display:block; }
+.prod-option-info { flex: 1; }
+.prod-option-name { font-size: 0.88rem; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
+.prod-option-sub { font-size: 0.76rem; color: var(--t2); }
+.prod-option-price {
+  font-size: 1rem; font-weight: 700; color: var(--red);
+  white-space: nowrap; margin-top: 2px;
+}
+.prod-option-badge {
+  position: absolute; top: 8px; right: 10px;
+  background: var(--navy); color: #fff;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: .06em;
+  padding: 2px 7px; border-radius: 10px; text-transform: uppercase;
+}
+
+/* Qty input */
+.qty-row {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1rem 1.2rem; background: var(--off);
+  border: 1px solid var(--border); border-radius: var(--r-md); margin-top: .5rem;
+}
+.qty-label { font-size: 0.85rem; font-weight: 600; flex: 1; }
+.qty-ctrl { display: flex; align-items: center; gap: .5rem; }
+.qty-btn {
+  width: 32px; height: 32px; border: 1.5px solid var(--border);
+  background: #fff; border-radius: 6px; cursor: pointer;
+  font-size: 1.1rem; font-weight: 600; color: var(--t1);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.qty-btn:hover { border-color: var(--red); color: var(--red); }
+.qty-num {
+  width: 48px; height: 32px; border: 1.5px solid var(--border);
+  border-radius: 6px; text-align: center;
+  font-family: 'DM Mono', monospace; font-size: 0.95rem; font-weight: 500;
+  outline: none;
+}
+.qty-num:focus { border-color: var(--red); }
+
+/* Price summary */
+.price-summary {
+  background: linear-gradient(135deg, var(--navy) 0%, #1a3560 100%);
+  border-radius: var(--r-md); padding: 1.2rem 1.4rem; color: #fff;
+  margin-top: 1.2rem;
+}
+.price-row { display: flex; justify-content: space-between; align-items: center; }
+.price-label { font-size: 0.82rem; color: rgba(255,255,255,.65); }
+.price-val { font-size: 0.9rem; font-weight: 600; }
+.price-total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: .8rem; padding-top: .8rem;
+  border-top: 1px solid rgba(255,255,255,.15);
+}
+.price-total-label { font-size: 0.85rem; font-weight: 500; }
+.price-total-val { font-size: 1.5rem; font-weight: 700; color: #fff; }
+
+/* Form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-size: 0.78rem; font-weight: 600; color: var(--t2); }
+.form-label span { color: var(--red); }
+.form-input, .form-select, .form-textarea {
+  border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  padding: .6rem .85rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; color: var(--t1); background: #fff;
+  outline: none; transition: border-color .2s;
+  width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--red); }
+.form-textarea { min-height: 80px; resize: vertical; }
+
+/* File upload */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--r-md);
+  padding: 2rem; text-align: center; cursor: pointer;
+  transition: all .2s; background: var(--off);
+}
+.upload-zone:hover { border-color: var(--red); background: var(--red-bg); }
+.upload-zone.has-file { border-color: var(--green); background: var(--green-bg); border-style: solid; }
+.upload-icon { font-size: 2rem; margin-bottom: .5rem; }
+.upload-title { font-size: 0.88rem; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
+.upload-sub { font-size: 0.76rem; color: var(--t2); }
+.upload-name { font-size: 0.82rem; font-weight: 600; color: var(--green); margin-top: .4rem; }
+#fileInput { display: none; }
+
+/* Notice */
+.notice {
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: var(--r-sm); padding: .8rem 1rem;
+  font-size: 0.8rem; color: #78350f;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.notice-icon { flex-shrink: 0; font-size: 0.95rem; }
+
+/* Summary */
+.summary-table { width: 100%; border-collapse: collapse; }
+.summary-table td {
+  padding: .6rem 0; border-bottom: 1px solid var(--border);
+  font-size: 0.87rem;
+}
+.summary-table td:first-child { color: var(--t2); width: 40%; }
+.summary-table td:last-child { font-weight: 600; text-align: right; }
+.summary-total td { border-bottom: none; padding-top: 1rem; }
+.summary-total td:last-child { font-size: 1.2rem; color: var(--red); font-weight: 700; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: .75rem 1.8rem; border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all .2s; border: none;
+}
+.btn-primary { background: var(--red); color: #fff; }
+.btn-primary:hover { background: var(--red-dark); }
+.btn-ghost {
+  background: transparent; color: var(--t2);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--t1); color: var(--t1); }
+.btn-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1.5rem; padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Success */
+.success-wrap { text-align: center; padding: 3rem 1.5rem; }
+.success-icon { font-size: 4rem; margin-bottom: 1rem; }
+.success-title { font-size: 1.6rem; font-weight: 700; color: var(--green); margin-bottom: .5rem; }
+.success-sub { color: var(--t2); font-size: 0.9rem; max-width: 400px; margin: 0 auto 1.5rem; }
+.order-id {
+  display: inline-block; background: var(--off);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  padding: .5rem 1.2rem; font-family: 'DM Mono', monospace;
+  font-size: 0.9rem; font-weight: 600; color: var(--navy);
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .product-grid.col-2 { grid-template-columns: 1fr; }
+  .content { padding: 1.2rem 1rem 3rem; }
+  .hero { padding: 2rem 1.2rem 1.8rem; }
+  header { padding: 0 1rem; }
+  .step-label { display: none; }
+  .btn-row { flex-direction: column; gap: .8rem; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo-wrap">
+    <img src="logo.png" class="logo-icon" alt="A&amp;T Signboard Logo" />
+    <div class="logo-text">
+      <span class="logo-name">A&T Signboard</span>
+      <span class="logo-tagline">Printing & Signage</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="ant-eshop-landing.html" class="back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      All Products
+    </a>
+    <a href="https://wa.me/60197901150" class="wa-btn" target="_blank" rel="noopener noreferrer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+      WhatsApp
+    </a>
+  </div>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">📐 Display Set</div>
+  <h1>Display Set with Printing</h1>
+  <p>Roll up buntings, beach flags, pop-up tables & more — complete display solutions with full-colour printing</p>
+</div>
+
+<!-- Steps -->
+<div class="step-bar">
+  <div class="steps">
+    <div class="step">
+      <div class="step-num active" id="sn1">1</div>
+      <div class="step-label active" id="sl1">Select Product</div>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step">
+      <div class="step-num" id="sn2">2</div>
+      <div class="step-label" id="sl2">Your Details</div>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step">
+      <div class="step-num" id="sn3">3</div>
+      <div class="step-label" id="sl3">Confirm Order</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+
+  <!-- Step 1: Product Selection -->
+  <div id="step1">
+
+    <!-- Roll Up Bunting -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">🎯</div>
+        <h2>Roll Up Bunting</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-section">
+          <div class="product-section-title">Visual Size: 32" × 80" — Synthetic Paper with Printing</div>
+          <div class="product-grid col-2">
+
+            <label class="prod-option" onclick="selectProduct('rollup','standard',130,this)">
+              <input type="radio" name="rollup" value="standard"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Roll Up Bunting</div>
+                <div class="prod-option-sub">Standard aluminium base</div>
+              </div>
+              <div class="prod-option-price">RM130/pc</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('rollup','deluxe',210,this)">
+              <input type="radio" name="rollup" value="deluxe"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Deluxe Roll Up Bunting</div>
+                <div class="prod-option-sub">Premium heavy-duty base</div>
+              </div>
+              <div class="prod-option-price">RM210/pc</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('rollup','double',280,this)">
+              <input type="radio" name="rollup" value="double"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Double Side Roll Up</div>
+                <div class="prod-option-sub">Visible from both directions</div>
+              </div>
+              <div class="prod-option-price">RM280/pc</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('rollup','double-deluxe',350,this)">
+              <input type="radio" name="rollup" value="double-deluxe"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Double Side Deluxe</div>
+                <div class="prod-option-sub">Double-sided + premium base</div>
+              </div>
+              <div class="prod-option-price">RM350/pc</div>
+            </label>
+
+          </div>
+          <div class="qty-row" id="qty-rollup" style="display:none">
+            <div class="qty-label">Quantity (pcs)</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('rollup',-1)">−</button>
+              <input class="qty-num" type="number" id="qty-rollup-val" value="1" min="1" onchange="calcTotal()"/>
+              <button class="qty-btn" onclick="changeQty('rollup',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bunting with Stand -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">🚩</div>
+        <h2>Bunting with Stand</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-section">
+          <div class="product-section-title">Visual Size: 24" × 72" — Tarpauline Printing with Pipe Finishing</div>
+          <div class="product-grid col-2">
+
+            <label class="prod-option" onclick="selectProduct('bunting','tripod',50,this)">
+              <input type="radio" name="bunting" value="tripod"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Tripod Stand</div>
+                <div class="prod-option-sub">Adjustable tripod base</div>
+              </div>
+              <div class="prod-option-price">RM50/set</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('bunting','roundplate',65,this)">
+              <input type="radio" name="bunting" value="roundplate"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Round Plate Stand</div>
+                <div class="prod-option-sub">Weighted round plate base</div>
+              </div>
+              <div class="prod-option-price">RM65/set</div>
+            </label>
+
+          </div>
+          <div class="qty-row" id="qty-bunting" style="display:none">
+            <div class="qty-label">Quantity (sets)</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('bunting',-1)">−</button>
+              <input class="qty-num" type="number" id="qty-bunting-val" value="1" min="1" onchange="calcTotal()"/>
+              <button class="qty-btn" onclick="changeQty('bunting',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jumbo Stand -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">🏟️</div>
+        <h2>Jumbo Stand</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-section">
+          <div class="product-section-title">96" × 96" — Tarpauline Printing with Pocket Finishing</div>
+          <div class="product-grid col-1">
+
+            <label class="prod-option" onclick="selectProduct('jumbo','standard',400,this)">
+              <input type="radio" name="jumbo" value="standard"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Jumbo Stand</div>
+                <div class="prod-option-sub">96" × 96" large format display</div>
+              </div>
+              <div class="prod-option-price">RM400/set</div>
+            </label>
+
+          </div>
+          <div class="qty-row" id="qty-jumbo" style="display:none">
+            <div class="qty-label">Quantity (sets)</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('jumbo',-1)">−</button>
+              <input class="qty-num" type="number" id="qty-jumbo-val" value="1" min="1" onchange="calcTotal()"/>
+              <button class="qty-btn" onclick="changeQty('jumbo',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Beach Flag -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">🏖️</div>
+        <h2>Beach Flag Stand</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-section">
+          <div class="product-section-title">Fabric Cloth Printing with Finishing</div>
+          <div class="product-grid col-2">
+
+            <label class="prod-option" onclick="selectProduct('beachflag','3m',400,this)">
+              <input type="radio" name="beachflag" value="3m"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Beach Flag 3m</div>
+                <div class="prod-option-sub">3-metre height flag & stand</div>
+              </div>
+              <div class="prod-option-price">RM400/set</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('beachflag','5m',600,this)">
+              <input type="radio" name="beachflag" value="5m"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Beach Flag 5m</div>
+                <div class="prod-option-sub">5-metre height flag & stand</div>
+              </div>
+              <div class="prod-option-price">RM600/set</div>
+            </label>
+
+          </div>
+          <div class="qty-row" id="qty-beachflag" style="display:none">
+            <div class="qty-label">Quantity (sets)</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('beachflag',-1)">−</button>
+              <input class="qty-num" type="number" id="qty-beachflag-val" value="1" min="1" onchange="calcTotal()"/>
+              <button class="qty-btn" onclick="changeQty('beachflag',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pop Up Table -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">🗂️</div>
+        <h2>Pop Up Table</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-section">
+          <div class="product-section-title">White Sticker Printing with Matt Lamination</div>
+          <div class="product-grid col-1">
+
+            <label class="prod-option" onclick="selectProduct('poptable','standard',650,this)">
+              <input type="radio" name="poptable" value="standard"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Pop Up Table</div>
+                <div class="prod-option-sub">Folding display table with custom print top</div>
+              </div>
+              <div class="prod-option-price">RM650/set</div>
+            </label>
+
+          </div>
+          <div class="qty-row" id="qty-poptable" style="display:none">
+            <div class="qty-label">Quantity (sets)</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('poptable',-1)">−</button>
+              <input class="qty-num" type="number" id="qty-poptable-val" value="1" min="1" onchange="calcTotal()"/>
+              <button class="qty-btn" onclick="changeQty('poptable',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Menu Display Stand -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">📋</div>
+        <h2>Menu Display Stand (A Type)</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-section">
+          <div class="product-section-title">31.5" × 47" — 3mm Foamboard with White Sticker Printing Matt Lam</div>
+          <div class="product-grid col-2">
+
+            <label class="prod-option" onclick="selectProduct('menu','single',300,this)">
+              <input type="radio" name="menu" value="single"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Single Side</div>
+                <div class="prod-option-sub">One-sided display</div>
+              </div>
+              <div class="prod-option-price">RM300/set</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('menu','double',420,this)">
+              <input type="radio" name="menu" value="double"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">Double Side</div>
+                <div class="prod-option-sub">Visible from both sides</div>
+              </div>
+              <div class="prod-option-price">RM420/set</div>
+            </label>
+
+          </div>
+          <div class="qty-row" id="qty-menu" style="display:none">
+            <div class="qty-label">Quantity (sets)</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('menu',-1)">−</button>
+              <input class="qty-num" type="number" id="qty-menu-val" value="1" min="1" onchange="calcTotal()"/>
+              <button class="qty-btn" onclick="changeQty('menu',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Easel Stand -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">🖼️</div>
+        <h2>Easel Stand</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-section">
+          <div class="product-section-title">5mm Foamboard with White Sticker Printing Matt Lam</div>
+          <div class="product-grid col-2" style="grid-template-columns: repeat(3,1fr)">
+
+            <label class="prod-option" onclick="selectProduct('easel','a0',350,this)">
+              <input type="radio" name="easel" value="a0"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">A0 Size</div>
+                <div class="prod-option-sub">841 × 1189mm</div>
+              </div>
+              <div class="prod-option-price">RM350/set</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('easel','a1',300,this)">
+              <input type="radio" name="easel" value="a1"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">A1 Size</div>
+                <div class="prod-option-sub">594 × 841mm</div>
+              </div>
+              <div class="prod-option-price">RM300/set</div>
+            </label>
+
+            <label class="prod-option" onclick="selectProduct('easel','a2',250,this)">
+              <input type="radio" name="easel" value="a2"/>
+              <div class="prod-check"></div>
+              <div class="prod-option-info">
+                <div class="prod-option-name">A2 Size</div>
+                <div class="prod-option-sub">420 × 594mm</div>
+              </div>
+              <div class="prod-option-price">RM250/set</div>
+            </label>
+
+          </div>
+          <div class="qty-row" id="qty-easel" style="display:none">
+            <div class="qty-label">Quantity (sets)</div>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty('easel',-1)">−</button>
+              <input class="qty-num" type="number" id="qty-easel-val" value="1" min="1" onchange="calcTotal()"/>
+              <button class="qty-btn" onclick="changeQty('easel',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="card" id="order-summary-card" style="display:none">
+      <div class="card-head">
+        <div class="card-head-icon">🧾</div>
+        <h2>Order Summary</h2>
+      </div>
+      <div class="card-body">
+        <div id="summary-lines"></div>
+        <div class="price-summary" style="margin-top:1rem">
+          <div class="price-total-row">
+            <div class="price-total-label">Total Estimated Price</div>
+            <div class="price-total-val" id="grand-total">RM 0.00</div>
+          </div>
+        </div>
+        <div class="notice" style="margin-top:1rem">
+          <div class="notice-icon">ℹ️</div>
+          <div>Final price subject to artwork review. Our team will confirm before production begins.</div>
+        </div>
+        <div class="btn-row">
+          <div></div>
+          <button class="btn btn-primary" onclick="goToStep2()">
+            Continue to Details
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /step1 -->
+
+  <!-- Step 2: Customer Details -->
+  <div id="step2" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">👤</div>
+        <h2>Your Details</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Full Name <span>*</span></label>
+            <input class="form-input" id="f-name" type="text" placeholder="e.g. Ahmad bin Ali" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number <span>*</span></label>
+            <input class="form-input" id="f-phone" type="tel" placeholder="e.g. 012-345 6789" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Email Address <span>*</span></label>
+            <input class="form-input" id="f-email" type="email" placeholder="e.g. ahmad@company.com" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Company Name <span style="color:var(--t3);font-weight:400">(optional)</span></label>
+            <input class="form-input" id="f-company" type="text" placeholder="Your company name" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Delivery / Collection</label>
+            <select class="form-select" id="f-delivery">
+              <option value="self">Self Collection — Ulu Tiram, JB</option>
+              <option value="jb">Delivery within JB</option>
+              <option value="sg">Delivery to Singapore</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Remarks <span style="color:var(--t3);font-weight:400">(optional)</span></label>
+            <textarea class="form-textarea" id="f-remarks" placeholder="Special instructions, preferred completion date, etc."></textarea>
+          </div>
+        </div>
+
+        <!-- File Upload -->
+        <div style="margin-top:1.2rem">
+          <div class="form-label" style="margin-bottom:.5rem">Artwork / Design File <span style="color:var(--t3);font-weight:400">(optional — you can send later)</span></div>
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📁</div>
+            <div class="upload-title">Click to upload artwork</div>
+            <div class="upload-sub">AI, PDF, PSD, PNG, JPG — max 50MB</div>
+            <div class="upload-name" id="uploadName" style="display:none"></div>
+          </div>
+          <input type="file" id="fileInput" accept=".ai,.pdf,.psd,.png,.jpg,.jpeg,.eps" onchange="handleFile(this)" />
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goToStep1()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" onclick="goToStep3()">
+            Review Order
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /step2 -->
+
+  <!-- Step 3: Confirm -->
+  <div id="step3" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">✅</div>
+        <h2>Confirm Your Order</h2>
+      </div>
+      <div class="card-body">
+        <table class="summary-table">
+          <tr><td>Product</td><td id="sum-product">—</td></tr>
+          <tr><td>Quantity</td><td id="sum-qty">—</td></tr>
+          <tr><td>Name</td><td id="sum-name">—</td></tr>
+          <tr><td>Phone</td><td id="sum-phone">—</td></tr>
+          <tr><td>Email</td><td id="sum-email">—</td></tr>
+          <tr><td>Company</td><td id="sum-company">—</td></tr>
+          <tr><td>Delivery</td><td id="sum-delivery">—</td></tr>
+          <tr><td>Remarks</td><td id="sum-remarks">—</td></tr>
+          <tr><td>Artwork File</td><td id="sum-file">—</td></tr>
+          <tr class="summary-total"><td>Estimated Total</td><td id="sum-total">—</td></tr>
+        </table>
+        <div class="notice" style="margin-top:1.2rem">
+          <div class="notice-icon">⚠️</div>
+          <div>By placing this order, you agree that final pricing will be confirmed after artwork review. Our team will contact you within 1 business day.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="goToStep2()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <button class="btn btn-primary" onclick="submitOrder()">
+            Place Order
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /step3 -->
+
+  <!-- Success -->
+  <div id="step-success" style="display:none">
+    <div class="card">
+      <div class="card-body">
+        <div class="success-wrap">
+          <div class="success-icon">🎉</div>
+          <div class="success-title">Order Placed!</div>
+          <div class="success-sub">We've received your Display Set order. Our team will review and contact you within 1 business day to confirm details and payment.</div>
+          <div class="order-id" id="success-order-id">ORDER-XXXXXXX</div>
+          <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+            <a href="https://wa.me/60197901150" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+              Chat with Us
+            </a>
+            <a href="ant-eshop-landing.html" class="btn btn-ghost">Back to Shop</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /success -->
+
+</div><!-- /content -->
+
+<script>
+// ─── State ───────────────────────────────────────────────
+const selections = {};
+// selections[group] = { variant, price, qty }
+
+const productNames = {
+  rollup: 'Roll Up Bunting',
+  bunting: 'Bunting with Stand',
+  jumbo: 'Jumbo Stand',
+  beachflag: 'Beach Flag Stand',
+  poptable: 'Pop Up Table',
+  menu: 'Menu Display Stand (A Type)',
+  easel: 'Easel Stand'
+};
+
+const variantNames = {
+  standard: 'Standard', deluxe: 'Deluxe', double: 'Double Side',
+  'double-deluxe': 'Double Side Deluxe',
+  tripod: 'Tripod', roundplate: 'Round Plate',
+  '3m': '3m', '5m': '5m',
+  single: 'Single Side',
+  a0: 'A0', a1: 'A1', a2: 'A2'
+};
+
+// ─── Select Product ───────────────────────────────────────
+function selectProduct(group, variant, price, el) {
+  // Deselect others in group
+  document.querySelectorAll(`[onclick*="'${group}'"]`).forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+
+  selections[group] = { variant, price, qty: 1 };
+
+  // Show qty
+  const qtyRow = document.getElementById('qty-' + group);
+  if (qtyRow) {
+    qtyRow.style.display = 'flex';
+    document.getElementById('qty-' + group + '-val').value = 1;
+  }
+
+  updateSummaryCard();
+}
+
+function changeQty(group, delta) {
+  const input = document.getElementById('qty-' + group + '-val');
+  let val = parseInt(input.value) + delta;
+  if (val < 1) val = 1;
+  input.value = val;
+  if (selections[group]) selections[group].qty = val;
+  calcTotal();
+}
+
+// ─── Calc Total ───────────────────────────────────────────
+function calcTotal() {
+  // sync qty values from inputs
+  Object.keys(selections).forEach(g => {
+    const inp = document.getElementById('qty-' + g + '-val');
+    if (inp) {
+      let v = parseInt(inp.value);
+      if (isNaN(v) || v < 1) v = 1;
+      inp.value = v;
+      selections[g].qty = v;
+    }
+  });
+  updateSummaryCard();
+}
+
+function updateSummaryCard() {
+  const keys = Object.keys(selections);
+  if (keys.length === 0) {
+    document.getElementById('order-summary-card').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('order-summary-card').style.display = 'block';
+
+  let html = '';
+  let grand = 0;
+  keys.forEach(g => {
+    const s = selections[g];
+    const subtotal = s.price * s.qty;
+    grand += subtotal;
+    html += `
+      <div class="price-summary" style="margin-bottom:.8rem;background:var(--navy);">
+        <div class="price-row">
+          <div class="price-label">${productNames[g]} — ${variantNames[s.variant]}</div>
+          <div class="price-val">RM${s.price}/unit</div>
+        </div>
+        <div class="price-total-row">
+          <div class="price-total-label">× ${s.qty} unit${s.qty > 1 ? 's' : ''}</div>
+          <div class="price-total-val">RM ${subtotal.toFixed(2)}</div>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('summary-lines').innerHTML = html;
+  document.getElementById('grand-total').textContent = 'RM ' + grand.toFixed(2);
+}
+
+// ─── Step Navigation ──────────────────────────────────────
+function setStep(n) {
+  [1,2,3,'success'].forEach(s => {
+    const el = document.getElementById('step' + s);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('step' + n).style.display = 'block';
+
+  // Update step bar
+  [1,2,3].forEach(i => {
+    const num = document.getElementById('sn' + i);
+    const lbl = document.getElementById('sl' + i);
+    num.className = 'step-num' + (i < n ? ' done' : i === n ? ' active' : '');
+    lbl.className = 'step-label' + (i === n ? ' active' : i < n ? ' done' : '');
+    if (i < n) num.textContent = '✓';
+    else num.textContent = i;
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goToStep1() { setStep(1); }
+
+function goToStep2() {
+  if (Object.keys(selections).length === 0) {
+    alert('Please select at least one product to continue.');
+    return;
+  }
+  setStep(2);
+}
+
+function goToStep3() {
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+
+  if (!name || !phone || !email) {
+    alert('Please fill in your Name, Phone Number, and Email to continue.');
+    return;
+  }
+
+  // Build product summary string
+  const prodStr = Object.keys(selections).map(g => {
+    const s = selections[g];
+    return `${productNames[g]} (${variantNames[s.variant]}) × ${s.qty}`;
+  }).join(' | ');
+
+  const qtyStr = Object.keys(selections).map(g => {
+    return `${selections[g].qty}`;
+  }).join(' + ');
+
+  const grand = Object.values(selections).reduce((a, s) => a + s.price * s.qty, 0);
+
+  const deliveryMap = { self: 'Self Collection (Ulu Tiram, JB)', jb: 'Delivery within JB', sg: 'Delivery to Singapore' };
+  const file = document.getElementById('fileInput').files[0];
+
+  document.getElementById('sum-product').textContent = prodStr;
+  document.getElementById('sum-qty').textContent = qtyStr + ' unit(s)';
+  document.getElementById('sum-name').textContent = name;
+  document.getElementById('sum-phone').textContent = phone;
+  document.getElementById('sum-email').textContent = email;
+  document.getElementById('sum-company').textContent = document.getElementById('f-company').value.trim() || '—';
+  document.getElementById('sum-delivery').textContent = deliveryMap[document.getElementById('f-delivery').value];
+  document.getElementById('sum-remarks').textContent = document.getElementById('f-remarks').value.trim() || '—';
+  document.getElementById('sum-file').textContent = file ? file.name : 'Not uploaded';
+  document.getElementById('sum-total').textContent = 'RM ' + grand.toFixed(2);
+
+  setStep(3);
+}
+
+function submitOrder() {
+  const orderId = 'DS-' + Date.now().toString().slice(-7);
+
+  // DEVELOPER TODO:
+  // 1. Collect order data + file and POST to backend
+  // 2. Save order to Firebase, generate order ID
+  // 3. Send notification to designer (email/WhatsApp)
+  // 4. Redirect to iPay88 payment gateway
+  // 5. On payment callback: update order status
+
+  document.getElementById('success-order-id').textContent = 'Order ID: ' + orderId;
+  document.getElementById('step3').style.display = 'none';
+  document.getElementById('step-success').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── File Upload ──────────────────────────────────────────
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const zone = document.getElementById('uploadZone');
+  const name = document.getElementById('uploadName');
+  zone.classList.add('has-file');
+  zone.querySelector('.upload-icon').textContent = '✅';
+  zone.querySelector('.upload-title').textContent = 'File attached';
+  name.textContent = file.name;
+  name.style.display = 'block';
+}
+</script>
+</body>
+</html>

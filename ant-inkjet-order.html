@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inkjet Printing — A&T Signboard & Printing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:       #0d1f3c;
+  --navy-2:     #162b52;
+  --red:        #e63946;
+  --red-dark:   #c1121f;
+  --red-bg:     #fff0f1;
+  --white:      #ffffff;
+  --off:        #f6f8fc;
+  --border:     #e3e7ef;
+  --t1:         #0d1f3c;
+  --t2:         #5a6478;
+  --t3:         #9aa3b2;
+  --green:      #16a34a;
+  --green-bg:   #edfdf4;
+  --amber:      #b45309;
+  --amber-bg:   #fffbeb;
+  --sh-sm:      0 1px 4px rgba(13,31,60,.06);
+  --sh-md:      0 4px 20px rgba(13,31,60,.10);
+  --r-sm: 8px; --r-md: 12px; --r-lg: 18px;
+}
+
+body { font-family: 'DM Sans', sans-serif; background: var(--off); color: var(--t1); min-height: 100vh; line-height: 1.6; }
+
+/* ── Header ── */
+header {
+  background: var(--navy);
+  padding: 0 2rem;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 16px rgba(0,0,0,.28);
+}
+.logo-wrap { display: flex; align-items: center; gap: 11px; }
+.logo-icon { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; object-fit: cover; }
+.logo-name { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: .04em; line-height: 1.2; }
+.logo-name span { color: var(--red); }
+.logo-tag { font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: .08em; text-transform: uppercase; margin-top: 1px; }
+.wa-header {
+  display: flex; align-items: center; gap: 6px;
+  background: #25D366; color: #fff; text-decoration: none;
+  padding: 8px 13px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  transition: background .15s;
+}
+.wa-header:hover { background: #1da851; }
+
+/* ── Page ── */
+.page { max-width: 580px; margin: 0 auto; padding: 2rem 1rem 5rem; }
+
+/* ── Hero ── */
+.hero {
+  background: var(--navy);
+  border-radius: var(--r-lg);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: var(--red); opacity: .07; border-radius: 50%;
+}
+.hero::after {
+  content: ''; position: absolute;
+  bottom: -25px; right: 80px;
+  width: 90px; height: 90px;
+  background: var(--red); opacity: .05; border-radius: 50%;
+}
+.hero h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 5px; position: relative; }
+.hero p { font-size: 13.5px; color: rgba(255,255,255,.5); position: relative; }
+.hero-badges { display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; position: relative; }
+.hero-badge {
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.7);
+  font-size: 11px; font-weight: 500;
+  padding: 3px 9px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.12);
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* ── Steps ── */
+.steps {
+  display: flex; align-items: center;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: .9rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--sh-sm);
+}
+.step-node { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.step-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--t3);
+  background: var(--white); transition: all .2s; flex-shrink: 0;
+}
+.step-circle.active { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 0 0 4px rgba(230,57,70,.15); }
+.step-circle.done { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.step-label { font-size: 12.5px; color: var(--t3); transition: color .2s; }
+.step-label.active { color: var(--t1); font-weight: 600; }
+.step-label.done { color: var(--green); }
+.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 12px; }
+
+/* ── Card ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--sh-sm);
+}
+.card-title {
+  font-size: 11px; font-weight: 700; color: var(--t2);
+  text-transform: uppercase; letter-spacing: .09em;
+  margin-bottom: 1.2rem;
+}
+
+/* ── Material Cards ── */
+.mat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.mat-opt { position: relative; }
+.mat-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+.mat-card {
+  display: flex; flex-direction: column;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all .15s;
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+.mat-card:hover { border-color: rgba(230,57,70,.4); background: #fff8f8; transform: translateY(-1px); box-shadow: var(--sh-md); }
+.mat-opt input:checked + .mat-card {
+  border-color: var(--red);
+  background: var(--red-bg);
+  box-shadow: 0 0 0 1px var(--red);
+}
+.mat-tick {
+  position: absolute; top: 8px; right: 8px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--red); color: #fff;
+  font-size: 10px; display: none;
+  align-items: center; justify-content: center;
+  z-index: 2; box-shadow: 0 2px 6px rgba(230,57,70,.4);
+}
+.mat-opt input:checked + .mat-card .mat-tick { display: flex; }
+
+/* Image placeholder — swap src once photos are ready */
+.mat-img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+  background: var(--off);
+  flex-shrink: 0;
+}
+.mat-img-placeholder {
+  width: 100%; height: 100px;
+  background: linear-gradient(135deg, var(--off) 0%, #e8ecf4 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 5px; flex-shrink: 0;
+}
+.mat-img-placeholder svg { opacity: .3; }
+.mat-img-placeholder span { font-size: 10px; color: var(--t3); }
+
+.mat-body { padding: 10px 11px 11px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.mat-name { font-size: 12.5px; font-weight: 700; color: var(--t1); line-height: 1.3; }
+.mat-sub  { font-size: 11px; color: var(--t3); line-height: 1.3; }
+.mat-price {
+  display: inline-flex; align-items: center;
+  background: var(--navy); color: #fff;
+  font-size: 10.5px; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  align-self: flex-start; margin-top: 5px;
+}
+.mat-price.premium { background: linear-gradient(135deg,#92400e,#d97706); }
+
+/* ── Form ── */
+.field { margin-bottom: 1.1rem; }
+.field:last-child { margin-bottom: 0; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.1rem; }
+.field-row:last-child { margin-bottom: 0; }
+
+label {
+  display: block; font-size: 12.5px; font-weight: 600;
+  color: var(--t2); margin-bottom: 6px;
+}
+input[type="text"], input[type="email"], input[type="tel"],
+input[type="number"], select, textarea {
+  width: 100%; padding: 11px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; color: var(--t1);
+  background: var(--white); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  appearance: none; -webkit-appearance: none;
+}
+input[type="number"] { font-family: 'DM Mono', monospace; font-size: 15px; }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(230,57,70,.12);
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a6478' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 36px; cursor: pointer;
+}
+textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
+.hint { font-size: 11.5px; color: var(--t3); margin-top: 6px; }
+
+/* ── Price Dark Card ── */
+.price-card {
+  background: var(--navy);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative; overflow: hidden;
+}
+.price-card::before {
+  content: ''; position: absolute;
+  top: -40px; right: -40px;
+  width: 150px; height: 150px;
+  background: var(--red); opacity: .07; border-radius: 50%;
+}
+.price-card-title {
+  font-size: 10.5px; font-weight: 700;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase; letter-spacing: .1em;
+  margin-bottom: 1.1rem; position: relative;
+}
+.price-metrics {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 9px; margin-bottom: 1.2rem; position: relative;
+}
+.price-metric {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--r-sm); padding: 10px 12px;
+}
+.pm-label { font-size: 10.5px; color: rgba(255,255,255,.4); margin-bottom: 3px; }
+.pm-val { font-size: 15px; font-weight: 700; color: #fff; font-family: 'DM Mono', monospace; }
+.bk-row {
+  display: flex; justify-content: space-between;
+  font-size: 13px; padding: 6px 0;
+  color: rgba(255,255,255,.55);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  position: relative;
+}
+.bk-row:last-child { border-bottom: none; }
+.bk-total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: 12px; padding-top: 13px;
+  border-top: 1px solid rgba(255,255,255,.15);
+  position: relative;
+}
+.bk-total-label { font-size: 13px; color: rgba(255,255,255,.65); font-weight: 500; }
+.bk-total-val {
+  font-size: 32px; font-weight: 700;
+  color: var(--red); font-family: 'DM Mono', monospace; line-height: 1;
+}
+.price-note { font-size: 11px; color: rgba(255,255,255,.28); margin-top: 10px; position: relative; }
+
+/* ── Alert ── */
+.alert { border-radius: var(--r-sm); padding: 10px 14px; font-size: 12.5px; margin-top: 12px; display: none; position: relative; }
+.alert-warn { background: var(--amber-bg); color: var(--amber); border-left: 3px solid #d97706; }
+
+/* ── Upload ── */
+.upload-wrap {
+  border: 2px dashed var(--border);
+  border-radius: var(--r-md); padding: 2rem;
+  text-align: center; cursor: pointer;
+  transition: all .15s; position: relative;
+}
+.upload-wrap:hover { border-color: var(--red); background: var(--red-bg); }
+.upload-wrap.has-file { border-color: var(--green); background: var(--green-bg); border-style: solid; }
+.upload-wrap input[type="file"] {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; opacity: 0; cursor: pointer;
+}
+.up-icon {
+  width: 46px; height: 46px;
+  background: var(--off); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 11px;
+}
+.up-title { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 3px; }
+.up-sub { font-size: 12px; color: var(--t3); }
+.file-chosen {
+  display: none; align-items: center; justify-content: center;
+  gap: 7px; font-size: 13px; font-weight: 600;
+  color: var(--green); margin-top: 8px;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 13px 22px; border-radius: var(--r-md);
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; border: none; transition: all .15s; text-decoration: none;
+}
+.btn-primary {
+  background: var(--red); color: #fff; width: 100%;
+  box-shadow: 0 4px 14px rgba(230,57,70,.3);
+}
+.btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(230,57,70,.38); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  background: var(--white); color: var(--t2);
+  border: 1.5px solid var(--border); width: 100%;
+}
+.btn-secondary:hover { background: var(--off); }
+.btn-row { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: .5rem; }
+
+/* ── Review ── */
+.rtable { width: 100%; border-collapse: collapse; }
+.rtable td { padding: 10px 0; font-size: 13.5px; border-bottom: 1px solid var(--off); vertical-align: top; }
+.rtable td:first-child { color: var(--t2); width: 38%; font-size: 12.5px; font-weight: 500; }
+.rtable td:last-child { text-align: right; color: var(--t1); font-weight: 500; }
+.rtable tr:last-child td { border-bottom: none; }
+
+.pay-box {
+  background: var(--off); border-radius: var(--r-md);
+  padding: 1rem 1.1rem; display: flex; align-items: flex-start;
+  gap: 11px; margin-bottom: 1rem; border: 1px solid var(--border);
+}
+.pay-icon {
+  width: 36px; height: 36px; background: var(--white); border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: var(--sh-sm);
+}
+.pay-box p { font-size: 13px; color: var(--t2); }
+.pay-box strong { color: var(--t1); font-weight: 600; }
+
+.total-dark {
+  background: var(--navy); border-radius: var(--r-lg);
+  padding: 1.25rem 1.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 1.25rem;
+}
+.td-label { font-size: 13px; color: rgba(255,255,255,.55); margin-bottom: 3px; }
+.td-val { font-size: 30px; font-weight: 700; color: var(--red); font-family: 'DM Mono', monospace; line-height: 1; }
+.td-note { font-size: 11px; color: rgba(255,255,255,.28); text-align: right; }
+
+/* ── Success ── */
+.success-screen { text-align: center; padding: 3rem 1.5rem; display: none; }
+.success-icon {
+  width: 72px; height: 72px; background: var(--green-bg); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem; font-size: 30px;
+  box-shadow: 0 0 0 12px rgba(22,163,74,.08);
+}
+.success-screen h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.success-screen p { font-size: 14px; color: var(--t2); }
+
+/* ── WhatsApp FAB ── */
+.wa-fab {
+  position: fixed; bottom: 22px; right: 18px;
+  width: 52px; height: 52px; background: #25D366; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(37,211,102,.4);
+  text-decoration: none; transition: transform .2s, box-shadow .2s; z-index: 50;
+}
+.wa-fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(37,211,102,.5); }
+
+/* ── Mobile ── */
+@media (max-width: 500px) {
+  header { padding: 0 1rem; }
+  .logo-tag { display: none; }
+  .step-label { display: none; }
+  .field-row { grid-template-columns: 1fr; }
+  .mat-grid { grid-template-columns: 1fr 1fr; }
+  .bk-total-val { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <img src="logo.png" class="logo-icon" alt="A&T Signboard Logo" />
+    <div>
+      <div class="logo-name">A<span>&amp;</span>T SIGNBOARD</div>
+      <div class="logo-tag">We Make Sign Speak Your Name</div>
+    </div>
+  </div>
+  <a href="https://wa.me/60197901150" class="wa-header" target="_blank" rel="noopener noreferrer">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+    WhatsApp
+  </a>
+</header>
+
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Inkjet Printing</h1>
+    <p>Configure, get an instant price, and place your order in 3 steps.</p>
+    <div class="hero-badges">
+      <span class="hero-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        JB &amp; All Malaysia
+      </span>
+      <span class="hero-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        Singapore Delivery
+      </span>
+      <span class="hero-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        2–3 Days Production
+      </span>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step-node">
+      <div class="step-circle active" id="sc-1">1</div>
+      <span class="step-label active" id="sl-1">Configure</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node">
+      <div class="step-circle" id="sc-2">2</div>
+      <span class="step-label" id="sl-2">Your Details</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node">
+      <div class="step-circle" id="sc-3">3</div>
+      <span class="step-label" id="sl-3">Review &amp; Pay</span>
+    </div>
+  </div>
+
+  <!-- ══ STEP 1 ══ -->
+  <div id="step1">
+
+    <div class="card">
+      <div class="card-title">Select Material</div>
+      <div class="mat-grid">
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m1" value="8" data-name="White vinyl sticker + matt lam" checked />
+          <label class="mat-card" for="m1">
+            <div class="mat-tick">✓</div>
+            <!-- Replace with: <img src="img/white-vinyl-matt.jpg" class="mat-img" alt="White Vinyl Matt"> -->
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#eef0f5,#dde1eb)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">White Vinyl · Matt Lam</div>
+              <div class="mat-sub">Indoor / outdoor use</div>
+              <span class="mat-price">RM 8/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m2" value="8" data-name="White vinyl sticker + gloss lam" />
+          <label class="mat-card" for="m2">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#ddeeff,#c8dff8)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">White Vinyl · Gloss Lam</div>
+              <div class="mat-sub">Vibrant, shiny finish</div>
+              <span class="mat-price">RM 8/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m3" value="8" data-name="Transparent sticker + matt lam" />
+          <label class="mat-card" for="m3">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:repeating-linear-gradient(45deg,#e0e0e0 0,#e0e0e0 2px,#f2f2f2 0,#f2f2f2 10px)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Transparent · Matt Lam</div>
+              <div class="mat-sub">Clear base, soft finish</div>
+              <span class="mat-price">RM 8/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m4" value="8" data-name="Transparent sticker + gloss lam" />
+          <label class="mat-card" for="m4">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:repeating-linear-gradient(45deg,#b8d8f0 0,#b8d8f0 2px,#e4f0fa 0,#e4f0fa 10px)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Transparent · Gloss Lam</div>
+              <div class="mat-sub">Clear base, shiny finish</div>
+              <span class="mat-price">RM 8/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m5" value="10" data-name="Transparent sticker reverse print + white lam" />
+          <label class="mat-card" for="m5">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#b0cce8,#d0e4f4)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Transparent Reverse Print</div>
+              <div class="mat-sub">+ White lam backing</div>
+              <span class="mat-price premium">RM 10/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m6" value="12" data-name="Lightbox sticker + matt lam" />
+          <label class="mat-card" for="m6">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#ffe566,#ffd000)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,.3)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span style="color:rgba(0,0,0,.4)">Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Lightbox Sticker</div>
+              <div class="mat-sub">Backlit display, glow effect</div>
+              <span class="mat-price premium">RM 12/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m7" value="15" data-name="Synthetic paper printing" />
+          <label class="mat-card" for="m7">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#ede4d6,#ddd0bc)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Synthetic Paper</div>
+              <div class="mat-sub">Waterproof, durable</div>
+              <span class="mat-price premium">RM 15/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m8" value="8" data-name="Frosted sticker printing" />
+          <label class="mat-card" for="m8">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#e2e2ee,#d4d4e4)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Frosted Sticker</div>
+              <div class="mat-sub">Premium soft matte finish</div>
+              <span class="mat-price">RM 8/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m9" value="12" data-name="Wall sticker + matt lam" />
+          <label class="mat-card" for="m9">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#dce8d4,#c8dcc0)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Wall Sticker · Matt Lam</div>
+              <div class="mat-sub">Interior wall application</div>
+              <span class="mat-price premium">RM 12/sqf</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="mat-opt">
+          <input type="radio" name="material" id="m10" value="10" data-name="Grey base sticker + matt lam" />
+          <label class="mat-card" for="m10">
+            <div class="mat-tick">✓</div>
+            <div class="mat-img-placeholder" style="background:linear-gradient(135deg,#b0b8c4,#8e98a8)">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span style="color:rgba(255,255,255,.6)">Photo coming soon</span>
+            </div>
+            <div class="mat-body">
+              <div class="mat-name">Grey Base Sticker · Matt Lam</div>
+              <div class="mat-sub">Opaque grey base</div>
+              <span class="mat-price premium">RM 10/sqf</span>
+            </div>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Size &amp; Quantity</div>
+      <div class="field-row">
+        <div>
+          <label for="width">Width (ft)</label>
+          <input type="number" id="width" min="0.1" step="0.1" placeholder="e.g. 2" />
+        </div>
+        <div>
+          <label for="height">Height (ft)</label>
+          <input type="number" id="height" min="0.1" step="0.1" placeholder="e.g. 3" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label for="qty">Quantity (pcs)</label>
+          <input type="number" id="qty" min="1" step="1" value="1" />
+        </div>
+        <div>
+          <label for="install">Installation</label>
+          <select id="install">
+            <option value="0">Self-collect</option>
+            <option value="3">JB Area (+RM3/sqf)</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">Minimum billable area: 2 sqf per piece</p>
+    </div>
+
+    <!-- Price result -->
+    <div class="price-card" id="result-box" style="display:none">
+      <div class="price-card-title">Price Estimate</div>
+      <div class="price-metrics">
+        <div class="price-metric">
+          <div class="pm-label">Area / piece</div>
+          <div class="pm-val" id="sqf-display">—</div>
+        </div>
+        <div class="price-metric">
+          <div class="pm-label">Total area</div>
+          <div class="pm-val" id="total-sqf-display">—</div>
+        </div>
+      </div>
+      <div class="bk-row">
+        <span>Printing (<span id="rate-label">—</span>/sqf)</span>
+        <span id="print-cost">RM —</span>
+      </div>
+      <div class="bk-row" id="install-row" style="display:none">
+        <span>Installation (JB area)</span>
+        <span id="install-cost">RM —</span>
+      </div>
+      <div class="bk-total">
+        <span class="bk-total-label">Estimated Total</span>
+        <span class="bk-total-val" id="total-display">RM —</span>
+      </div>
+      <div class="alert alert-warn" id="min-warning">
+        ⚠ Minimum order is 2 sqf per piece. Price calculated at 2 sqf.
+      </div>
+      <p class="price-note">Price excludes SST · No hidden charges</p>
+    </div>
+
+    <button class="btn btn-primary" id="btn-next1" onclick="goStep2()" style="display:none">
+      Proceed to Order &rarr;
+    </button>
+  </div>
+
+  <!-- ══ STEP 2 ══ -->
+  <div id="step2" style="display:none">
+
+    <div class="card">
+      <div class="card-title">Your Details</div>
+      <div class="field">
+        <label for="cname">Full Name</label>
+        <input type="text" id="cname" placeholder="As per IC / company name" />
+      </div>
+      <div class="field">
+        <label for="cphone">Phone Number</label>
+        <input type="tel" id="cphone" placeholder="e.g. 012-3456789" />
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="cemail">Email Address</label>
+        <input type="email" id="cemail" placeholder="Order confirmation sent here" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Artwork File</div>
+      <p style="font-size:13px;color:var(--t2);margin-bottom:1rem;">Ensure your file is print-ready. Recommended: 300 DPI, CMYK colour mode.</p>
+      <div class="upload-wrap" id="upload-zone">
+        <input type="file" id="artwork" accept=".ai,.pdf,.jpg,.jpeg,.png,.psd,.eps" onchange="fileChosen(this)" />
+        <div class="up-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        </div>
+        <div class="up-title">Click to upload artwork</div>
+        <div class="up-sub">AI · PDF · JPG · PNG · PSD · EPS — max 50 MB</div>
+        <div class="file-chosen" id="file-chosen-msg"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Additional Remarks</div>
+      <textarea id="remarks" placeholder="e.g. cutting required, specific finish, urgent order…"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep1()">&larr; Back</button>
+      <button class="btn btn-primary" onclick="goStep3()">Review Order &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3 ══ -->
+  <div id="step3" style="display:none">
+
+    <div class="card">
+      <div class="card-title">Order Summary</div>
+      <table class="rtable" id="r-summary"></table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Customer Info</div>
+      <table class="rtable">
+        <tr><td>Name</td><td id="r-name">—</td></tr>
+        <tr><td>Phone</td><td id="r-phone">—</td></tr>
+        <tr><td>Email</td><td id="r-email">—</td></tr>
+        <tr><td>Artwork</td><td id="r-file">—</td></tr>
+      </table>
+    </div>
+
+    <div class="pay-box">
+      <div class="pay-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e63946" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div>
+        <p><strong>Payment via iPay88</strong></p>
+        <p>FPX, credit/debit card &amp; e-wallet accepted. Production begins after payment confirmation.</p>
+      </div>
+    </div>
+
+    <div class="total-dark">
+      <div>
+        <div class="td-label">Total Payable</div>
+        <div class="td-val" id="r-total">RM —</div>
+      </div>
+      <div class="td-note">Excl. SST<br>No hidden charges</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep2()">&larr; Back</button>
+      <button class="btn btn-primary" onclick="submitOrder()">Pay Now &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Success -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">✓</div>
+    <h2>Order Received!</h2>
+    <p style="margin-bottom:8px">Thank you! Our team will review your order and contact you shortly to confirm.</p>
+    <p style="margin-bottom:2rem">Production begins after payment is verified.</p>
+    <p style="font-size:13px;color:var(--t3)">Questions? WhatsApp us at <strong style="color:var(--t1)">+60 19-790 1150</strong></p>
+  </div>
+
+</div>
+
+<!-- WhatsApp FAB -->
+<a href="https://wa.me/60197901150" class="wa-fab" target="_blank" rel="noopener noreferrer" title="Chat on WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+</a>
+
+<script>
+var order = {};
+
+function getSelectedMat() {
+  var el = document.querySelector('input[name="material"]:checked');
+  return el ? { rate: parseFloat(el.value), name: el.getAttribute('data-name') } : null;
+}
+
+function calc() {
+  var w = parseFloat(document.getElementById('width').value);
+  var h = parseFloat(document.getElementById('height').value);
+  var qty = parseInt(document.getElementById('qty').value) || 1;
+  var mat = getSelectedMat();
+  var installRate = parseFloat(document.getElementById('install').value);
+
+  if (!w || !h || isNaN(w) || isNaN(h)) {
+    document.getElementById('result-box').style.display = 'none';
+    document.getElementById('btn-next1').style.display = 'none';
+    return;
+  }
+
+  var sqfPc = w * h;
+  var minWarn = sqfPc < 2;
+  var billable = Math.max(sqfPc, 2);
+  var totalSqf = billable * qty;
+  var printCost = totalSqf * mat.rate;
+  var installCost = installRate > 0 ? totalSqf * installRate : 0;
+  var total = printCost + installCost;
+
+  document.getElementById('sqf-display').textContent = sqfPc.toFixed(2) + ' sqf';
+  document.getElementById('total-sqf-display').textContent = totalSqf.toFixed(2) + ' sqf';
+  document.getElementById('rate-label').textContent = 'RM' + mat.rate.toFixed(0);
+  document.getElementById('print-cost').textContent = 'RM ' + printCost.toFixed(2);
+  document.getElementById('total-display').textContent = 'RM ' + total.toFixed(2);
+
+  var ir = document.getElementById('install-row');
+  if (installRate > 0) {
+    ir.style.display = 'flex';
+    document.getElementById('install-cost').textContent = 'RM ' + installCost.toFixed(2);
+  } else {
+    ir.style.display = 'none';
+  }
+
+  document.getElementById('min-warning').style.display = minWarn ? 'block' : 'none';
+  document.getElementById('result-box').style.display = 'block';
+  document.getElementById('btn-next1').style.display = 'flex';
+
+  order.material = mat.name; order.rate = mat.rate;
+  order.width = w; order.height = h; order.qty = qty;
+  order.sqfPc = sqfPc; order.billable = billable;
+  order.totalSqf = totalSqf; order.installRate = installRate;
+  order.printCost = printCost; order.installCost = installCost; order.total = total;
+
+  // Build summaryRows for review screen (consistent with acrylic/foamboard pages)
+  order.summaryRows = [
+    ['Material', mat.name],
+    ['Rate', 'RM ' + mat.rate.toFixed(0) + '/sqf'],
+    ['Size', w + ' ft × ' + h + ' ft (' + sqfPc.toFixed(2) + ' sqf/pc)'],
+    ['Quantity', qty + ' piece(s)'],
+    ['Billable area', totalSqf.toFixed(2) + ' sqf' + (minWarn ? ' (min. 2 sqf/pc applied)' : '')],
+    ['Print cost', 'RM ' + printCost.toFixed(2)],
+    ['Installation', installRate > 0 ? 'Yes — JB area (RM ' + installCost.toFixed(2) + ')' : 'Self-collect / Delivery']
+  ];
+}
+
+document.querySelectorAll('input[name="material"]').forEach(function(el) {
+  el.addEventListener('change', calc);
+});
+['width','height','qty','install'].forEach(function(id) {
+  var el = document.getElementById(id);
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+
+function fileChosen(input) {
+  if (input.files && input.files[0]) {
+    var msg = document.getElementById('file-chosen-msg');
+    msg.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> ' + input.files[0].name;
+    msg.style.display = 'flex';
+    document.getElementById('upload-zone').classList.add('has-file');
+    order.filename = input.files[0].name;
+  }
+}
+
+function setStep(n) {
+  ['step1','step2','step3'].forEach(function(id, i) {
+    document.getElementById(id).style.display = (i + 1 === n) ? 'block' : 'none';
+  });
+  [1,2,3].forEach(function(i) {
+    var sc = document.getElementById('sc-' + i);
+    var sl = document.getElementById('sl-' + i);
+    if (i < n)      { sc.className = 'step-circle done';   sc.textContent = '✓'; sl.className = 'step-label done'; }
+    else if (i ===n){ sc.className = 'step-circle active'; sc.textContent = i;   sl.className = 'step-label active'; }
+    else            { sc.className = 'step-circle';        sc.textContent = i;   sl.className = 'step-label'; }
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goStep1() { setStep(1); }
+
+function goStep2() {
+  if (!order.total) { alert('Please select a material and enter dimensions first.'); return; }
+  setStep(2);
+}
+
+function goStep3() {
+  var name  = document.getElementById('cname').value.trim();
+  var phone = document.getElementById('cphone').value.trim();
+  var email = document.getElementById('cemail').value.trim();
+  var file  = document.getElementById('artwork').files[0];
+  if (!name)                        { alert('Please enter your full name.'); return; }
+  if (!phone)                       { alert('Please enter your phone number.'); return; }
+  if (!email || !email.includes('@')){ alert('Please enter a valid email address.'); return; }
+  if (!file)                        { alert('Please upload your artwork file.'); return; }
+
+  order.name = name; order.phone = phone; order.email = email;
+
+  // Build summary table dynamically (same approach as acrylic/foamboard)
+  var html = (order.summaryRows || []).map(function(r) {
+    return '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>';
+  }).join('');
+  document.getElementById('r-summary').innerHTML = html;
+
+  document.getElementById('r-name').textContent  = name;
+  document.getElementById('r-phone').textContent = phone;
+  document.getElementById('r-email').textContent = email;
+  document.getElementById('r-file').textContent  = order.filename || 'Not uploaded';
+  document.getElementById('r-total').textContent = 'RM ' + order.total.toFixed(2);
+
+  setStep(3);
+}
+
+function submitOrder() {
+  /*
+    DEVELOPER TODO:
+    1. POST order object + artwork file to backend (multipart/form-data)
+    2. Save order record, generate order ID
+    3. Redirect to iPay88 payment gateway
+    4. On payment callback: send confirmation email to customer + alert to admin
+  */
+  document.getElementById('step3').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

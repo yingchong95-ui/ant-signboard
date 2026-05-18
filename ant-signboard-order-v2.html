@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Signboard — A&T Signboard & Printing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1f3c;--red:#e63946;--red-dark:#c1121f;--red-bg:#fff0f1;
+  --white:#fff;--off:#f6f8fc;--border:#e3e7ef;
+  --t1:#0d1f3c;--t2:#5a6478;--t3:#9aa3b2;
+  --green:#16a34a;--green-bg:#edfdf4;
+  --sh-md:0 4px 20px rgba(13,31,60,.10);
+  --sh-lg:0 8px 40px rgba(13,31,60,.15);
+  --r-sm:8px;--r-md:12px;--r-lg:18px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-height:100vh;line-height:1.6}
+
+/* ── Header ── */
+header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,.28)}
+.logo-wrap{display:flex;align-items:center;gap:11px}
+.logo-icon{width:42px;height:42px;flex-shrink:0;border-radius:50%;object-fit:cover}
+.logo-text{display:flex;flex-direction:column}
+.logo-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.04em;line-height:1.1}
+.logo-tagline{font-size:.65rem;font-weight:400;color:rgba(255,255,255,.55);letter-spacing:.06em;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:12px}
+.back-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:.8rem;font-weight:500;padding:7px 14px;border-radius:6px;text-decoration:none;transition:background .2s}
+.back-btn:hover{background:rgba(255,255,255,.18)}
+.wa-btn{display:flex;align-items:center;gap:6px;background:#25D366;color:#fff;font-size:.8rem;font-weight:600;padding:8px 16px;border-radius:6px;text-decoration:none;transition:filter .2s}
+.wa-btn:hover{filter:brightness(1.08)}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#1a3560 100%);padding:3rem 2rem 2.5rem;text-align:center;color:#fff}
+.hero-label{display:inline-flex;align-items:center;gap:6px;background:rgba(230,57,70,.18);border:1px solid rgba(230,57,70,.35);color:#ff8b91;font-size:.72rem;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:1rem;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(1.7rem,3.5vw,2.4rem);font-weight:700;margin-bottom:.5rem}
+.hero p{color:rgba(255,255,255,.6);font-size:.9rem;max-width:520px;margin:0 auto}
+
+/* ── Step Bar ── */
+.step-bar{background:#fff;border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;justify-content:center}
+.steps{display:flex;align-items:center}
+.step{display:flex;align-items:center;gap:8px}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--border);color:var(--t2);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.step-num.active{background:var(--red);color:#fff}
+.step-num.done{background:var(--green);color:#fff}
+.step-label{font-size:.8rem;font-weight:500;color:var(--t2)}
+.step-label.active{color:var(--red);font-weight:600}
+.step-label.done{color:var(--green)}
+.step-sep{width:28px;height:1px;background:var(--border);margin:0 6px}
+
+/* ── Page layout ── */
+.page{max-width:1140px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+/* ── Step 1 layout: form left, preview right ── */
+.design-layout{display:grid;grid-template-columns:360px 1fr;gap:1.5rem;align-items:start}
+
+/* ── Card ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-md);margin-bottom:1.5rem;overflow:hidden}
+.card-head{background:var(--navy);padding:1rem 1.5rem;display:flex;align-items:center;gap:10px}
+.card-head-icon{width:32px;height:32px;background:rgba(255,255,255,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.card-head h2{color:#fff;font-size:.95rem;font-weight:600}
+.card-body{padding:1.5rem}
+
+/* ── Form panel ── */
+.form-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh-md);overflow:hidden;position:sticky;top:88px}
+.form-head{background:var(--navy);padding:.9rem 1.3rem}
+.form-head h2{color:#fff;font-size:.88rem;font-weight:600}
+.form-body{padding:1.2rem;display:flex;flex-direction:column;gap:.85rem}
+.sec{font-size:.67rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fl{font-size:.74rem;font-weight:600;color:var(--t2);display:flex;justify-content:space-between;align-items:center}
+.fl-tag{font-size:.59rem;background:var(--off);border:1px solid var(--border);color:var(--t3);padding:1px 6px;border-radius:7px}
+.fi,.fta{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.5rem .75rem;font-family:'DM Sans',sans-serif;font-size:.83rem;color:var(--t1);background:#fff;outline:none;transition:border-color .2s;width:100%}
+.fi:focus,.fta:focus{border-color:var(--red)}
+.fta{min-height:54px;resize:vertical}
+.fh{font-size:.64rem;color:var(--t3)}
+
+/* Option grid */
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.board-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.board-type-grid .lo:last-child:nth-child(odd){grid-column:1/-1}
+.opt-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.lo{border:2px solid var(--border);border-radius:var(--r-sm);padding:.55rem .3rem;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
+.lo:hover{border-color:#aab4c8}
+.lo.on{border-color:var(--red);background:var(--red-bg)}
+.lo-icon{font-size:1.1rem;line-height:1}
+.lo-name{font-size:.68rem;font-weight:600;color:var(--t1);margin-top:2px}
+
+/* Colour inputs */
+.cpair{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.cg{display:flex;flex-direction:column;gap:3px}
+.cl{font-size:.72rem;font-weight:600;color:var(--t2)}
+.cw{display:flex;gap:5px;align-items:center}
+.csw{width:30px;height:30px;border-radius:6px;border:2px solid var(--border);cursor:pointer;flex-shrink:0}
+.ctx{flex:1;border:1.5px solid var(--border);border-radius:6px;padding:.4rem .6rem;font-size:.75rem;font-family:'DM Sans',sans-serif;color:var(--t1);outline:none;transition:border-color .2s}
+.ctx:focus{border-color:var(--red)}
+.ch{font-size:.62rem;color:var(--t3)}
+.tips{display:flex;gap:4px;flex-wrap:wrap}
+.tip{display:flex;align-items:center;gap:3px;border:1px solid var(--border);border-radius:20px;padding:3px 7px;cursor:pointer;background:#fff;font-size:.66rem;font-weight:500;color:var(--t2);transition:all .15s;font-family:inherit}
+.tip:hover{border-color:var(--red);color:var(--red)}
+.td{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+.upload-artwork-zone{
+  border:2px dashed var(--border);border-radius:var(--r-sm);
+  padding:.9rem .8rem;text-align:center;cursor:pointer;
+  transition:all .2s;background:rgba(255,255,255,.5);
+  position:relative;overflow:hidden;
+}
+.upload-artwork-zone:hover{border-color:var(--red);background:var(--red-bg)}
+.upload-artwork-zone.has-art{
+  border-style:solid;border-color:rgba(255,255,255,.3);
+  background:transparent;padding:0;
+}
+.az-icon{font-size:1.4rem;margin-bottom:3px}
+.az-title{font-size:.75rem;font-weight:600;color:var(--t2)}
+.az-sub{font-size:.65rem;color:var(--t3)}
+.az-name{font-size:.68rem;font-weight:600;color:var(--green);margin-top:3px}
+.az-preview{width:100%;display:block;border-radius:4px;object-fit:cover;max-height:80px}
+
+/* Artwork overlay on signboard preview */
+.sb-artwork{
+  position:absolute;
+  inset:0;z-index:5;
+  border-radius:4px;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .3s;
+}
+.sb-artwork img{width:100%;height:100%;object-fit:cover;display:block}
+.sb-artwork.visible{opacity:.9}
+
+.size-input-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.size-inp-wrap{flex:1;position:relative;display:flex;align-items:center}
+.size-inp{padding-right:2rem !important;text-align:center}
+.size-unit{position:absolute;right:.6rem;font-size:.72rem;color:var(--t3);font-weight:600;pointer-events:none}
+.size-x{color:var(--t2);font-weight:700;font-size:1rem;flex-shrink:0}
+
+.price-est{
+  background:linear-gradient(135deg,#0a3d1f 0%,#0d5a2a 100%);
+  border:1px solid rgba(34,197,94,.3);
+  border-radius:var(--r-md);
+  padding:1rem 1.1rem;
+  margin-top:.2rem;
+}
+.pe-header{display:flex;align-items:center;gap:6px;margin-bottom:.5rem}
+.pe-icon{font-size:1rem}
+.pe-title{color:rgba(255,255,255,.6);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.pe-price{
+  font-size:1.5rem;font-weight:800;
+  color:#4ade80;
+  line-height:1.1;margin-bottom:.2rem;
+  font-family:'DM Mono',monospace;
+}
+.pe-sqft{font-size:.7rem;color:rgba(255,255,255,.45);margin-bottom:.6rem;font-family:'DM Mono',monospace}
+.pe-note{
+  font-size:.65rem;color:rgba(255,255,255,.4);
+  line-height:1.5;
+  border-top:1px solid rgba(255,255,255,.08);
+  padding-top:.5rem;margin-top:.3rem;
+}
+
+.next-btn{width:100%;padding:.72rem;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .2s;margin-top:.2rem}
+.next-btn:hover{background:var(--red-dark)}
+
+/* ── Preview panel ── */
+.prev-col{display:flex;flex-direction:column;gap:1rem}
+.prev-card{border-radius:var(--r-lg);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.25)}
+.prev-head{background:rgba(10,15,30,.95);padding:.7rem 1.1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)}
+.prev-title{color:#fff;font-size:.8rem;font-weight:600;display:flex;align-items:center;gap:6px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 5px #22c55e;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.prev-tag{background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);font-size:.62rem;font-weight:600;padding:3px 9px;border-radius:9px}
+
+/* Signboard scene */
+.sb-scene{padding:2.5rem 2rem 2rem;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:220px}
+.sb-scene::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,#0f1523 0%,#162035 50%,#0f1523 100%)}
+.sb-scene::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(255,255,255,.012) 80px,rgba(255,255,255,.012) 81px),repeating-linear-gradient(0deg,transparent,transparent 80px,rgba(255,255,255,.012) 80px,rgba(255,255,255,.012) 81px)}
+.sb-wrap{position:relative;width:100%;max-width:680px;z-index:1;aspect-ratio:3.5/1;min-height:130px}
+.sb-panel{position:absolute;inset:0;border-radius:4px;transition:background-color .35s;z-index:1;background-image:linear-gradient(160deg,rgba(255,255,255,.06) 0%,transparent 40%)}
+.sb-texture{position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:4px;overflow:hidden}
+.sb-light{position:absolute;inset:0;border-radius:4px;z-index:3;pointer-events:none;transition:all .4s}
+.sb-light.nonlit{background:linear-gradient(160deg,rgba(255,255,255,.06) 0%,transparent 50%)}
+.sb-text{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8% 5% 10% 5%;pointer-events:none}
+.sb-biz{font-size:clamp(.35rem,1.1vw,.65rem);font-weight:400;letter-spacing:.09em;margin-bottom:3%;opacity:.78;transition:color .3s,text-shadow .3s;line-height:1.2;text-transform:uppercase;text-align:left;width:100%}
+.sb-name{font-size:clamp(.75rem,3vw,1.85rem);font-weight:800;letter-spacing:.025em;line-height:1.15;margin-bottom:3%;transition:color .3s,text-shadow .3s;word-break:break-word;text-align:center;width:100%}
+.sb-slogan{font-size:clamp(.35rem,1vw,.68rem);font-weight:400;opacity:.78;line-height:1.5;transition:color .3s;white-space:pre-line;text-align:center;width:100%}
+.sb-ssm{position:absolute;bottom:6%;right:4%;font-size:clamp(.2rem,.48vw,.36rem);font-weight:400;opacity:.4;font-family:'DM Mono',monospace;text-align:right;line-height:1.4;transition:color .3s;z-index:5;max-width:55%;letter-spacing:.05em;text-transform:uppercase}
+/* Lightbox: uniform internal glow */
+.sb-scene.lightbox-mode .sb-panel{
+  filter:brightness(1.3) saturate(1.4);
+}
+/* Lightbox glow overlay */
+.sb-light.lightbox{
+  background:
+    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(255,255,255,.45) 0%, rgba(255,255,255,.25) 40%, rgba(255,255,255,.08) 70%, transparent 85%);
+  box-shadow:
+    inset 0 0 40px rgba(255,255,255,.3),
+    inset 0 0 80px rgba(255,255,255,.15),
+    0 0 30px rgba(255,255,255,.2);
+}
+/* Double side: same as lightbox */
+.sb-light.dslightbox{
+  background:
+    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(255,255,255,.45) 0%, rgba(255,255,255,.25) 40%, rgba(255,255,255,.08) 70%, transparent 85%);
+  box-shadow:
+    inset 0 0 40px rgba(255,255,255,.3),
+    inset 0 0 80px rgba(255,255,255,.15),
+    0 0 30px rgba(255,255,255,.2);
+}
+/* Wall lettering scene */
+.sb-scene.wall-mode{
+  padding:2rem;
+  min-height:280px;
+}
+.sb-scene.wall-mode::before{
+  background:linear-gradient(160deg,#e8e0d8 0%,#d4ccc4 100%);
+}
+.sb-scene.wall-white::before{background:#f0eeec}
+.sb-scene.wall-cement::before{
+  background:
+    repeating-linear-gradient(45deg,#b8b0a8 0px,#b8b0a8 1px,transparent 1px,transparent 8px),
+    repeating-linear-gradient(-45deg,#c4bcb4 0px,#c4bcb4 1px,transparent 1px,transparent 8px),
+    linear-gradient(160deg,#a8a09898 0%,#9890889a 100%);
+}
+/* Wall text: drop shadow for 3D effect, no frame */
+.wall-mode .sb-name{
+  text-shadow:2px 3px 6px rgba(0,0,0,.25), 1px 1px 0px rgba(0,0,0,.15) !important;
+}
+.wall-mode .sb-biz{
+  text-shadow:1px 2px 4px rgba(0,0,0,.2) !important;
+}
+.wall-mode .sb-slogan{
+  text-shadow:1px 2px 4px rgba(0,0,0,.2) !important;
+}
+/* DS Lightbox: portrait/vertical shape */
+.sb-scene.dslightbox-mode .sb-wrap{
+  max-width:220px;
+  aspect-ratio:1/2.5;
+}
+/* DS Lightbox vertical text layout */
+.dslightbox-mode .sb-text{padding:6% 8% 12% 8%}
+.dslightbox-mode .sb-ssm{bottom:4%;right:5%;font-size:clamp(.18rem,.5vw,.3rem)}
+/* Lightbox metallic frame */
+.lightbox-frame{
+  position:absolute;inset:0;z-index:6;pointer-events:none;
+  border-radius:3px;
+  border:6px solid transparent;
+  background:
+    linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(180deg,#d0d0d0 0%,#a0a0a0 40%,#c8c8c8 60%,#888 100%) border-box;
+  box-shadow:0 4px 16px rgba(0,0,0,.4),0 1px 4px rgba(0,0,0,.3);
+}
+.lightbox-frame::before{
+  content:'';position:absolute;inset:2px;border-radius:1px;
+  border:1px solid rgba(255,255,255,.5);pointer-events:none;
+}
+.sb-frame-css{position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:4px;box-shadow:0 6px 24px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(0,0,0,.3);border-top:3px solid #4a5a7a;border-left:3px solid #4a5a7a;border-right:3px solid #1a2235;border-bottom:4px solid #111825;background:transparent}
+.sb-frame-css::before{content:'';position:absolute;inset:3px;border-radius:2px;border-top:1px solid rgba(255,255,255,.15);border-left:1px solid rgba(255,255,255,.1);border-right:1px solid rgba(0,0,0,.3);border-bottom:1px solid rgba(0,0,0,.4);pointer-events:none}
+.prev-meta{background:rgba(8,12,24,.9);border-top:1px solid rgba(255,255,255,.05);padding:.65rem 1.1rem;display:flex;gap:1.2rem;flex-wrap:wrap}
+.mi{display:flex;flex-direction:column;gap:1px}
+.ml{font-size:.58rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.mv{font-size:.7rem;color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;font-weight:500}
+
+/* ── Standard form elements ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:.78rem;font-weight:600;color:var(--t2)}
+.form-label span{color:var(--red)}
+.form-input,.form-select,.form-textarea{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem .85rem;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--t1);background:#fff;outline:none;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--red)}
+.form-textarea{min-height:80px;resize:vertical}
+.size-row{display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:center}
+.size-sep{color:var(--t2);font-weight:600;text-align:center}
+
+/* Upload */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r-md);padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--off)}
+.upload-zone:hover{border-color:var(--red);background:var(--red-bg)}
+.upload-zone.has-file{border-color:var(--green);background:var(--green-bg);border-style:solid}
+.upload-icon{font-size:1.8rem;margin-bottom:.4rem}
+.upload-title{font-size:.85rem;font-weight:600;color:var(--t1)}
+.upload-sub{font-size:.72rem;color:var(--t2)}
+.upload-name{font-size:.78rem;font-weight:600;color:var(--green);margin-top:.3rem}
+#fileInput{display:none}
+
+/* Notice */
+.notice{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r-sm);padding:.8rem 1rem;font-size:.8rem;color:#78350f;display:flex;gap:8px;align-items:flex-start}
+.notice-blue{background:#eff6ff;border-color:#bfdbfe;color:#1e3a5f}
+
+/* Summary */
+.summary-table{width:100%;border-collapse:collapse}
+.summary-table td{padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.87rem}
+.summary-table td:first-child{color:var(--t2);width:42%}
+.summary-table td:last-child{font-weight:600;text-align:right}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:.75rem 1.8rem;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;border:none}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:hover{background:var(--red-dark)}
+.btn-ghost{background:transparent;color:var(--t2);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--t1);color:var(--t1)}
+.btn-row{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+
+/* Info card */
+.claude-design-wrap{
+  background:linear-gradient(135deg,#0d1f3c 0%,#1a3560 100%);
+  border-radius:var(--r-md);
+  padding:1.1rem;
+  margin-bottom:.2rem;
+  border:1px solid rgba(230,57,70,.3);
+  position:relative;
+  overflow:hidden;
+}
+.claude-design-wrap::before{
+  content:'';position:absolute;
+  top:-40px;right:-40px;
+  width:120px;height:120px;
+  background:radial-gradient(circle,rgba(230,57,70,.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.cd-header{margin-bottom:.9rem}
+.cd-logo{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.cd-sparkle{
+  color:var(--red);font-size:1rem;
+  animation:spin 4s linear infinite;
+}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.cd-brand{color:#fff;font-size:.9rem;font-weight:700;letter-spacing:.04em}
+.cd-badge{
+  background:var(--red);color:#fff;
+  font-size:.55rem;font-weight:800;
+  padding:2px 6px;border-radius:6px;
+  letter-spacing:.08em;
+}
+.cd-tagline{color:rgba(255,255,255,.45);font-size:.68rem}
+.cd-inputs{display:flex;flex-direction:column;gap:.7rem;margin-bottom:.9rem}
+.cd-inputs .fi{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff}
+.cd-inputs .fi option{background:#1a3560;color:#fff}
+.cd-inputs .fl{color:rgba(255,255,255,.6)}
+.cd-style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:4px}
+.cd-style{
+  border:1.5px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.6);
+  border-radius:6px;padding:.35rem .3rem;
+  font-size:.7rem;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  font-family:'DM Sans',sans-serif;
+}
+.cd-style:hover{border-color:rgba(230,57,70,.6);color:#fff}
+.cd-style.on{border-color:var(--red);background:rgba(230,57,70,.2);color:#fff}
+
+.cd-generate-btn{
+  width:100%;padding:.7rem;
+  background:var(--red);color:#fff;
+  border:none;border-radius:var(--r-sm);
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.cd-generate-btn:hover{background:var(--red-dark);transform:translateY(-1px)}
+.cd-generate-btn:disabled{background:rgba(255,255,255,.15);cursor:not-allowed;transform:none}
+.cd-btn-icon{animation:none;font-size:.9rem}
+.cd-generate-btn:not(:disabled) .cd-btn-icon{animation:spin 2s linear infinite}
+
+.cd-result{
+  margin-top:.9rem;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--r-sm);
+  overflow:hidden;
+}
+.cd-result-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.6rem .8rem;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.cd-result-title{color:#fff;font-size:.75rem;font-weight:700}
+.cd-regenerate{
+  background:none;border:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.6);font-size:.68rem;
+  padding:2px 8px;border-radius:10px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;
+}
+.cd-regenerate:hover{border-color:rgba(255,255,255,.5);color:#fff}
+.cd-result-body{padding:.8rem;display:flex;flex-direction:column;gap:.6rem}
+.cd-item{display:flex;flex-direction:column;gap:2px}
+.cd-item-label{font-size:.6rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em}
+.cd-item-value{font-size:.78rem;color:#fff;font-weight:500;line-height:1.4}
+.cd-colour-preview{display:flex;gap:6px;align-items:center;margin-top:2px}
+.cd-swatch{width:18px;height:18px;border-radius:4px;border:1px solid rgba(255,255,255,.2);flex-shrink:0}
+.cd-apply-btn{
+  width:100%;padding:.6rem;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:.8rem;font-weight:600;
+  cursor:pointer;transition:all .2s;
+  font-family:'DM Sans',sans-serif;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.cd-apply-btn:hover{background:rgba(255,255,255,.18)}
+
+.cd-error{
+  margin-top:.7rem;
+  background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.3);
+  border-radius:var(--r-sm);padding:.6rem .8rem;
+  font-size:.75rem;color:#ff8b91;
+  display:flex;gap:6px;align-items:center;
+}
+
+/* Loading shimmer */
+.cd-loading{
+  display:flex;flex-direction:column;gap:.5rem;padding:.8rem;
+}
+.cd-shimmer{
+  height:12px;border-radius:4px;
+  background:linear-gradient(90deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 100%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.info-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:.9rem 1.1rem;font-size:.77rem;color:var(--t2);line-height:1.7}
+.info-title{font-size:.68rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem}
+
+/* Success */
+.success-wrap{text-align:center;padding:3rem 1.5rem}
+.success-icon{font-size:4rem;margin-bottom:1rem}
+.success-title{font-size:1.5rem;font-weight:700;color:var(--green);margin-bottom:.5rem}
+.success-sub{color:var(--t2);font-size:.88rem;max-width:400px;margin:0 auto 1.5rem}
+.order-id-box{display:inline-block;background:var(--off);border:1px solid var(--border);border-radius:var(--r-sm);padding:.5rem 1.2rem;font-family:'DM Mono',monospace;font-size:.88rem;font-weight:600;color:var(--navy);margin-bottom:1.5rem}
+
+@media(max-width:860px){
+  .design-layout{grid-template-columns:1fr}
+  .form-panel{position:static}
+}
+@media(max-width:520px){
+  .cpair{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  header{padding:0 1rem}
+  .step-label{display:none}
+  .btn-row{flex-direction:column;gap:.8rem}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo-wrap">
+    <img src="logo.png" class="logo-icon" alt="A&amp;T Signboard Logo" />
+    <div class="logo-text">
+      <span class="logo-name">A&T Signboard</span>
+      <span class="logo-tagline">Printing & Signage</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="ant-eshop-landing.html" class="back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      All Products
+    </a>
+    <a href="https://wa.me/60197901150" class="wa-btn" target="_blank" rel="noopener noreferrer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+      WhatsApp
+    </a>
+  </div>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">🪧 Signboard</div>
+  <h1>Custom Signboard</h1>
+  <p>Design your signboard below — our sales team will follow up with a personalised quotation within 1 business day</p>
+</div>
+
+<!-- Step Bar -->
+<div class="step-bar">
+  <div class="steps">
+    <div class="step"><div class="step-num active" id="sn1">1</div><div class="step-label active" id="sl1">Design</div></div>
+    <div class="step-sep"></div>
+    <div class="step"><div class="step-num" id="sn2">2</div><div class="step-label" id="sl2">Size & Notes</div></div>
+    <div class="step-sep"></div>
+    <div class="step"><div class="step-num" id="sn3">3</div><div class="step-label" id="sl3">Contact</div></div>
+    <div class="step-sep"></div>
+    <div class="step"><div class="step-num" id="sn4">4</div><div class="step-label" id="sl4">Confirm</div></div>
+  </div>
+</div>
+
+<!-- ══ STEP 1: Design ══ -->
+<div id="step1">
+<div class="page">
+<div class="design-layout">
+
+  <!-- Form -->
+  <div class="form-panel">
+    <div class="form-head"><h2>✏️ Design Your Signboard</h2></div>
+    <div class="form-body">
+
+      <div class="sec">Business Info</div>
+      <div class="fg">
+        <label class="fl">Business Type <span class="fl-tag">Top left</span></label>
+        <input class="fi" id="fBiz" type="text" placeholder="e.g. Pejabat Urusan" oninput="render()"/>
+        <div class="fh">Short descriptor above company name</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Company / Business Name <span class="fl-tag">Main</span></label>
+        <input class="fi" id="fName" type="text" placeholder="e.g. Prefer same with SSM company name" oninput="render()"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Slogan / Services <span class="fl-tag">Below name</span></label>
+        <textarea class="fta" id="fSlogan" placeholder="e.g. Prefer Malay Language" oninput="render()"></textarea>
+      </div>
+      <div class="fg">
+        <label class="fl">SSM / Reg. No. <span class="fl-tag">Bottom right</span></label>
+        <input class="fi" id="fSSM" type="text" placeholder="e.g. DIMILIKI OLEH: ABC SDN BHD (201801021537)" oninput="render()"/>
+      </div>
+
+      <!-- ══ CLAUDE DESIGN AI ══ -->
+      <div class="claude-design-wrap">
+        <div class="cd-header">
+          <div class="cd-logo">
+            <div class="cd-sparkle">✦</div>
+            <span class="cd-brand">Claude Design</span>
+            <div class="cd-badge">AI</div>
+          </div>
+          <div class="cd-tagline">Let AI design your signboard</div>
+        </div>
+
+        <div class="cd-inputs">
+          <div class="fg">
+            <label class="fl">Industry / Business Type</label>
+            <select class="fi" id="cdIndustry">
+              <option value="">Select your industry...</option>
+              <option value="retail">Retail / Shop</option>
+              <option value="food">Food & Beverage</option>
+              <option value="clinic">Medical / Clinic</option>
+              <option value="legal">Legal / Consultancy</option>
+              <option value="education">Education / Tuition</option>
+              <option value="beauty">Beauty / Salon</option>
+              <option value="construction">Construction / Engineering</option>
+              <option value="property">Property / Real Estate</option>
+              <option value="auto">Automotive</option>
+              <option value="logistics">Logistics / Transport</option>
+              <option value="tech">Technology / IT</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Design Style</label>
+            <div class="cd-style-grid">
+              <button class="cd-style on" id="style-modern" onclick="setStyle('modern',this)">Modern</button>
+              <button class="cd-style" id="style-classic" onclick="setStyle('classic',this)">Classic</button>
+              <button class="cd-style" id="style-bold" onclick="setStyle('bold',this)">Bold</button>
+              <button class="cd-style" id="style-elegant" onclick="setStyle('elegant',this)">Elegant</button>
+              <button class="cd-style" id="style-minimal" onclick="setStyle('minimal',this)">Minimal</button>
+              <button class="cd-style" id="style-playful" onclick="setStyle('playful',this)">Playful</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="cd-generate-btn" id="cdGenerateBtn" onclick="generateDesign()">
+          <span class="cd-btn-icon">✦</span>
+          <span id="cdBtnText">Generate Design</span>
+        </button>
+
+        <!-- Result panel -->
+        <div class="cd-result" id="cdResult" style="display:none">
+          <div class="cd-result-header">
+            <div class="cd-result-title">✦ AI Suggestion</div>
+            <button class="cd-regenerate" onclick="generateDesign()">↻ Regenerate</button>
+          </div>
+          <div class="cd-result-body" id="cdResultBody"></div>
+          <button class="cd-apply-btn" id="cdApplyBtn" onclick="applyDesign()">
+            Apply to Signboard →
+          </button>
+        </div>
+
+        <div class="cd-error" id="cdError" style="display:none">
+          <span>⚠️</span> <span id="cdErrorMsg">Something went wrong. Please try again.</span>
+        </div>
+      </div>
+
+      <div class="sec" style="margin-top:.1rem">Signboard Type</div>
+      <div class="board-type-grid">
+        <div class="lo on" id="bt-flat" onclick="setBoard('flat')">
+          <div class="lo-icon">🪟</div><div class="lo-name">Flat Panel + 3D</div>
+        </div>
+        <div class="lo" id="bt-alum" onclick="setBoard('alum')">
+          <div class="lo-icon">🔩</div><div class="lo-name">Alum Strip + 3D</div>
+        </div>
+        <div class="lo" id="bt-lightbox" onclick="setBoard('lightbox')">
+          <div class="lo-icon">💡</div><div class="lo-name">Lightbox</div>
+        </div>
+
+        <div class="lo" id="bt-wall" onclick="setBoard('wall')">
+          <div class="lo-icon">🧱</div><div class="lo-name">Wall Lettering</div>
+        </div>
+      </div>
+
+      <!-- Wall options: only show for wall lettering -->
+      <div id="wall-opts" style="display:none">
+        <div class="sec" style="margin-top:.8rem">Wall Surface</div>
+        <div class="opt-grid">
+          <div class="lo on" id="wall-white" onclick="setWall('white')">
+            <div class="lo-icon">🤍</div><div class="lo-name">White Wall</div>
+          </div>
+          <div class="lo" id="wall-cement" onclick="setWall('cement')">
+            <div class="lo-icon">🪨</div><div class="lo-name">Cement / Textured</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="light-section">
+      <div class="sec" style="margin-top:.1rem">Lighting</div>
+      <div class="opt-grid-3">
+        <div class="lo on" id="lo-frontlit" onclick="setLight('frontlit')">
+          <div class="lo-icon">🔦</div><div class="lo-name">Frontlit</div>
+        </div>
+        <div class="lo" id="lo-backlit" onclick="setLight('backlit')">
+          <div class="lo-icon">✨</div><div class="lo-name">Backlit</div>
+        </div>
+        <div class="lo" id="lo-nonlit" onclick="setLight('nonlit')">
+          <div class="lo-icon">🌑</div><div class="lo-name">Non-lit</div>
+        </div>
+      </div>
+
+      </div><!-- /light-section -->
+      <div id="led-section">
+        <div class="sec" style="margin-top:.1rem">LED Colour</div>
+        <div class="opt-grid">
+          <div class="lo on" id="led-white" onclick="setLED('white')">
+            <div class="lo-icon">⚪</div><div class="lo-name">White</div>
+          </div>
+          <div class="lo" id="led-warm" onclick="setLED('warm')">
+            <div class="lo-icon">🟡</div><div class="lo-name">Warm White</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec" style="margin-top:.1rem">Colours</div>
+      <div class="cpair">
+        <div class="cg" id="bg-colour-group">
+          <div class="cl">Background / Panel</div>
+          <div class="cw">
+            <input type="color" class="csw" id="bgSw" value="#1a2d5a" oninput="syncC('bg')"/>
+            <input class="ctx" id="bgTx" type="text" placeholder="Oracal code" oninput="syncT('bg')"/>
+          </div>
+          <div class="ch">Oracal colour code or name</div>
+        </div>
+        <div class="cg">
+          <div class="cl">Letter / Logo</div>
+          <div class="cw">
+            <input type="color" class="csw" id="fgSw" value="#ffffff" oninput="syncC('fg')"/>
+            <input class="ctx" id="fgTx" type="text" placeholder="Oracal code" oninput="syncT('fg')"/>
+          </div>
+          <div class="ch">Oracal colour code or name</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.67rem;font-weight:600;color:var(--t2);margin-bottom:.35rem">Quick combinations:</div>
+        <div class="tips">
+          <button class="tip" onclick="applyC('#1a2d5a','#ffffff','Navy Blue','White')"><div class="td" style="background:#1a2d5a"></div>Navy+White</button>
+          <button class="tip" onclick="applyC('#1a1a1a','#FFD700','Black','Gold')"><div class="td" style="background:#1a1a1a"></div>Black+Gold</button>
+          <button class="tip" onclick="applyC('#cc0000','#ffffff','Red','White')"><div class="td" style="background:#cc0000"></div>Red+White</button>
+          <button class="tip" onclick="applyC('#ffffff','#0d1f3c','White','Navy')"><div class="td" style="background:#fff;border:1px solid #ccc"></div>White+Navy</button>
+          <button class="tip" onclick="applyC('#2d2d2d','#e8c97e','Charcoal','Gold')"><div class="td" style="background:#2d2d2d"></div>Charcoal+Gold</button>
+          <button class="tip" onclick="applyC('#0a4a2a','#ffffff','Forest Green','White')"><div class="td" style="background:#0a4a2a"></div>Green+White</button>
+        </div>
+      </div>
+
+      <div class="sec" style="margin-top:.1rem">Artwork Preview <span style="font-size:.6rem;font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(optional)</span></div>
+      <div class="upload-artwork-zone" id="artworkZone" onclick="document.getElementById('artworkInput').click()">
+        <div class="az-icon" id="azIcon">🖼️</div>
+        <div class="az-title" id="azTitle">Upload your artwork to preview</div>
+        <div class="az-sub">JPEG or PNG — max 10MB</div>
+        <div class="az-name" id="azName" style="display:none"></div>
+      </div>
+      <input type="file" id="artworkInput" accept=".jpg,.jpeg,.png" style="display:none" onchange="handleArtwork(this)"/>
+      <div id="azClearRow" style="display:none;margin-top:.3rem">
+        <button onclick="clearArtwork()" style="background:none;border:none;color:var(--t3);font-size:.7rem;cursor:pointer;font-family:inherit;padding:0">✕ Remove artwork</button>
+      </div>
+
+      <div class="sec" style="margin-top:.1rem">Estimated Size</div>
+      <div class="size-input-row">
+        <div class="size-inp-wrap">
+          <input class="fi size-inp" id="inW" type="number" min="1" step="0.5" placeholder="Width" oninput="calcPrice()"/>
+          <span class="size-unit">ft</span>
+        </div>
+        <span class="size-x">×</span>
+        <div class="size-inp-wrap">
+          <input class="fi size-inp" id="inH" type="number" min="1" step="0.5" placeholder="Height" oninput="calcPrice()"/>
+          <span class="size-unit">ft</span>
+        </div>
+      </div>
+      <div class="fh" style="margin-top:-4px">Standard reference: 20ft × 4ft</div>
+
+      <!-- Price estimator result -->
+      <div class="price-est" id="priceEst" style="display:none">
+        <div class="pe-header">
+          <div class="pe-icon">💰</div>
+          <div class="pe-title">Estimated Price</div>
+        </div>
+        <div class="pe-price" id="pePrice">RM 0</div>
+        <div class="pe-sqft" id="peSqft"></div>
+        <div class="pe-note">Final price subject to design complexity, materials & installation. Our team will confirm before production.</div>
+      </div>
+
+      <button class="next-btn" onclick="goStep(2)">
+        Continue to Size & Notes
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="prev-col">
+    <div class="prev-card">
+      <div class="prev-head">
+        <div class="prev-title"><div class="live-dot"></div>Live Preview</div>
+        <div class="prev-tag" id="prevTag">Flat Panel · Frontlit</div>
+      </div>
+      <div class="sb-scene" id="sbScene">
+        <div class="sb-wrap">
+          <div class="sb-panel" id="sbPanel"></div>
+          <div class="sb-texture" id="sbTexture" style="display:none">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABLAAAADuCAYAAAAp6v5bAAAhpElEQVR4nO3d+XIk2XUf4B+WXqd7FpLDVbJsOSyFw34fvaNex+Fw2FotyZTIIUezshd0N/zHzRN5kSwUCpVZPXfI74tAYGnUyZt3vycLM2dJHiT5qyRvk5wFAAAAAL5b10keJvnrJC/Ov+PCAAAAAMBeElgAAAAADE0C63DX33UB4IT07+/Wqet/hPYdoQy3Gbls3xfq8A/bH3P7XmeM+x+hDH+o1O13TxusM3r9/THsc/+YbVX/B8W53OBC/X83692e36tk2X1vsOLv20CcTR9bVN6uGGdJLrL//u5ytuf1a//bY/X6u+q/6rCv033XPlv8ziHx+9cd4tD+s1Ub3/b68z3/doh97Vv/viZ2Thg/udk/bvv37Pn3Q+x77Rbx971+i/a9aw5aE/sU8fvxsnX7LueRu+KfZX0b1LVui79mfqj7P+Ucfcgalj2/c1f8ZH/57xP/D619D5lD+987Rfz+geF97uM+e6Bj4vfuat81se+6xinn6OrD/feHtvVy7BzaRw/pr7t+f1/9HDtH9LFvu/fvwx4rOc0+6NA1+L71f5/23aL+T92+pz7HHLoPus/47V+XnPacui/+qc+pSTunrkm2n7J9k8P2ofc9p943fh/zmHra95q1+7i7rvF9Pscs1+DbYlznwH58nwTWrht7l/Yff6+CPczvT9jnSd4keZ2biaBD3v11Pb22buhR5sHVH8zeTB8Xt5TzkOtUrIvcrLSLJFdJXkzXP7aBr5I8XlyzGvxt2n0dG7te/zjzBFQdvdrjVVp7X6bVVW2G9v3H++v33k7fP8zNAXQ9xXs7xT/P3B772qKv3zfT57O0/6HAcgI6z9zPqqz3fefgrvZdHuxf3VHmu7zJ3D/6Cbjao+rwmPg1Bh5NZax6qGudZ67/ut7Z4utd3nXxrtLa92FuLmD12hfT15eL+LfZVY5H3dfLTd3r6eeXd8S9TdX3w+nrukbNN9W+x77r9M1Utl31s7Z9q29X/OT36+dqx+vuupcqc9Lq9zJtjnjTlbM+v5yu09/fvnvp55HqfzVH9/NDun+/ml635p2/dT/9puZiiv92+voYr6dyPcnvL5zXWde+7zLPyVU//bisOfOq+z47vt4Vt8ZXtenj7K7/q+njvHvNfdq36qdv3ypD1f9W7dtvoqucV1nXvlW3T6bPy41RrTP92LiP2gf1c1y/GXubVoc1Xx+6D+r3QJeZ18g+fq3jV138PtmxS72mXzOSuf+8635+MZX99fT1sW2QzOvAct9Rc9yxsWsOvsi8BvRzxGVa+eue73PQe5O5fmoNXu6xkpt9tC/PvvW379N9+ZeHyH6NrHXsPgm46te1h6v5rPpL9f27ynyXvn2Xh63qP8eo/nE2xS/9GHuXeZ7q+3Q/Xm4rc+2ha4+8fCBbc9Cb3Jw7982jt7Xvg+yeo+scU+P3Lv1BufpjzQ9vd/xuzUFr9kFvc/saX3Psmj10nWOqzaod6nO1b61Pfdvf1Q5leY5Jbu4Ta649ZJ+bzPuDfo2vn/f1U3P0oe1727VqH97/rO7nd9O/HTvO3mT3Oa/KvyZ58i7t/h9lPjcu59A6xzzI3GbV1vvat+8fD3IzV5DM9f1y+tyfo/a1xa7E5LJ9+/qvNaDKfV9VFw8W16gyvjqgzPvctsb0a9iaPER/junnz2SeI3bte952ny+SfJtWz3vv87YKroPMPyX5f7k961eDtiaRHyX5qPv3d2kH3y/SBlZtHA7diC43bz9K8skU98H0+Yskv8m8eT628q+TfJzk09xc3F8l+SzJl0meroj/KsmP08pfE9B1kq+SfJ7jO06/uf9hkp9217uc/u3XaR3iYeaNXC1i+65bk2119GdJfpK5U9XB9LdJvs68ua3D8n0TWM/T2rhPZn2T1r61eTt28F5P5f9p5mTNWdqE9tlU/mP7z9lUvo/T2rc2KLVp+CatjtYkP9+lja1P0wZ2jYuzKfaXmcfXoQnKt1NZK8H8NMnPM29Aa1H/LK2PVrvctbD3idm+HI/T6udh5vF/lTaGv5h+p9rlvq6n+D+dyleL8FWSX03xH+T3E9SHqDH2IK3+n08/r3niVZJfHlnuZE5ePEkbw8+7WO/S6v7LHeXeN4dWn6yE2Iup/D9L8mHmPpIp/meZ6/CuZE3NXzXOz6f4tQY8m36v5rgvpvg17o5dfM+n+E8zb6gu08bwLzMn7I5p3yr/T9LGWX/oeZvkH7NuYa/yP09r4weZ596ag152v1dua+N+bFeC6Sytfz7rYpxlnn9eZj6c7jsA9+1bc3rVzw/S5rnazD6e/u2f08ZBjbFjPZnu4XHmvUWNr1rjj2nfV9PXP07r/30Zr5P8W+YD3rEJrHeZ18jH3c+u0tr3m8x7pUP3Qf0e6EFa3/84c/3UGvx52hpWCY67khA1N9b4rXX4g8xr2JvpOldpe8GaQ9YmsP4kbRxU0vsiyb+mzRPHtm8dfh+mja8Pc/Mg/+up/P0918H/Lv2h5IO0NeZJ5vH7Nq19X2Su/zo037an6Mtc+/D6+sPpHur1tQb8pvvZoUmmPvlSCe6P0uq/+uJV2vzw1R1lPsTbJL+YrlFzxoO0NfjzHN++/UOoT9PmoaTV4YO09fGr7pq1D0oOOwDX4evRFLvOMbUOfDFdoxIo6f79tvbtD3R1nYvM+9x0//ZlWh+6T4KpT4z1B8eaI/oH2N9M9/Bt1u2D3kxl/0Fu9sXP08bYsf0mmRN4n6TtU5J5j1F99NvMfaoeCNRcdWgC65Op/H3i60Va//m6i3lMAusire7rHFNt9HXmNX5NArHW3D/Lzb74Jm1++G3mc94x7fs6bf75UVod1F7hd2lt/OLIctd4eJU2tn4+lbHG9PVU/i8zJ1hqzqq9yL55tObJV2lj+Odp46DWyNdp/f/fu5h1vt03Fqr9+oeYNb6q7z9Mq5fP0vpnrSkPcn+V6/gPmdeDWqs/78q/5TmmHrC+SfIvWTf3v858Dnuamw/Dag7qH6wn8x6nYjxM6wf/Mclfpo2ZneNlXwKrFp3/c48b+Lfpov0B+pdplb6F3yb508wbv8sp/r9uFP95WgNXljNpk9o/bxT/12kTT9X7ZVqdbVX+32SeICuT/SbJ32wUP0n+W+YOeZnW0f7vRrEvk/x55kH7KO2etopfE9rLzImSqyT/K+ueLPT+MvPmsp4I/DJtAdjCn6ctAPWOissk/3Oj2EnrL08zJ0Cvk/xDtiv/L9Im/2Se3P4mv//E8FjfZH5K/iitrf935glyrReZN4dV/i/TJv4tVBK6+s95Wv283Peie/hd5sNRjeF/TLuHLfw2bfP5OvOTql+lzX1b+HFagiCZ3/X4L2nzxBa+zpykr3XmTe63Du7zMMl/6eKeZdv+8y9pa3Ctv7XGbFX/H2XePF+nHeS/SfK3G8VPkv+a+QnqRVqf+qeNYv9r5vqpzembtDVgC3XYrgRl0uaMv892a8x/Tqv3ekDwKsnfbRj/P6WtAZVUrzl0K9dph6QXmRNxf5fWj7bw0+mjf1fE/9godtLm0E9y86Ha307fb+HHaXVeG/2rtDG81T76h2kHpJeZD+p/n+3W+NdpB6RvM7/r9+/TDmBb+CLtgFoH7idpD9o/2yj+x2lJ1nKetgfdao38QeZ3+tS7Tbbc516m7dP7d2T+e9o+dAu/SptDk/ldp1uew36deT9Ye/WaQ7dwkbYGV3LqMq3+t6qfR5nPMUlr36+y3RpZ70B72X39bdo+fat97l9kftB8nlb+v9sodr3J4VHmOfM8257DXqXN0fVQ7Xdpe4it5uhfpK1hZ2n38W3aPn2r8idzMqsedv1Dtlsjv0xLUlZbnKWNu63m0K+n+NUfL9L6/33OMR8k+e/7XrPvLW6VxKq3Ox7ypOph5g1PvRX3edZP/HWY+3i6Rr1jod7R8avud9bE7/+Eqja41bC7/oTnvp5M8R+kTciXufm0/FhV/o8yt+mzzIv7MdnaXZ5M1/g28wHp2fTxuxzfBvW6D6Zr9Jn5D7K+/BX/cW7+mWttpD9MG3BrVbxKHtYTzv5POtbcR42vSt6eTz97lG3650Va+ZM5wVFt/jLbjLGP0tq0Nv+P0w5L3x5d6lk9DXmWNr6qTz1LW4C3KP8Pc/OQ+jY3x8PacfZB5kRr/TlG1ddaZ2nzZTLPc9W+X2fb9q2nROdpG/YtEkxnmcdAPT2r+XSrOfSTzO+e6f9UZ2371ms/zNw/K0nzbLrmFm38NK3+y6O0dfM32a78NQfVOPgwN9/yv8aDtPqod0z17ypYk8Tt15gPMr9zo9b6rfrP87T6qPWwyl9rzNo54izzA4B6h9qjzE+s18St8j/Lzb1Qrcuvbn314c7Tyl9/6lFP1z/Iuj1EOcvcR7/JPDfUHmWtB5nnt6eZnzj/IPM7UNaOsR9nrpvapzxL20evrZ+q/+ov55nnjK0eknyU1m+eTt9fTD/7ItvUT/XPin2ZVv+fr4jdqzUmmd+Z/nG2WyPrXfT1J2W1Lq99UN7PcfWnzPWusndpa8AWCY6a/x+mjalqk63WyOeZ/8qg3ilYfxa2xT73MvOeqvYPH6X1nzVrcL9GVvKnkgMfZ7tzWJ1hql3rnbkfZJs+2o/d+lO/D7J+je/btx7AVDs8znbnsKS1Z5W32vvDzH9JsqYdao/yLHOS+GnafW2RYKo9Q/8u4ZqD1q6R/T695s46Z9Q+d61aU+pPAOsdn7Ve3lX+/q8r9t7nXX+j2b/F+pAEVv1+/+6Eegq2Rt1w/dlC3VT/1s0tGnX50Zd/7T0kN+sm3TW2rp+ahPr4W0ycVR/9PbzrPtYmsPpYyXbl7+PX53qHXb39eov2rXjLPtRfc8199HXRx9+qf9aGp/+79H4MbDHG+j877r/fovy7/ixki/6Z7rX9n6n17bFF+/blfR/tu5zjTtG+/c/WWo7j5TjYInZf/izib1k/y9hbrjHL/n+K9l3Ooacq/7KOjrVcY07Zf/pN/pZjrK5TY7jKXGvOFvXTt2W/99uqfZP54Ug/zraYo5O5fpZjbKs5aFkvp5hD60+td+2Dtlhj9u3httD/6eOyX21RP8t+s2veXqMfS6do3/qT4D7OluekXXvEU5xjdu2ztlpjlvPyluVf7su3qp/bzqnJ9v2zPu/aQ2w1xvo4u9r82Nh9X981h25h1zlsqzW4r+td56S1bhtfW+/jdu1/tqr/5Rmm6ujQ8i/Hz05bZNsAAIB1zu7+FQD44yWBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlgAQAAADA0CSwAAAAAhiaBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlgAQAAADA0CSwAAAAAhiaBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlgAQAAADA0CSwAAAAAhiaBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlgAQAAADA0CSwAAAAAhiaBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlgAQAAADA0CSwAAAAAhiaBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlgAQAAADA0CSwAAAAAhiaBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlgAQAAADA0CSwAAAAAhiaBBQAAAMDQJLAAAAAAGJoEFgAAAABDk8ACAAAAYGgSWAAAAAAMTQILAAAAgKFJYAEAAAAwNAksAAAAAIYmgQUAAADA0CSwAAAAABiaBBYAAAAAQ5PAAgAAAGBoElgAAAAADE0CCwAAAIChSWABAAAAMDQJLAAAAACGJoEFAAAAwNAksAAAAAAYmgQWAAAAAEOTwAIAAABgaBJYAAAAAAxNAgsAAACAoUlg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" style="width:100%;height:100%;object-fit:cover;opacity:.35;border-radius:4px;"/>
+          </div>
+          <div class="sb-light frontlit" id="sbLight"></div>
+          <div class="sb-text">
+            <div class="sb-biz"  id="pBiz"></div>
+            <div class="sb-name" id="pName">Your Company Name</div>
+            <div class="sb-slogan" id="pSlogan"></div>
+          </div>
+          <div class="sb-ssm" id="pSSM"></div>
+          <!-- Artwork overlay layer -->
+          <div class="sb-artwork" id="sbArtwork"><img id="sbArtworkImg" src="" alt="artwork"/></div>
+          <div class="sb-frame-css" id="sbFrameCss"></div>
+          <div class="lightbox-frame" id="sbLightboxFrame" style="display:none"></div>
+        </div>
+      </div>
+      <div class="prev-meta">
+        <div class="mi"><div class="ml">Board</div><div class="mv" id="mType">Flat Panel</div></div>
+        <div class="mi"><div class="ml">Lighting</div><div class="mv" id="mLight">Frontlit</div></div>
+        <div class="mi"><div class="ml">LED</div><div class="mv" id="mLED">White</div></div>
+        <div class="mi"><div class="ml">Panel</div><div class="mv" id="mBg">Navy Blue</div></div>
+        <div class="mi"><div class="ml">Letters</div><div class="mv" id="mFg">White</div></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-title">📌 Preview Notes</div>
+      This is a <strong>visual mockup</strong> — colours and layout are approximate. Your actual signboard will be professionally designed by our team based on your inputs.<br/>
+      <strong>Logo:</strong> Upload your logo file in the next step — our designer will incorporate it into the final artwork.
+    </div>
+  </div>
+
+</div>
+</div>
+</div><!-- /step1 -->
+
+<!-- ══ STEP 2: Size & Notes ══ -->
+<div id="step2" style="display:none">
+<div class="page" style="max-width:720px">
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon">📐</div><h2>Size & Installation Details</h2></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Estimated Signboard Size <span>*</span></label>
+          <div class="size-row">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <input class="form-input" id="sizeW" type="number" min="0.5" step="0.5" placeholder="Width"/>
+              <div style="font-size:.7rem;color:var(--t2);text-align:center">Width (feet)</div>
+            </div>
+            <div class="size-sep">×</div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <input class="form-input" id="sizeH" type="number" min="0.5" step="0.5" placeholder="Height"/>
+              <div style="font-size:.7rem;color:var(--t2);text-align:center">Height (feet)</div>
+            </div>
+          </div>
+          <div style="font-size:.72rem;color:var(--t3);margin-top:4px">Approximate size is fine — our team will advise on best dimensions</div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Installation Location</label>
+          <input class="form-input" id="location" type="text" placeholder="e.g. Above main entrance, ground floor shopfront"/>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Special Requirements / Remarks</label>
+          <textarea class="form-textarea" id="remarks" placeholder="e.g. Match existing brand colours, specific font, replacing old signboard..."></textarea>
+        </div>
+      </div>
+      <div style="margin-top:1.2rem">
+        <div class="form-label" style="margin-bottom:.5rem">Reference Image / Logo File <span style="color:var(--t3);font-weight:400">(optional)</span></div>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">📁</div>
+          <div class="upload-title">Upload logo or reference image</div>
+          <div class="upload-sub">AI, PDF, PSD, PNG, JPG — max 50MB</div>
+          <div class="upload-name" id="uploadName" style="display:none"></div>
+        </div>
+        <input type="file" id="fileInput" accept=".ai,.pdf,.psd,.png,.jpg,.jpeg,.eps,.svg" onchange="handleFile(this)"/>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back
+        </button>
+        <button class="btn btn-primary" onclick="goStep(3)">
+          Continue <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /step2 -->
+
+<!-- ══ STEP 3: Contact ══ -->
+<div id="step3" style="display:none">
+<div class="page" style="max-width:720px">
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon">👤</div><h2>Your Contact Details</h2></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full Name <span>*</span></label>
+          <input class="form-input" id="f-name" type="text" placeholder="e.g. Ahmad bin Ali"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number <span>*</span></label>
+          <input class="form-input" id="f-phone" type="tel" placeholder="e.g. 012-345 6789"/>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Email Address <span>*</span></label>
+          <input class="form-input" id="f-email" type="email" placeholder="e.g. ahmad@company.com"/>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Company Name <span style="color:var(--t3);font-weight:400">(optional)</span></label>
+          <input class="form-input" id="f-company" type="text" placeholder="Your registered company name"/>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Preferred Contact Method</label>
+          <select class="form-select" id="f-contact">
+            <option value="whatsapp">WhatsApp</option>
+            <option value="call">Phone Call</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(2)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back
+        </button>
+        <button class="btn btn-primary" onclick="goStep(4)">
+          Review Submission <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /step3 -->
+
+<!-- ══ STEP 4: Confirm ══ -->
+<div id="step4" style="display:none">
+<div class="page" style="max-width:720px">
+  <div class="card">
+    <div class="card-head"><div class="card-head-icon">📋</div><h2>Confirm Your Submission</h2></div>
+    <div class="card-body">
+      <table class="summary-table">
+        <tr><td>Business Name</td><td id="sum-biz">—</td></tr>
+        <tr><td>Board Type</td><td id="sum-board">—</td></tr>
+        <tr><td>Lighting</td><td id="sum-light">—</td></tr>
+        <tr><td>LED Colour</td><td id="sum-led">—</td></tr>
+        <tr><td>Panel Colour</td><td id="sum-bg">—</td></tr>
+        <tr><td>Letter Colour</td><td id="sum-fg">—</td></tr>
+        <tr><td>Size</td><td id="sum-size">—</td></tr>
+        <tr><td>Location</td><td id="sum-loc">—</td></tr>
+        <tr><td>Remarks</td><td id="sum-rem">—</td></tr>
+        <tr><td>Reference File</td><td id="sum-file">—</td></tr>
+        <tr><td>Contact Name</td><td id="sum-name">—</td></tr>
+        <tr><td>Phone</td><td id="sum-phone">—</td></tr>
+        <tr><td>Email</td><td id="sum-email">—</td></tr>
+        <tr><td>Preferred Contact</td><td id="sum-pref">—</td></tr>
+      </table>
+      <div class="notice" style="margin-top:1.2rem">
+        <div>💬</div>
+        <div>No payment required now. Our sales team will review your requirements and contact you within <strong>1 business day</strong> with a personalised quotation.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goStep(3)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back
+        </button>
+        <button class="btn btn-primary" onclick="submitOrder()">
+          Submit Enquiry <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /step4 -->
+
+<!-- ══ SUCCESS ══ -->
+<div id="step-success" style="display:none">
+<div class="page" style="max-width:720px">
+  <div class="card">
+    <div class="card-body">
+      <div class="success-wrap">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Enquiry Submitted!</div>
+        <div class="success-sub">Our sales team has received your signboard requirements and will contact you within 1 business day with a personalised quotation.</div>
+        <div class="order-id-box" id="success-id">ENQ-XXXXXXX</div>
+        <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+          <a href="https://wa.me/60197901150" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+            Chat with Us
+          </a>
+          <a href="ant-eshop-landing.html" class="btn btn-ghost">Back to Shop</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /success -->
+
+<script>
+const S = {bg:'#1a2d5a',fg:'#ffffff',bgL:'Navy Blue',fgL:'White',light:'frontlit',board:'flat',led:'white'};
+const boardLabels  = {
+  flat:'Flat Panel + 3D', alum:'Alum Strip + 3D',
+  lightbox:'Lightbox', dslightbox:'Double Side Lightbox', wall:'Wall Lettering'
+};
+let wallSurface = 'white';
+const lightLabels  = {frontlit:'Frontlit', backlit:'Backlit', nonlit:'Non-lit'};
+const ledLabels    = {white:'White LED', warm:'Warm White LED'};
+const contactMap   = {whatsapp:'WhatsApp', call:'Phone Call', email:'Email'};
+
+function ledColour(alpha) {
+  return S.led==='warm' ? `rgba(255,185,80,${alpha})` : `rgba(255,255,255,${alpha})`;
+}
+function darken(hex) {
+  hex = hex.replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  return `rgb(${Math.floor(parseInt(hex.slice(0,2),16)*.25)},${Math.floor(parseInt(hex.slice(2,4),16)*.25)},${Math.floor(parseInt(hex.slice(4,6),16)*.25)})`;
+}
+
+// ── Claude Design AI ──────────────────────────────
+let cdStyle = 'modern';
+let cdDesignData = null;
+
+function setStyle(s, el) {
+  cdStyle = s;
+  document.querySelectorAll('.cd-style').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+async function generateDesign() {
+  const industry = document.getElementById('cdIndustry').value;
+  const companyName = document.getElementById('fName').value.trim();
+  const btn = document.getElementById('cdGenerateBtn');
+  const resultEl = document.getElementById('cdResult');
+  const errorEl = document.getElementById('cdError');
+  const btnText = document.getElementById('cdBtnText');
+
+  if(!industry) { alert('Please select your industry first.'); return; }
+
+  // Loading state
+  btn.disabled = true;
+  btnText.textContent = 'Generating...';
+  errorEl.style.display = 'none';
+  resultEl.style.display = 'block';
+  document.getElementById('cdResultBody').innerHTML = `
+    <div class="cd-loading">
+      <div class="cd-shimmer" style="width:60%"></div>
+      <div class="cd-shimmer" style="width:80%"></div>
+      <div class="cd-shimmer" style="width:45%"></div>
+      <div class="cd-shimmer" style="width:70%"></div>
+    </div>`;
+  document.getElementById('cdApplyBtn').style.display = 'none';
+
+  try {
+    const prompt = `You are a professional signboard design consultant in Malaysia. 
+A customer wants a signboard design with these details:
+- Company name: ${companyName || '(not specified yet)'}
+- Industry: ${industry}
+- Design style preference: ${cdStyle}
+
+Please suggest a complete signboard design in JSON format only. No explanation, just JSON.
+Return exactly this structure:
+{
+  "businessType": "short business type label in Bahasa Malaysia (max 3 words, e.g. 'Pejabat Urusan', 'Kedai Runcit', 'Klinik Pergigian')",
+  "slogan": "a short compelling slogan in Bahasa Malaysia (max 8 words)",
+  "bgColour": "#hexcode for background/panel colour that suits the industry and style",
+  "fgColour": "#hexcode for letter/logo colour that contrasts well",
+  "bgColourName": "colour name in English (e.g. Deep Navy, Forest Green)",
+  "fgColourName": "colour name in English (e.g. Pure White, Champagne Gold)",
+  "lighting": "frontlit or backlit or nonlit — whichever suits the style best",
+  "led": "white or warm — whichever suits the colour scheme",
+  "reasoning": "one sentence in English explaining the design choice"
+}`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content[0].text.trim();
+
+    // Parse JSON — strip any markdown fences
+    const clean = text.replace(/```json|```/g, '').trim();
+    const design = JSON.parse(clean);
+    cdDesignData = design;
+
+    // Render result
+    document.getElementById('cdResultBody').innerHTML = `
+      <div class="cd-item">
+        <div class="cd-item-label">Business Type</div>
+        <div class="cd-item-value">${design.businessType}</div>
+      </div>
+      <div class="cd-item">
+        <div class="cd-item-label">Slogan</div>
+        <div class="cd-item-value">"${design.slogan}"</div>
+      </div>
+      <div class="cd-item">
+        <div class="cd-item-label">Colour Scheme</div>
+        <div class="cd-colour-preview">
+          <div class="cd-swatch" style="background:${design.bgColour}"></div>
+          <span style="font-size:.72rem;color:rgba(255,255,255,.7)">${design.bgColourName}</span>
+          <span style="color:rgba(255,255,255,.3);font-size:.7rem">+</span>
+          <div class="cd-swatch" style="background:${design.fgColour};${design.fgColour==='#ffffff'||design.fgColour==='#FFFFFF'?'border:1px solid rgba(255,255,255,.4)':''}"></div>
+          <span style="font-size:.72rem;color:rgba(255,255,255,.7)">${design.fgColourName}</span>
+        </div>
+      </div>
+      <div class="cd-item">
+        <div class="cd-item-label">Lighting</div>
+        <div class="cd-item-value">${design.lighting.charAt(0).toUpperCase()+design.lighting.slice(1)} · ${design.led==='warm'?'Warm White LED':'White LED'}</div>
+      </div>
+      <div class="cd-item">
+        <div class="cd-item-label">Design Reasoning</div>
+        <div class="cd-item-value" style="color:rgba(255,255,255,.6);font-size:.72rem">${design.reasoning}</div>
+      </div>`;
+
+    document.getElementById('cdApplyBtn').style.display = 'block';
+
+  } catch(err) {
+    console.error(err);
+    resultEl.style.display = 'none';
+    errorEl.style.display = 'flex';
+    document.getElementById('cdErrorMsg').textContent = 'Failed to generate. Please check your connection and try again.';
+  }
+
+  btn.disabled = false;
+  btnText.textContent = 'Generate Design';
+}
+
+function applyDesign() {
+  if(!cdDesignData) return;
+  const d = cdDesignData;
+
+  // Apply business type
+  document.getElementById('fBiz').value = d.businessType;
+  // Apply slogan
+  document.getElementById('fSlogan').value = d.slogan;
+  // Apply colours
+  S.bg = d.bgColour; S.bgL = d.bgColourName;
+  S.fg = d.fgColour; S.fgL = d.fgColourName;
+  document.getElementById('bgSw').value = d.bgColour;
+  document.getElementById('fgSw').value = d.fgColour;
+  document.getElementById('bgTx').value = d.bgColourName;
+  document.getElementById('fgTx').value = d.fgColourName;
+  // Apply lighting
+  setLight(d.lighting);
+  // Apply LED
+  setLED(d.led);
+  // Re-render preview
+  render();
+
+  // Scroll to preview on mobile
+  if(window.innerWidth < 860) {
+    document.querySelector('.prev-col').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  // Visual feedback
+  const applyBtn = document.getElementById('cdApplyBtn');
+  applyBtn.textContent = '✓ Applied!';
+  applyBtn.style.background = 'rgba(34,197,94,.2)';
+  applyBtn.style.borderColor = 'rgba(34,197,94,.4)';
+  setTimeout(() => {
+    applyBtn.textContent = 'Apply to Signboard →';
+    applyBtn.style.background = '';
+    applyBtn.style.borderColor = '';
+  }, 2000);
+}
+
+// ── End Claude Design ──────────────────────────────
+function render() {
+  // Always update text content first
+  const bizVal    = document.getElementById('fBiz').value.trim();
+  const nameVal   = document.getElementById('fName').value.trim() || 'Your Company Name';
+  const sloganVal = document.getElementById('fSlogan').value.trim();
+  const ssmVal    = document.getElementById('fSSM').value.trim();
+  document.getElementById('pBiz').textContent    = bizVal;
+  document.getElementById('pName').textContent   = nameVal;
+  document.getElementById('pSlogan').textContent = sloganVal;
+  document.getElementById('pSSM').textContent    = ssmVal;
+
+  const nameEl = document.getElementById('pName');
+  const bizEl  = document.getElementById('pBiz');
+  const sloEl  = document.getElementById('pSlogan');
+  const ssmEl  = document.getElementById('pSSM');
+  const lightEl = document.getElementById('sbLight');
+
+  document.getElementById('sbPanel').style.backgroundColor = S.bg;
+
+  // Lightbox / Double Side: override lighting to uniform glow
+  // lightbox handled above
+  // wall handled above
+  // ── Early exit for special board types ──
+  if(S.board==='lightbox') {
+    const lightEl2 = document.getElementById('sbLight');
+    lightEl2.className = 'sb-light lightbox';
+    lightEl2.style.background='';
+    lightEl2.style.boxShadow='';
+    document.getElementById('sbPanel').style.filter='brightness(1.3) saturate(1.5)';
+    document.getElementById('sbPanel').style.backgroundColor = S.bg;
+    // Text: solid printed colours, no glow
+    ['pBiz','pName','pSlogan','pSSM'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.style.color=S.fg;
+      el.style.textShadow='0 1px 2px rgba(0,0,0,.25)';
+      el.style.fontSize=''; el.style.fontWeight=''; el.style.letterSpacing='';
+      el.style.opacity='1';
+    });
+    document.getElementById('mBg').textContent=S.bgL||S.bg;
+    document.getElementById('mFg').textContent=S.fgL||S.fg;
+    document.getElementById('mLight').textContent='Internal LED';
+    document.getElementById('mLED').textContent='—';
+    document.getElementById('mType').textContent=boardLabels[S.board];
+    document.getElementById('prevTag').textContent='Lightbox · Internal LED';
+    return;
+  }
+
+  if(S.board==='wall') {
+    document.getElementById('sbPanel').style.filter='none';
+    document.getElementById('sbPanel').style.backgroundColor='transparent';
+    document.getElementById('sbLight').className='sb-light nonlit';
+    document.getElementById('sbLight').style.background='';
+    document.getElementById('sbLight').style.boxShadow='';
+    ['pBiz','pName','pSlogan','pSSM'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.style.color=S.fg; el.style.opacity='1';
+    });
+    document.getElementById('pName').style.textShadow=`2px 3px 8px rgba(0,0,0,.3),1px 1px 0 rgba(0,0,0,.15)`;
+    document.getElementById('pBiz').style.textShadow=`1px 2px 5px rgba(0,0,0,.25)`;
+    document.getElementById('pSlogan').style.textShadow=`1px 2px 5px rgba(0,0,0,.2)`;
+    document.getElementById('pSSM').style.textShadow='none';
+    document.getElementById('mBg').textContent='—';
+    document.getElementById('mFg').textContent=S.fgL||S.fg;
+    document.getElementById('mLight').textContent='—';
+    document.getElementById('mLED').textContent='—';
+    document.getElementById('mType').textContent=boardLabels[S.board];
+    document.getElementById('prevTag').textContent=`Wall Lettering · ${wallSurface==='cement'?'Cement Wall':'White Wall'}`;
+    return;
+  }
+
+  // Reset panel filter for non-lightbox/wall
+  document.getElementById('sbPanel').style.filter='none';
+  if(S.light==='frontlit') {
+    nameEl.style.color = S.fg; bizEl.style.color = S.fg; sloEl.style.color = S.fg; ssmEl.style.color = S.fg;
+    if(S.led==='warm') {
+      nameEl.style.textShadow = `0 0 12px rgba(255,185,80,1),0 0 25px rgba(255,185,80,.85),0 0 50px rgba(255,160,50,.6),0 0 80px rgba(255,140,30,.35),0 2px 6px rgba(0,0,0,.6)`;
+      bizEl.style.textShadow  = `0 0 10px rgba(255,185,80,.8),0 0 25px rgba(255,160,50,.5),0 1px 4px rgba(0,0,0,.5)`;
+      sloEl.style.textShadow  = `0 0 8px rgba(255,185,80,.6),0 1px 4px rgba(0,0,0,.4)`;
+      lightEl.style.background = `radial-gradient(ellipse 90% 70% at 50% -5%,rgba(255,185,80,.35) 0%,rgba(255,160,50,.15) 40%,transparent 70%),radial-gradient(ellipse 50% 50% at 25% 50%,rgba(255,185,80,.18) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 75% 50%,rgba(255,185,80,.18) 0%,transparent 60%)`;
+      lightEl.style.boxShadow = 'inset 0 0 30px rgba(255,185,80,.1)';
+    } else {
+      nameEl.style.textShadow = `0 0 18px rgba(255,255,255,.75),0 0 35px rgba(255,255,255,.4),0 2px 6px rgba(0,0,0,.6)`;
+      bizEl.style.textShadow  = `0 0 10px rgba(255,255,255,.5),0 1px 4px rgba(0,0,0,.5)`;
+      sloEl.style.textShadow  = `0 1px 4px rgba(0,0,0,.5)`;
+      lightEl.style.background = `radial-gradient(ellipse 70% 60% at 50% -10%,rgba(255,255,255,.22) 0%,transparent 65%),radial-gradient(ellipse 40% 40% at 30% 50%,rgba(255,255,255,.08) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 70% 50%,rgba(255,255,255,.08) 0%,transparent 60%)`;
+      lightEl.style.boxShadow = '';
+    }
+    ssmEl.style.textShadow = `0 1px 3px rgba(0,0,0,.4)`;
+  } else if(S.light==='backlit') {
+    const dk = darken(S.bg);
+    nameEl.style.color = dk; bizEl.style.color = dk; sloEl.style.color = dk; ssmEl.style.color = dk;
+    nameEl.style.textShadow = `0 0 8px ${ledColour(1)},0 0 18px ${ledColour(.9)},0 0 35px ${ledColour(.75)},0 0 60px ${ledColour(.5)},0 0 95px ${ledColour(.25)}`;
+    bizEl.style.textShadow  = `0 0 8px ${ledColour(.8)},0 0 20px ${ledColour(.5)}`;
+    sloEl.style.textShadow  = `0 0 6px ${ledColour(.7)},0 0 16px ${ledColour(.4)}`;
+    ssmEl.style.textShadow  = `0 0 5px ${ledColour(.5)}`;
+    if(S.led==='warm') {
+      lightEl.style.background = `radial-gradient(ellipse 70% 50% at 50% 50%,rgba(255,185,80,.35) 0%,rgba(255,160,50,.2) 25%,rgba(255,140,30,.06) 55%,transparent 75%)`;
+      lightEl.style.boxShadow  = `inset 0 0 30px rgba(255,185,80,.15),inset 0 0 70px rgba(255,160,50,.08)`;
+    } else {
+      lightEl.style.background = `radial-gradient(ellipse 70% 50% at 50% 50%,rgba(255,255,255,.28) 0%,rgba(255,255,255,.18) 20%,rgba(255,255,255,.06) 55%,transparent 75%)`;
+      lightEl.style.boxShadow  = `inset 0 0 25px rgba(255,255,255,.12),inset 0 0 60px rgba(255,255,255,.06)`;
+    }
+  } else {
+    nameEl.style.color = S.fg; bizEl.style.color = S.fg; sloEl.style.color = S.fg; ssmEl.style.color = S.fg;
+    nameEl.style.textShadow = `0 1px 5px rgba(0,0,0,.5)`;
+    bizEl.style.textShadow  = `0 1px 3px rgba(0,0,0,.4)`;
+    sloEl.style.textShadow  = `0 1px 3px rgba(0,0,0,.3)`;
+    ssmEl.style.textShadow  = `none`;
+    lightEl.style.background = `linear-gradient(160deg,rgba(255,255,255,.06) 0%,transparent 50%)`;
+    lightEl.style.boxShadow = '';
+  }
+
+  lightEl.className = `sb-light ${S.light}`;
+  document.getElementById('mBg').textContent    = S.bgL||S.bg;
+  document.getElementById('mFg').textContent    = S.fgL||S.fg;
+  document.getElementById('mLight').textContent = lightLabels[S.light];
+  document.getElementById('mLED').textContent   = ledLabels[S.led];
+  document.getElementById('mType').textContent  = boardLabels[S.board];
+  document.getElementById('prevTag').textContent = `${boardLabels[S.board]} · ${lightLabels[S.light]}`;
+}
+
+function syncC(w) {
+  const v = document.getElementById(w+'Sw').value;
+  document.getElementById(w+'Tx').value = v;
+  S[w]=v; S[w+'L']=v; render();
+}
+function syncT(w) {
+  const v = document.getElementById(w+'Tx').value;
+  S[w+'L']=v;
+  if(/^#[0-9a-fA-F]{6}$/.test(v)){S[w]=v;document.getElementById(w+'Sw').value=v;}
+  render();
+}
+function applyC(bg,fg,bgL,fgL) {
+  S.bg=bg;S.fg=fg;S.bgL=bgL;S.fgL=fgL;
+  document.getElementById('bgSw').value=bg;
+  document.getElementById('fgSw').value=fg;
+  document.getElementById('bgTx').value=bgL;
+  document.getElementById('fgTx').value=fgL;
+  render();
+}
+function setBoard(b) {
+  S.board=b;
+  ['flat','alum','lightbox','wall'].forEach(x=>{
+    const el=document.getElementById('bt-'+x);
+    if(el) el.classList.toggle('on',x===b);
+  });
+
+  // Alum strip texture
+  document.getElementById('sbTexture').style.display = b==='alum' ? 'block' : 'none';
+
+  // Frame: show CSS bevel for flat/alum, metallic for lightbox/dslightbox, none for wall
+  const cssFr = document.getElementById('sbFrameCss');
+  const lbFr  = document.getElementById('sbLightboxFrame');
+  if(b==='flat'||b==='alum'){cssFr.style.display='block';lbFr.style.display='none';}
+  else if(b==='lightbox'){cssFr.style.display='none';lbFr.style.display='block';}
+  else{cssFr.style.display='none';lbFr.style.display='none';}
+
+  // Scene mode classes
+  const scene=document.getElementById('sbScene');
+  scene.classList.remove('lightbox-mode','dslightbox-mode','wall-mode','wall-white','wall-cement');
+  if(b==='lightbox') scene.classList.add('lightbox-mode');
+  if(b==='wall') {scene.classList.add('wall-mode','wall-'+wallSurface);}
+
+  // Show/hide wall surface options
+  document.getElementById('wall-opts').style.display = b==='wall' ? 'block' : 'none';
+
+  // Show/hide lighting for lightbox types (always on, no choice)
+  const lightSec = document.getElementById('light-section');
+  if(lightSec){
+    lightSec.style.display = b==='lightbox' ? 'none' : 'block';
+  }
+  // Show/hide LED colour
+  const ledSec = document.getElementById('led-section');
+  if(ledSec) ledSec.style.display = (b==='wall'||b==='lightbox') ? 'none' : 'block';
+
+  // Show/hide panel colour (not needed for wall)
+  const bgColGrp = document.getElementById('bg-colour-group');
+  if(bgColGrp) bgColGrp.style.display = b==='wall' ? 'none' : 'block';
+
+  render();
+}
+
+// ── Artwork Upload ────────────────────────────────
+function handleArtwork(input) {
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 10 * 1024 * 1024) {
+    alert('File too large. Please upload a JPEG or PNG under 10MB.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Show on preview signboard
+    const artworkEl = document.getElementById('sbArtwork');
+    const artworkImg = document.getElementById('sbArtworkImg');
+    artworkImg.src = e.target.result;
+    artworkEl.classList.add('visible');
+
+    // Update upload zone to show thumbnail
+    const zone = document.getElementById('artworkZone');
+    zone.classList.add('has-art');
+    zone.innerHTML = `<img class="az-preview" src="${e.target.result}" alt="artwork preview"/>`;
+
+    // Show clear button
+    document.getElementById('azClearRow').style.display = 'block';
+
+    // Hide text overlay when artwork is shown
+    ['pBiz','pName','pSlogan','pSSM'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.opacity = '0';
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearArtwork() {
+  // Hide artwork overlay
+  const artworkEl = document.getElementById('sbArtwork');
+  const artworkImg = document.getElementById('sbArtworkImg');
+  artworkEl.classList.remove('visible');
+  artworkImg.src = '';
+
+  // Reset upload zone
+  const zone = document.getElementById('artworkZone');
+  zone.classList.remove('has-art');
+  zone.innerHTML = `
+    <div class="az-icon" id="azIcon">🖼️</div>
+    <div class="az-title" id="azTitle">Upload your artwork to preview</div>
+    <div class="az-sub">JPEG or PNG — max 10MB</div>
+    <div class="az-name" id="azName" style="display:none"></div>`;
+  zone.onclick = function(){ document.getElementById('artworkInput').click(); };
+
+  // Reset file input
+  document.getElementById('artworkInput').value = '';
+
+  // Show text overlay again
+  ['pBiz','pName','pSlogan','pSSM'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.opacity = '1';
+  });
+
+  // Hide clear button
+  document.getElementById('azClearRow').style.display = 'none';
+}
+// ── End Artwork Upload ─────────────────────────────
+
+// ── Price Estimator ──────────────────────────────
+const PRICING = {
+  // [min, max] at 80 sqft base
+  'flat-nonlit':    [2300, 3500],
+  'flat-frontlit':  [3300, 5500],
+  'flat-backlit':   [2800, 4000],
+  'alum-nonlit':    [2800, 4000],
+  'alum-frontlit':  [4000, 6000],
+  'alum-backlit':   [3500, 4800],
+  'lightbox':       [2500, 2500],
+  'wall':           [1300, 2400],
+};
+
+function getPricingKey() {
+  const b = S.board;
+  if(b==='lightbox') return 'lightbox';
+  if(b==='wall') return 'wall';
+  if(b==='flat') return `flat-${S.light}`;
+  if(b==='alum') return `alum-${S.light}`;
+  return null;
+}
+
+function calcPrice() {
+  const w = parseFloat(document.getElementById('inW').value);
+  const h = parseFloat(document.getElementById('inH').value);
+  const estEl = document.getElementById('priceEst');
+
+  if(!w || !h || w<=0 || h<=0) { estEl.style.display='none'; return; }
+
+  const key = getPricingKey();
+  if(!key) { estEl.style.display='none'; return; }
+
+  const sqft = w * h;
+  const ratio = sqft / 80; // base is 80 sqft
+  const [minBase, maxBase] = PRICING[key];
+  const minPrice = Math.round(minBase * ratio / 100) * 100;
+  const maxPrice = Math.round(maxBase * ratio / 100) * 100;
+
+  estEl.style.display = 'block';
+
+  const priceEl = document.getElementById('pePrice');
+  const sqftEl  = document.getElementById('peSqft');
+
+  if(minPrice === maxPrice) {
+    priceEl.textContent = `RM ${minPrice.toLocaleString()}`;
+  } else {
+    priceEl.textContent = `RM ${minPrice.toLocaleString()} — RM ${maxPrice.toLocaleString()}`;
+  }
+  sqftEl.textContent = `${w}ft × ${h}ft = ${sqft} sq ft · Based on 20ft × 4ft reference`;
+}
+// ── End Price Estimator ──────────────────────────
+
+function setWall(w) {
+  wallSurface = w;
+  ['white','cement'].forEach(x=>{
+    const el=document.getElementById('wall-'+x);
+    if(el) el.classList.toggle('on',x===w);
+  });
+  const scene=document.getElementById('sbScene');
+  scene.classList.remove('wall-white','wall-cement');
+  scene.classList.add('wall-'+w);
+  render();
+}
+function setLight(l) {
+  S.light=l;
+  ['frontlit','backlit','nonlit'].forEach(x=>document.getElementById('lo-'+x).classList.toggle('on',x===l));
+  document.getElementById('led-section').style.opacity = l==='nonlit' ? '.35' : '1';
+  render();
+  calcPrice();
+}
+function setLED(l) {
+  S.led=l;
+  ['white','warm'].forEach(x=>document.getElementById('led-'+x).classList.toggle('on',x===l));
+  render();
+}
+
+// ── Steps ──
+function goStep(n) {
+  if(n===2) {
+    // Pre-fill size from step 1 inputs
+    const w1 = document.getElementById('inW').value;
+    const h1 = document.getElementById('inH').value;
+    if(w1) document.getElementById('sizeW').value = w1;
+    if(h1) document.getElementById('sizeH').value = h1;
+  }
+  if(n===2 && !document.getElementById('fName').value.trim()) {
+    alert('Please enter your company name to continue.'); return;
+  }
+  if(n===3) {
+    const w = document.getElementById('sizeW').value;
+    const h = document.getElementById('sizeH').value;
+    if(!w||!h){alert('Please enter the estimated signboard size.');return;}
+  }
+  if(n===4) {
+    const nm = document.getElementById('f-name').value.trim();
+    const ph = document.getElementById('f-phone').value.trim();
+    const em = document.getElementById('f-email').value.trim();
+    if(!nm||!ph||!em){alert('Please fill in your Name, Phone and Email.');return;}
+    buildSummary();
+  }
+  ['1','2','3','4','success'].forEach(s=>{
+    const el = document.getElementById('step'+s);
+    if(el) el.style.display='none';
+  });
+  document.getElementById('step'+n).style.display='block';
+  [1,2,3,4].forEach(i=>{
+    const num = document.getElementById('sn'+i);
+    const lbl = document.getElementById('sl'+i);
+    if(!num) return;
+    if(i<n){num.className='step-num done';num.textContent='✓';lbl.className='step-label done';}
+    else if(i===n){num.className='step-num active';num.textContent=i;lbl.className='step-label active';}
+    else{num.className='step-num';num.textContent=i;lbl.className='step-label';}
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function buildSummary() {
+  const w = document.getElementById('sizeW').value;
+  const h = document.getElementById('sizeH').value;
+  const file = document.getElementById('fileInput').files[0];
+  document.getElementById('sum-biz').textContent    = document.getElementById('fName').value.trim();
+  document.getElementById('sum-board').textContent  = S.board==='wall'
+    ? `${boardLabels[S.board]} (${wallSurface==='cement'?'Cement Wall':'White Wall'})`
+    : boardLabels[S.board];
+  document.getElementById('sum-light').textContent  = lightLabels[S.light];
+  document.getElementById('sum-led').textContent    = ledLabels[S.led];
+  document.getElementById('sum-bg').textContent     = S.bgL||S.bg;
+  document.getElementById('sum-fg').textContent     = S.fgL||S.fg;
+  document.getElementById('sum-size').textContent   = w&&h ? `${w} ft × ${h} ft` : '—';
+  document.getElementById('sum-loc').textContent    = document.getElementById('location').value.trim()||'—';
+  document.getElementById('sum-rem').textContent    = document.getElementById('remarks').value.trim()||'—';
+  document.getElementById('sum-file').textContent   = file ? file.name : 'Not uploaded';
+  document.getElementById('sum-name').textContent   = document.getElementById('f-name').value.trim();
+  document.getElementById('sum-phone').textContent  = document.getElementById('f-phone').value.trim();
+  document.getElementById('sum-email').textContent  = document.getElementById('f-email').value.trim();
+  document.getElementById('sum-pref').textContent   = contactMap[document.getElementById('f-contact').value];
+}
+
+function submitOrder() {
+  const enqId = 'SB-' + Date.now().toString().slice(-7);
+  // DEVELOPER TODO: POST to backend/Firebase, notify sales team
+  document.getElementById('success-id').textContent = 'Enquiry ID: ' + enqId;
+  document.getElementById('step4').style.display='none';
+  document.getElementById('step-success').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function handleFile(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const zone = document.getElementById('uploadZone');
+  zone.classList.add('has-file');
+  zone.querySelector('.upload-icon').textContent='✅';
+  zone.querySelector('.upload-title').textContent='File attached';
+  const n = document.getElementById('uploadName');
+  n.textContent=file.name; n.style.display='block';
+}
+
+render();
+</script>
+</body>
+</html>
