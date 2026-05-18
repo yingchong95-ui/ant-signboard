@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>A&T Signboard & Printing — Order Online</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1f3c;--red:#e63946;--red-dark:#c1121f;--red-bg:#fff0f1;
+  --white:#fff;--off:#f6f8fc;--border:#e3e7ef;
+  --t1:#0d1f3c;--t2:#5a6478;--t3:#9aa3b2;
+  --green:#16a34a;
+  --gemini:#4285f4;--gemini-dark:#1a73e8;--gemini-bg:#e8f0fe;
+  --sh-sm:0 1px 4px rgba(13,31,60,.06);
+  --sh-md:0 4px 20px rgba(13,31,60,.10);
+  --sh-lg:0 8px 40px rgba(13,31,60,.13);
+  --r-sm:8px;--r-md:12px;--r-lg:18px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-height:100vh;line-height:1.6}
+
+/* Header */
+header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.28)}
+.logo-wrap{display:flex;align-items:center;gap:11px}
+.logo-box{width:42px;height:42px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0}
+.logo-text{display:flex;flex-direction:column}
+.logo-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.04em;line-height:1.1}
+.logo-tagline{font-size:.65rem;font-weight:400;color:rgba(255,255,255,.55);letter-spacing:.06em;text-transform:uppercase}
+.wa-btn{display:flex;align-items:center;gap:6px;background:#25D366;color:#fff;font-size:.8rem;font-weight:600;padding:8px 16px;border-radius:6px;text-decoration:none;transition:filter .2s}
+.wa-btn:hover{filter:brightness(1.08)}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#1a3560 100%);padding:4rem 2rem 3.5rem;text-align:center;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(230,57,70,.12) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(230,57,70,.18);border:1px solid rgba(230,57,70,.35);color:#ff8b91;font-size:.72rem;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:1.2rem;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;margin-bottom:.8rem;line-height:1.2}
+.hero h1 span{color:var(--red)}
+.hero p{color:rgba(255,255,255,.65);font-size:.95rem;max-width:520px;margin:0 auto 2rem}
+.hero-stats{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.hero-stat{text-align:center}
+.hero-stat-num{font-size:1.4rem;font-weight:800;color:#fff;line-height:1}
+.hero-stat-label{font-size:.7rem;color:rgba(255,255,255,.45);margin-top:3px;letter-spacing:.04em}
+
+/* ── PLAN B: Hero AI Search Box ── */
+.hero-ai-box{
+  position:relative;max-width:580px;margin:0 auto;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:16px;padding:1.2rem 1.4rem;
+  backdrop-filter:blur(12px);
+}
+.hero-ai-label{
+  display:flex;align-items:center;gap:7px;
+  font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);margin-bottom:.8rem;
+}
+.hero-ai-label .gemini-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--gemini);
+  box-shadow:0 0 8px rgba(66,133,244,.8);animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+.hero-ai-input-row{display:flex;gap:.6rem;align-items:stretch}
+.hero-ai-input{
+  flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:10px;padding:.7rem 1rem;color:#fff;font-size:.9rem;
+  font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;
+}
+.hero-ai-input::placeholder{color:rgba(255,255,255,.35)}
+.hero-ai-input:focus{border-color:rgba(66,133,244,.7);background:rgba(255,255,255,.13)}
+.hero-ai-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--gemini);color:#fff;border:none;cursor:pointer;
+  padding:.7rem 1.2rem;border-radius:10px;font-size:.85rem;font-weight:600;
+  font-family:'DM Sans',sans-serif;transition:background .2s,transform .15s;white-space:nowrap;
+}
+.hero-ai-btn:hover{background:var(--gemini-dark);transform:translateY(-1px)}
+.hero-ai-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.hero-ai-result{
+  margin-top:1rem;font-size:.83rem;line-height:1.6;color:rgba(255,255,255,.85);
+  display:none;animation:fadeSlideUp .3s ease;
+}
+.hero-ai-result.show{display:block}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.hero-ai-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.ai-chip{
+  background:rgba(66,133,244,.25);border:1px solid rgba(66,133,244,.4);
+  color:#90b8ff;font-size:.72rem;font-weight:600;padding:4px 12px;
+  border-radius:20px;cursor:pointer;transition:background .2s;text-decoration:none;
+}
+.ai-chip:hover{background:rgba(66,133,244,.4);color:#fff}
+.hero-ai-suggestions{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+.hero-ai-suggest-btn{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.55);font-size:.7rem;padding:3px 10px;border-radius:14px;
+  cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;
+}
+.hero-ai-suggest-btn:hover{background:rgba(255,255,255,.15);color:rgba(255,255,255,.85)}
+.thinking-dots span{animation:blink 1.2s infinite;display:inline-block}
+.thinking-dots span:nth-child(2){animation-delay:.2s}
+.thinking-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+
+/* Section */
+.section{max-width:1100px;margin:0 auto;padding:3rem 1.5rem}
+.section-header{margin-bottom:2rem}
+.section-title{font-size:1.2rem;font-weight:700;margin-bottom:.3rem}
+.section-sub{color:var(--t2);font-size:.87rem}
+.section-divider{display:flex;align-items:center;gap:.8rem;margin-bottom:1.5rem}
+.section-divider-line{flex:1;height:1px;background:var(--border)}
+.section-divider-label{font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+
+/* Product Grid */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem}
+
+/* Product Card */
+.product-card{
+  background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);
+  box-shadow:var(--sh-sm);transition:all .25s;overflow:hidden;
+  display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  position:relative;
+}
+.product-card:hover{box-shadow:var(--sh-lg);transform:translateY(-3px);border-color:#d0d7e4}
+.product-card.coming-soon{opacity:.6;cursor:default;pointer-events:none}
+.product-card.coming-soon:hover{transform:none;box-shadow:var(--sh-sm)}
+/* AI highlight state */
+.product-card.ai-highlight{
+  border-color:var(--gemini)!important;
+  box-shadow:0 0 0 2px rgba(66,133,244,.25),var(--sh-md)!important;
+  transform:translateY(-4px)!important;
+}
+.product-card.ai-dim{opacity:.4;filter:grayscale(.4)}
+
+.card-banner{
+  height:110px;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;position:relative;overflow:hidden;
+}
+.card-body{padding:1.2rem 1.3rem;flex:1;display:flex;flex-direction:column}
+.card-category{font-size:.65rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+.card-title{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:.4rem;line-height:1.3}
+.card-desc{font-size:.8rem;color:var(--t2);line-height:1.5;flex:1;margin-bottom:1rem}
+.card-footer{display:flex;justify-content:space-between;align-items:center}
+.card-price{font-size:.82rem;font-weight:600;color:var(--t1)}
+.card-price span{color:var(--green);font-weight:700;font-size:.88rem}
+.card-arrow{
+  width:32px;height:32px;background:var(--red);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;flex-shrink:0;
+}
+.product-card:hover .card-arrow{background:var(--red-dark)}
+.card-arrow svg{color:#fff}
+.coming-badge{
+  position:absolute;top:10px;right:10px;
+  background:var(--navy);color:#fff;
+  font-size:.6rem;font-weight:700;padding:3px 9px;
+  border-radius:10px;letter-spacing:.06em;text-transform:uppercase;
+}
+.new-badge{
+  position:absolute;top:10px;right:10px;
+  background:var(--green);color:#fff;
+  font-size:.6rem;font-weight:700;padding:3px 9px;
+  border-radius:10px;letter-spacing:.06em;text-transform:uppercase;
+}
+/* AI Recommend badge */
+.ai-badge{
+  position:absolute;top:10px;left:10px;
+  background:var(--gemini);color:#fff;
+  font-size:.58rem;font-weight:700;padding:3px 9px;
+  border-radius:10px;letter-spacing:.06em;text-transform:uppercase;
+  display:none;animation:fadeSlideUp .3s ease;
+}
+.product-card.ai-highlight .ai-badge{display:block}
+
+/* How it works */
+.how-section{background:var(--navy);padding:3rem 2rem;color:#fff;margin-top:1rem}
+.how-inner{max-width:900px;margin:0 auto;text-align:center}
+.how-title{font-size:1.2rem;font-weight:700;margin-bottom:.4rem}
+.how-sub{color:rgba(255,255,255,.5);font-size:.87rem;margin-bottom:2.5rem}
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem}
+.how-step{display:flex;flex-direction:column;align-items:center;gap:.6rem}
+.how-num{width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;font-size:.88rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.how-step-title{font-size:.82rem;font-weight:600;color:#fff}
+.how-step-desc{font-size:.72rem;color:rgba(255,255,255,.45);line-height:1.5}
+
+/* Footer */
+footer{background:var(--navy);padding:2rem;text-align:center;color:rgba(255,255,255,.4);font-size:.78rem;border-top:1px solid rgba(255,255,255,.06)}
+footer a{color:rgba(255,255,255,.5);text-decoration:none}
+footer a:hover{color:#fff}
+
+/* WA FAB */
+.wa-fab{
+  position:fixed;bottom:1.5rem;right:1.5rem;z-index:200;
+  width:56px;height:56px;background:#25D366;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);transition:transform .2s;
+}
+.wa-fab:hover{transform:scale(1.1)}
+
+/* ── PLAN A: Gemini Chat FAB ── */
+.ai-fab{
+  position:fixed;bottom:5.5rem;right:1.5rem;z-index:200;
+  width:56px;height:56px;
+  background:linear-gradient(135deg,#4285f4,#1a73e8);
+  border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(66,133,244,.45);transition:transform .2s,box-shadow .2s;
+}
+.ai-fab:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(66,133,244,.55)}
+.ai-fab svg{width:26px;height:26px}
+
+/* Chat Panel */
+.ai-panel{
+  position:fixed;bottom:9.5rem;right:1.5rem;z-index:300;
+  width:360px;max-width:calc(100vw - 2rem);
+  background:#fff;border-radius:20px;
+  box-shadow:0 20px 60px rgba(13,31,60,.2),0 0 0 1px rgba(13,31,60,.07);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:scale(.9) translateY(20px);opacity:0;pointer-events:none;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;
+  max-height:500px;
+}
+.ai-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+
+.ai-panel-header{
+  background:linear-gradient(135deg,#0d1f3c,#1a3560);
+  padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;flex-shrink:0;
+}
+.ai-panel-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#4285f4,#34a853);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.ai-panel-avatar svg{width:18px;height:18px}
+.ai-panel-info{flex:1}
+.ai-panel-name{font-size:.88rem;font-weight:700;color:#fff;line-height:1.1}
+.ai-panel-status{font-size:.68rem;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:4px}
+.ai-panel-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#34a853;display:inline-block}
+.ai-panel-close{
+  background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);
+  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s;
+  font-size:1.1rem;line-height:1;
+}
+.ai-panel-close:hover{background:rgba(255,255,255,.2);color:#fff}
+
+.ai-messages{flex:1;overflow-y:auto;padding:.8rem 1rem;display:flex;flex-direction:column;gap:.7rem;min-height:200px}
+.ai-msg{display:flex;gap:.5rem;animation:fadeSlideUp .25s ease}
+.ai-msg.user{flex-direction:row-reverse}
+.ai-bubble{
+  max-width:78%;padding:.6rem .9rem;border-radius:14px;
+  font-size:.82rem;line-height:1.5;
+}
+.ai-msg.bot .ai-bubble{background:var(--off);border:1px solid var(--border);color:var(--t1);border-bottom-left-radius:4px}
+.ai-msg.user .ai-bubble{background:var(--gemini);color:#fff;border-bottom-right-radius:4px}
+.ai-msg-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#4285f4,#34a853);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.ai-msg-avatar svg{width:12px;height:12px}
+.ai-typing{display:flex;align-items:center;gap:3px;padding:.4rem .2rem}
+.ai-typing span{width:6px;height:6px;border-radius:50%;background:var(--t3);animation:bounce-dot .8s infinite}
+.ai-typing span:nth-child(2){animation-delay:.15s}
+.ai-typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce-dot{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+.ai-quick-btns{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem 1rem .6rem}
+.ai-quick-btn{
+  background:var(--gemini-bg);border:1px solid rgba(66,133,244,.3);
+  color:var(--gemini-dark);font-size:.7rem;font-weight:600;
+  padding:4px 10px;border-radius:12px;cursor:pointer;transition:all .2s;
+  font-family:'DM Sans',sans-serif;
+}
+.ai-quick-btn:hover{background:var(--gemini);color:#fff}
+
+.ai-input-row{
+  display:flex;gap:.5rem;padding:.8rem 1rem;
+  border-top:1px solid var(--border);flex-shrink:0;
+}
+.ai-input{
+  flex:1;border:1px solid var(--border);border-radius:10px;
+  padding:.55rem .9rem;font-size:.83rem;font-family:'DM Sans',sans-serif;
+  outline:none;color:var(--t1);transition:border .2s;
+}
+.ai-input:focus{border-color:var(--gemini)}
+.ai-send{
+  width:36px;height:36px;background:var(--gemini);border:none;border-radius:10px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s;flex-shrink:0;
+}
+.ai-send:hover{background:var(--gemini-dark)}
+.ai-send svg{color:#fff}
+
+/* Notification dot */
+.ai-fab-dot{
+  position:absolute;top:2px;right:2px;width:12px;height:12px;
+  background:#e63946;border-radius:50%;border:2px solid #fff;
+  display:none;
+}
+.ai-fab-dot.show{display:block}
+
+@media(max-width:600px){
+  header{padding:0 1rem}
+  .hero{padding:2.5rem 1.2rem 2.5rem}
+  .section{padding:2rem 1rem}
+  .how-steps{grid-template-columns:1fr 1fr}
+  .hero-stats{gap:1.5rem}
+  .ai-panel{width:calc(100vw - 2rem);right:1rem;bottom:9rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo-box">A&T</div>
+    <div class="logo-text">
+      <span class="logo-name">A&T Signboard</span>
+      <span class="logo-tagline">Printing & Signage</span>
+    </div>
+  </div>
+  <a href="https://wa.me/60197901150" class="wa-btn" target="_blank" rel="noopener noreferrer">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+    WhatsApp
+  </a>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">🏪 A&T Online Shop</div>
+  <h1>Custom Signage &<br/><span>Printing Solutions</span></h1>
+  <p>Professional signboards, printing & display solutions — get an instant quote and place your order online</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">10+</div><div class="hero-stat-label">Years Experience</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">500+</div><div class="hero-stat-label">Happy Clients</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">JB · KL · SG</div><div class="hero-stat-label">Locations Served</div></div>
+  </div>
+
+  <!-- PLAN B: AI Product Finder -->
+  <div class="hero-ai-box">
+    <div class="hero-ai-label">
+      <span class="gemini-dot"></span>
+      Gemini AI · 帮你找到合适的产品
+    </div>
+    <div class="hero-ai-input-row">
+      <input class="hero-ai-input" id="heroAiInput" type="text" placeholder="描述你的需求，例如：展览用的展示架…" autocomplete="off"/>
+      <button class="hero-ai-btn" id="heroAiBtn" onclick="heroAiSearch()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        推荐产品
+      </button>
+    </div>
+    <div class="hero-ai-suggestions">
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('室内展览展示架')">室内展览展示架</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('消防安全标志')">消防安全标志</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('活动横幅横额')">活动横幅横额</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('门店招牌')">门店招牌</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('霓虹灯装饰')">霓虹灯装饰</button>
+    </div>
+    <div class="hero-ai-result" id="heroAiResult"></div>
+  </div>
+</div>
+
+<!-- Products -->
+<div class="section">
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Printing Products</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="product-grid">
+
+    <!-- Acrylic -->
+    <a href="ant-acrylic-order.html" class="product-card" data-product="acrylic" data-tags="acrylic printing uv gloss matt indoor display">
+      <div class="card-banner" style="background:linear-gradient(135deg,#e8f4fd 0%,#cce5f5 100%)">🔷</div>
+      <div class="ai-badge">✦ AI推荐</div>
+      <div class="card-body">
+        <div class="card-category">Printing</div>
+        <div class="card-title">Acrylic Printing</div>
+        <div class="card-desc">UV direct printing on acrylic sheets. Available in multiple thickness options with matt or gloss finish.</div>
+        <div class="card-footer">
+          <div class="card-price">From <span>RM 35</span></div>
+          <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Foamboard -->
+    <a href="ant-foamboard-order.html" class="product-card" data-product="foamboard" data-tags="foamboard foam board lightweight indoor exhibition event display sticker printing">
+      <div class="card-banner" style="background:linear-gradient(135deg,#fef9ec 0%,#fdecc8 100%)">🟨</div>
+      <div class="ai-badge">✦ AI推荐</div>
+      <div class="card-body">
+        <div class="card-category">Printing</div>
+        <div class="card-title">Foamboard Printing</div>
+        <div class="card-desc">Lightweight foamboard with UV direct or sticker printing. Ideal for indoor displays, events and exhibitions.</div>
+        <div class="card-footer">
+          <div class="card-price">From <span>RM 15</span></div>
+          <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Inkjet -->
+    <a href="ant-inkjet-order.html" class="product-card" data-product="inkjet" data-tags="inkjet banner backdrop tarpaulin canvas vinyl large format printing outdoor">
+      <div class="card-banner" style="background:linear-gradient(135deg,#f0fdf4 0%,#d1fae5 100%)">🖨️</div>
+      <div class="ai-badge">✦ AI推荐</div>
+      <div class="card-body">
+        <div class="card-category">Printing</div>
+        <div class="card-title">Inkjet Printing</div>
+        <div class="card-desc">Large format inkjet printing on canvas, tarpaulin, vinyl and more. Perfect for banners and backdrops.</div>
+        <div class="card-footer">
+          <div class="card-price">From <span>RM 10</span></div>
+          <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="section-divider" style="margin-top:2.5rem">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Display & Signage</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="product-grid">
+
+    <!-- Display Set -->
+    <a href="ant-display-set-order.html" class="product-card" data-product="display" data-tags="display set roll up bunting beach flag pop up table menu stand easel exhibition event">
+      <div class="card-banner" style="background:linear-gradient(135deg,#fdf2f8 0%,#fce7f3 100%)">🎯</div>
+      <div class="ai-badge">✦ AI推荐</div>
+      <div class="card-body">
+        <div class="card-category">Display</div>
+        <div class="card-title">Display Set with Printing</div>
+        <div class="card-desc">Roll up buntings, beach flags, pop-up tables, menu stands, easel stands — complete display solutions.</div>
+        <div class="card-footer">
+          <div class="card-price">From <span>RM 50</span></div>
+          <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Bomba Signage -->
+    <a href="ant-bomba-signage-order.html" class="product-card" data-product="bomba" data-tags="bomba fire safety signage red acrylic wall room name v-shape residential commercial">
+      <div class="card-banner" style="background:linear-gradient(135deg,#fff0f0 0%,#fecaca 100%)">🧯</div>
+      <div class="ai-badge">✦ AI推荐</div>
+      <div class="card-body">
+        <div class="card-category">Safety Signage</div>
+        <div class="card-title">Bomba / Fire Safety Signage</div>
+        <div class="card-desc">Red acrylic UV direct print fire safety signs. Flat wall, V-shape and room name signage for residential & commercial.</div>
+        <div class="card-footer">
+          <div class="card-price">From <span>RM 25</span></div>
+          <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Signboard -->
+    <a href="ant-signboard-order-v2.html" class="product-card" data-product="signboard" data-tags="signboard flat panel aluminium lightbox wall lettering shop front business custom">
+      <div class="new-badge">NEW ✦ AI</div>
+      <div class="card-banner" style="background:linear-gradient(135deg,#0d1f3c 0%,#1a3560 100%)">🪧</div>
+      <div class="ai-badge">✦ AI推荐</div>
+      <div class="card-body">
+        <div class="card-category">Signboard</div>
+        <div class="card-title">Custom Signboard</div>
+        <div class="card-desc">Flat panel, aluminium strip, lightbox & wall lettering. Design with AI assistance — Claude Design powered.</div>
+        <div class="card-footer">
+          <div class="card-price">From <span>RM 1,300</span></div>
+          <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </a>
+
+    <!-- LED Neon Sign -->
+    <a href="ant-neon-order.html" class="product-card" data-product="neon" data-tags="neon led sign custom light decoration interior business event colour font">
+      <div class="new-badge">NEW ✦</div>
+      <div class="card-banner" style="background:linear-gradient(135deg,#07070d 0%,#14142a 100%)">💡</div>
+      <div class="ai-badge">✦ AI推荐</div>
+      <div class="card-body">
+        <div class="card-category">Signage</div>
+        <div class="card-title">LED Neon Sign</div>
+        <div class="card-desc">Custom LED neon signs for businesses, events and interior decoration. Design your sign live — 9 colours, 6 font styles.</div>
+        <div class="card-footer">
+          <div class="card-price">From <span>RM 15/m</span></div>
+          <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- How it works -->
+<div class="how-section">
+  <div class="how-inner">
+    <div class="how-title">How It Works</div>
+    <div class="how-sub">Simple 4-step process from order to delivery</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-step-title">Choose Product</div>
+        <div class="how-step-desc">Select your product and customise size, material & options</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-step-title">Submit Order</div>
+        <div class="how-step-desc">Fill in your details and upload your artwork or design file</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-step-title">Confirm & Pay</div>
+        <div class="how-step-desc">Our team confirms the order and you make payment</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">4</div>
+        <div class="how-step-title">Production & Delivery</div>
+        <div class="how-step-desc">We produce and deliver to you or you collect at our workshop</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p style="margin-bottom:4px">© 2025 A&T Signboard & Printing &nbsp;·&nbsp; <a href="https://jbsignboard.com" target="_blank" rel="noopener noreferrer">jbsignboard.com</a></p>
+  <p>Ulu Tiram, Johor Bahru &nbsp;·&nbsp; Subang Jaya, KL &nbsp;·&nbsp; Singapore</p>
+</footer>
+
+<!-- WhatsApp FAB -->
+<a href="https://wa.me/60197901150" class="wa-fab" target="_blank" rel="noopener noreferrer">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+</a>
+
+<!-- PLAN A: Gemini AI Chat FAB -->
+<button class="ai-fab" id="aiFab" onclick="toggleChat()" title="AI 询价助手">
+  <span class="ai-fab-dot" id="aiFabDot"></span>
+  <!-- Gemini-style spark icon -->
+  <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white" fill-opacity="0.95"/>
+  </svg>
+</button>
+
+<!-- PLAN A: Chat Panel -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-avatar">
+      <svg viewBox="0 0 28 28" fill="none"><path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white" fill-opacity="0.9"/></svg>
+    </div>
+    <div class="ai-panel-info">
+      <div class="ai-panel-name">A&T AI 询价助手</div>
+      <div class="ai-panel-status">Powered by Gemini</div>
+    </div>
+    <button class="ai-panel-close" onclick="toggleChat()">✕</button>
+  </div>
+
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-msg bot">
+      <div class="ai-msg-avatar"><svg viewBox="0 0 28 28" fill="none"><path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white"/></svg></div>
+      <div class="ai-bubble">你好！我是 A&T 的 AI 助手 👋<br/>请问你需要什么类型的标牌或印刷品？我可以帮你推荐合适的产品和估算价格。</div>
+    </div>
+  </div>
+
+  <div class="ai-quick-btns" id="aiQuickBtns">
+    <button class="ai-quick-btn" onclick="chatQuick('消防标志多少钱？')">🧯 消防标志</button>
+    <button class="ai-quick-btn" onclick="chatQuick('我要做店招牌')">🪧 店招牌</button>
+    <button class="ai-quick-btn" onclick="chatQuick('横幅横额印刷')">🖨️ 横额印刷</button>
+    <button class="ai-quick-btn" onclick="chatQuick('LED霓虹灯牌')">💡 霓虹灯</button>
+  </div>
+
+  <div class="ai-input-row">
+    <input class="ai-input" id="aiInput" type="text" placeholder="输入你的问题…" autocomplete="off" onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="ai-send" onclick="sendChat()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+// ─── Product data for AI context ───────────────────────────────
+const PRODUCTS = [
+  {id:'acrylic',  name:'Acrylic Printing',        price:'RM 35起', url:'ant-acrylic-order.html',          tags:'acrylic uv print indoor sign display gloss matt'},
+  {id:'foamboard',name:'Foamboard Printing',       price:'RM 15起', url:'ant-foamboard-order.html',         tags:'foamboard lightweight indoor exhibition event sticker'},
+  {id:'inkjet',   name:'Inkjet Printing',           price:'RM 10起', url:'ant-inkjet-order.html',            tags:'inkjet banner backdrop tarpaulin canvas vinyl outdoor'},
+  {id:'display',  name:'Display Set with Printing', price:'RM 50起', url:'ant-display-set-order.html',       tags:'display roll up bunting beach flag pop up table menu stand easel exhibition'},
+  {id:'bomba',    name:'Bomba / Fire Safety Signage',price:'RM 25起',url:'ant-bomba-signage-order.html',    tags:'bomba fire safety signage red acrylic wall room name v-shape residential commercial'},
+  {id:'signboard',name:'Custom Signboard',          price:'RM 1300起',url:'ant-signboard-order-v2.html',   tags:'signboard flat panel aluminium lightbox wall lettering shop front business'},
+  {id:'neon',     name:'LED Neon Sign',             price:'RM 15/m起',url:'ant-neon-order.html',           tags:'neon led light decoration interior event colour font custom'},
+];
+
+const SYSTEM_PROMPT = `你是 A&T Signboard & Printing 的 AI 询价助手。公司位于 Ulu Tiram (JB)、Subang Jaya (KL) 和 Singapore，主营招牌、印刷、展示产品。
+
+产品列表：
+${PRODUCTS.map(p=>`- ${p.name}（${p.price}）：${p.tags}`).join('\n')}
+
+回答规则：
+1. 用简体中文或英文（跟用户语言一致）
+2. 回答简洁，不超过100字
+3. 推荐产品时加上链接格式：[产品名](url)
+4. 价格只给起步价，说明需联系确认
+5. 鼓励用户通过 WhatsApp (+60197901150) 确认详细报价
+6. 如果问题超出产品范围，说明并引导联系客服`;
+
+// ─── Gemini API call (via Netlify proxy — key is server-side only) ──
+const GEMINI_URL = '/api/gemini';
+
+let chatHistory = [];
+
+async function callGemini(userMsg) {
+  chatHistory.push({role:'user', parts:[{text: userMsg}]});
+
+  const body = {
+    system_instruction: { parts:[{text: SYSTEM_PROMPT}] },
+    contents: chatHistory,
+    generationConfig: { maxOutputTokens:300, temperature:0.7 }
+  };
+
+  const res = await fetch(GEMINI_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) throw new Error('API error ' + res.status);
+  const data = await res.json();
+  const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '抱歉，我暂时无法回答，请直接联系 WhatsApp。';
+  chatHistory.push({role:'model', parts:[{text: reply}]});
+  return reply;
+}
+
+// ─── PLAN A: Chat Panel ────────────────────────────────────────
+let chatOpen = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('aiPanel').classList.toggle('open', chatOpen);
+  document.getElementById('aiFabDot').classList.remove('show');
+  if (chatOpen) setTimeout(()=>document.getElementById('aiInput').focus(), 300);
+}
+
+function chatQuick(msg) {
+  document.getElementById('aiInput').value = msg;
+  sendChat();
+  document.getElementById('aiQuickBtns').style.display = 'none';
+}
+
+async function sendChat() {
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  appendMsg('user', msg);
+  const typing = appendTyping();
+
+  try {
+    const reply = await callGemini(msg);
+    typing.remove();
+    appendMsg('bot', formatReply(reply));
+  } catch(e) {
+    typing.remove();
+    appendMsg('bot', '网络错误，请稍后再试，或直接 <a href="https://wa.me/60197901150" target="_blank" style="color:var(--gemini)">WhatsApp 联系</a> 我们。');
+  }
+}
+
+function appendMsg(role, html) {
+  const wrap = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+
+  if (role === 'bot') {
+    div.innerHTML = `<div class="ai-msg-avatar"><svg viewBox="0 0 28 28" fill="none"><path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white"/></svg></div><div class="ai-bubble">${html}</div>`;
+  } else {
+    div.innerHTML = `<div class="ai-bubble">${html}</div>`;
+  }
+
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+function appendTyping() {
+  const wrap = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.className = 'ai-msg bot';
+  div.innerHTML = `<div class="ai-msg-avatar"><svg viewBox="0 0 28 28" fill="none"><path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white"/></svg></div><div class="ai-bubble"><div class="ai-typing"><span>·</span><span>·</span><span>·</span></div></div>`;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+function formatReply(text) {
+  // Convert markdown links [text](url) to <a>
+  return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:var(--gemini);text-decoration:underline">$1</a>').replace(/\n/g,'<br/>');
+}
+
+// Show notification dot after 3s if panel not opened
+setTimeout(()=>{
+  if (!chatOpen) document.getElementById('aiFabDot').classList.add('show');
+}, 3000);
+
+// ─── PLAN B: Hero AI Product Recommender ──────────────────────
+const HERO_SYSTEM = `你是 A&T Signboard & Printing 的产品推荐 AI。根据用户需求，从以下产品中推荐 1-3 个最合适的，并简单说明原因（不超过60字）。
+
+产品列表（用product id回复）：
+${PRODUCTS.map(p=>`id:${p.id} | ${p.name} | ${p.tags}`).join('\n')}
+
+必须严格用以下JSON格式回复，不要有其他内容：
+{"summary":"一句话总结推荐原因","ids":["id1","id2"]}`;
+
+function heroAiFill(text) {
+  document.getElementById('heroAiInput').value = text;
+  heroAiSearch();
+}
+
+async function heroAiSearch() {
+  const input = document.getElementById('heroAiInput');
+  const query = input.value.trim();
+  if (!query) return;
+
+  const btn = document.getElementById('heroAiBtn');
+  const result = document.getElementById('heroAiResult');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="thinking-dots"><span>·</span><span>·</span><span>·</span></span> 分析中';
+  result.className = 'hero-ai-result';
+  result.innerHTML = '';
+
+  // Reset cards
+  document.querySelectorAll('.product-card').forEach(c=>{
+    c.classList.remove('ai-highlight','ai-dim');
+  });
+
+  try {
+    const body = {
+      system_instruction:{ parts:[{text: HERO_SYSTEM}] },
+      contents:[{role:'user', parts:[{text: query}]}],
+      generationConfig:{ maxOutputTokens:200, temperature:0.3 }
+    };
+
+    const res = await fetch(GEMINI_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+
+    if (!res.ok) throw new Error('api');
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    let parsed;
+    try {
+      const cleaned = raw.replace(/```json|```/g,'').trim();
+      parsed = JSON.parse(cleaned);
+    } catch { throw new Error('parse'); }
+
+    const { summary, ids } = parsed;
+    const matched = PRODUCTS.filter(p => ids.includes(p.id));
+
+    // Highlight cards
+    document.querySelectorAll('.product-card').forEach(card=>{
+      const pid = card.dataset.product;
+      if (ids.includes(pid)) {
+        card.classList.add('ai-highlight');
+      } else {
+        card.classList.add('ai-dim');
+      }
+    });
+
+    // Show result
+    result.innerHTML = `
+      <div style="margin-bottom:.6rem;font-size:.78rem;opacity:.7">✦ ${summary}</div>
+      <div class="hero-ai-chips">
+        ${matched.map(p=>`<a class="ai-chip" href="${p.url}">→ ${p.name} <span style="opacity:.7;font-weight:400">${p.price}</span></a>`).join('')}
+        <span class="ai-chip" style="cursor:pointer" onclick="resetCards()">✕ 重置</span>
+      </div>`;
+    result.classList.add('show');
+
+    // Scroll to products
+    setTimeout(()=>{
+      document.querySelector('.section')?.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 400);
+
+  } catch(e) {
+    result.innerHTML = '<span style="opacity:.6">⚠ 请配置 Gemini API Key，或直接浏览产品</span>';
+    result.classList.add('show');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 推荐产品';
+}
+
+function resetCards() {
+  document.querySelectorAll('.product-card').forEach(c=>{
+    c.classList.remove('ai-highlight','ai-dim');
+  });
+  document.getElementById('heroAiResult').classList.remove('show');
+  document.getElementById('heroAiInput').value = '';
+}
+
+// Enter key for hero search
+document.getElementById('heroAiInput').addEventListener('keydown', e=>{
+  if (e.key === 'Enter') heroAiSearch();
+});
+</script>
+</body>
+</html>
