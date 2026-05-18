@@ -1,6 +1,7 @@
 [build]
-  publish = "public"
   command = "echo 'No build step needed'"
+  publish = "."
+  functions = "netlify/functions"
 
-[functions]
-  directory = "netlify/functions"
+[build.environment]
+  ANTHROPIC_API_KEY = ""
