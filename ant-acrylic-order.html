@@ -42,6 +42,9 @@ header {
 .logo-name { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: .04em; line-height: 1.2; }
 .logo-name span { color: var(--red); }
 .logo-tag { font-size: 10px; color: rgba(255,255,255,.4); letter-spacing: .08em; text-transform: uppercase; margin-top: 1px; }
+.header-btns { display: flex; align-items: center; gap: 8px; }
+.back-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); color: #fff; font-size: 13px; font-weight: 500; padding: 7px 13px; border-radius: 8px; text-decoration: none; transition: background .15s; white-space: nowrap; }
+.back-btn:hover { background: rgba(255,255,255,.22); }
 .wa-header {
   display: flex; align-items: center; gap: 6px;
   background: #25D366; color: #fff; text-decoration: none;
@@ -241,7 +244,10 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
 .btn-primary:active { transform:translateY(0); }
 .btn-secondary { background:var(--white); color:var(--t2); border:1.5px solid var(--border); width:100%; }
 .btn-secondary:hover { background:var(--off); }
+.btn-cart { background:var(--green); color:#fff; width:100%; box-shadow:0 4px 14px rgba(22,163,74,.28); }
+.btn-cart:hover { background:#15803d; transform:translateY(-1px); }
 .btn-row { display:grid; grid-template-columns:1fr 2fr; gap:10px; margin-top:.5rem; }
+.step1-actions { display:none; grid-template-columns:1fr 1fr; gap:10px; margin-top:.5rem; }
 
 /* ── Review ── */
 .rtable { width:100%; border-collapse:collapse; }
@@ -269,6 +275,14 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
 .wa-fab { position:fixed; bottom:22px; right:18px; width:52px; height:52px; background:#25D366; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(37,211,102,.4); text-decoration:none; transition:transform .2s,box-shadow .2s; z-index:50; }
 .wa-fab:hover { transform:scale(1.08); box-shadow:0 6px 24px rgba(37,211,102,.5); }
 
+/* ── Cart FAB (bottom-left, WA is bottom-right) ── */
+.cart-fab { position:fixed; bottom:22px; left:18px; width:52px; height:52px; background:var(--navy); border:2px solid rgba(255,255,255,.12); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(13,31,60,.4); text-decoration:none; transition:transform .2s; z-index:50; }
+.cart-fab:hover { transform:scale(1.08); }
+.cart-fab-badge { position:absolute; top:-4px; right:-4px; background:var(--red); color:#fff; font-size:10px; font-weight:700; min-width:18px; height:18px; border-radius:9px; padding:0 3px; display:none; align-items:center; justify-content:center; }
+
+/* ── Toast ── */
+.cart-toast { position:fixed; bottom:88px; left:50%; transform:translateX(-50%); background:#1f2937; color:#fff; padding:10px 18px; border-radius:8px; font-size:13px; font-weight:600; display:none; align-items:center; gap:8px; z-index:200; white-space:nowrap; box-shadow:0 4px 16px rgba(0,0,0,.35); }
+
 /* ── Mobile ── */
 @media (max-width:500px) {
   header { padding:0 1rem; }
@@ -277,6 +291,7 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
   .field-row { grid-template-columns:1fr; }
   .size-grid { grid-template-columns:repeat(3,1fr); }
   .thick-grid,.lb-grid { grid-template-columns:repeat(3,1fr); }
+  .back-btn span { display:none; }
 }
 </style>
 </head>
@@ -290,10 +305,13 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
       <div class="logo-tag">We Make Sign Speak Your Name</div>
     </div>
   </div>
-  <a href="https://wa.me/60197901150" class="wa-header" target="_blank" rel="noopener noreferrer">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-    WhatsApp
-  </a>
+  <div class="header-btns">
+    <a href="index.html" class="back-btn">&#8592; <span>All Products</span></a>
+    <a href="https://wa.me/60197901150" class="wa-header" target="_blank" rel="noopener noreferrer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      WhatsApp
+    </a>
+  </div>
 </header>
 
 <div class="page">
@@ -517,9 +535,11 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
       <p class="price-note">Price excludes SST · No hidden charges</p>
     </div>
 
-    <button class="btn btn-primary" id="btn-next1" onclick="goStep2()" style="display:none">
-      Proceed to Order &rarr;
-    </button>
+    <!-- Step 1 action buttons -->
+    <div class="step1-actions" id="step1-actions">
+      <button class="btn btn-cart" onclick="addToCart()">🛒 Add to Cart</button>
+      <button class="btn btn-primary" onclick="goStep2()">Proceed to Order &rarr;</button>
+    </div>
   </div>
 
   <!-- ══ STEP 2 ══ -->
@@ -615,6 +635,17 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
   <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
 </a>
 
+<!-- Cart FAB -->
+<a href="cart.html" class="cart-fab" title="View Cart" style="position:relative">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+  <span class="cart-fab-badge" id="cart-fab-count">0</span>
+</a>
+
+<!-- Toast notification -->
+<div class="cart-toast" id="cart-toast">
+  ✅ Added to cart! <a href="cart.html" style="color:#86efac;margin-left:4px">View Cart →</a>
+</div>
+
 <script>
 var order = {};
 var posterWithPoster = false;
@@ -650,7 +681,7 @@ document.querySelectorAll('input[name="service"]').forEach(function(el) {
 
 function hideResult() {
   document.getElementById('result-box').style.display = 'none';
-  document.getElementById('btn-next1').style.display = 'none';
+  document.getElementById('step1-actions').style.display = 'none';
   order = {};
 }
 
@@ -661,7 +692,7 @@ function showResult(lines, total, summaryRows) {
   document.getElementById('bk-lines').innerHTML = html;
   document.getElementById('total-display').textContent = 'RM ' + total.toFixed(2);
   document.getElementById('result-box').style.display = 'block';
-  document.getElementById('btn-next1').style.display = 'flex';
+  document.getElementById('step1-actions').style.display = 'grid';
   order.total = total;
   order.summaryRows = summaryRows;
 }
@@ -849,17 +880,46 @@ function fileChosen(input) {
 }
 
 function submitOrder() {
-  /*
-    DEVELOPER TODO:
-    1. POST order object + file to backend
-    2. Save order, generate order ID
-    3. Redirect to iPay88 gateway
-    4. On callback: send confirmation email + admin alert
-  */
   document.getElementById('step3').style.display = 'none';
   document.getElementById('success-screen').style.display = 'block';
   window.scrollTo({top:0,behavior:'smooth'});
 }
+
+/* ══════════════════════════════════════════
+   Cart utilities (shared localStorage cart)
+══════════════════════════════════════════ */
+function getCart() {
+  try { return JSON.parse(localStorage.getItem('antCart') || '[]'); } catch(e) { return []; }
+}
+function saveCart(items) {
+  localStorage.setItem('antCart', JSON.stringify(items));
+  updateCartBadge();
+}
+function updateCartBadge() {
+  var items = getCart();
+  var total = items.reduce(function(s,i){ return s + i.qty; }, 0);
+  var el = document.getElementById('cart-fab-count');
+  if (el) { el.textContent = total; el.style.display = total > 0 ? 'flex' : 'none'; }
+}
+function addToCart() {
+  if (!order.total) { alert('Please configure your product first.'); return; }
+  var items = getCart();
+  var item = {
+    id: 'item-' + Date.now(),
+    name: order.service || 'Acrylic Product',
+    desc: (order.summaryRows || []).map(function(r){ return r[0] + ': ' + r[1]; }).join(', '),
+    price: order.total,
+    qty: 1,
+    page: 'ant-acrylic-order.html'
+  };
+  items.push(item);
+  saveCart(items);
+  var toast = document.getElementById('cart-toast');
+  if (toast) { toast.style.display = 'flex'; setTimeout(function(){ toast.style.display = 'none'; }, 3000); }
+}
+
+// Init badge on load
+updateCartBadge();
 </script>
 </body>
 </html>
