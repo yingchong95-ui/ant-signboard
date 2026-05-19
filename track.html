@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track Your Order — A&T Signboard & Printing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1f3c;--red:#e63946;--green:#16a34a;--green-bg:#edfdf4;
+  --blue:#1d72e8;--blue-bg:#dbeafe;--amber:#b45309;--amber-bg:#fffbeb;
+  --off:#f6f8fc;--border:#e3e7ef;--t1:#0d1f3c;--t2:#5a6478;--t3:#9aa3b2;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-height:100vh;line-height:1.5}
+
+/* ── Header ── */
+header{background:var(--navy);padding:0 1.5rem;height:62px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo img{height:38px;width:38px;border-radius:50%;object-fit:cover}
+.logo-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:.03em}
+.logo-name span{color:var(--red)}
+.wa-link{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.7);font-size:12px;font-weight:500;text-decoration:none;padding:6px 10px;border:1px solid rgba(255,255,255,.15);border-radius:7px;transition:background .15s}
+.wa-link:hover{background:rgba(255,255,255,.1)}
+
+/* ── Main ── */
+.main{max-width:560px;margin:0 auto;padding:1.5rem 1rem 4rem}
+
+/* ── States ── */
+.loading{text-align:center;padding:5rem 1rem;color:var(--t2)}
+.spinner{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.2rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Card ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1rem;box-shadow:0 2px 12px rgba(13,31,60,.06)}
+.card-head{background:var(--navy);padding:1.1rem 1.3rem}
+.card-head-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.order-id-display{font-family:'DM Mono',monospace;font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:.06em}
+.order-meta{font-size:12px;color:rgba(255,255,255,.55);margin-top:5px}
+.card-body{padding:1.2rem 1.3rem}
+
+/* ── Progress bar ── */
+.prog-wrap{height:6px;background:rgba(255,255,255,.15);border-radius:3px;margin-top:.8rem}
+.prog-fill{height:100%;background:#4ade80;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* ── Steps ── */
+.step-list{display:flex;flex-direction:column}
+.step-item{display:flex;gap:14px;position:relative;padding-bottom:1.5rem}
+.step-item:last-child{padding-bottom:0}
+.step-connector{position:absolute;left:17px;top:38px;bottom:0;width:2px;background:var(--border);transition:background .4s}
+.step-item:last-child .step-connector{display:none}
+.step-item.done .step-connector{background:var(--green)}
+.step-item.inprogress .step-connector{background:linear-gradient(to bottom,var(--blue) 0%,var(--border) 100%)}
+.step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:2px solid var(--border);background:#fff;z-index:1;position:relative;transition:all .3s}
+.step-item.done .step-dot{background:var(--green);border-color:var(--green);color:#fff}
+.step-item.inprogress .step-dot{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);animation:pulse 1.8s ease-in-out infinite}
+.step-item.pending .step-dot{background:#f5f7fb;border-color:var(--border);color:var(--t3);font-size:12px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(29,114,232,.28)}60%{box-shadow:0 0 0 8px rgba(29,114,232,0)}}
+.step-info{flex:1;padding-top:5px}
+.step-label{font-size:14px;font-weight:600;color:var(--t1)}
+.step-item.pending .step-label{color:var(--t3)}
+.step-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.step-date{font-size:11px;color:var(--green);font-weight:600;margin-top:3px;display:flex;align-items:center;gap:4px}
+
+/* ── Warranty ── */
+.warranty-card{background:var(--amber-bg);border:1.5px solid #fcd34d;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+.warranty-title{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:.8rem;display:flex;align-items:center;gap:7px}
+.w-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--t2);padding:.25rem 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.w-row:last-child{border-bottom:none;padding-bottom:0}
+.w-row strong{color:var(--t1);font-weight:600}
+.w-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
+.w-badge.active{background:var(--green);color:#fff}
+.w-badge.pending-w{background:var(--t3);color:#fff}
+.w-badge.expired{background:var(--red);color:#fff}
+
+/* ── Note ── */
+.info-note{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:.8rem 1rem;font-size:12.5px;color:#0369a1;margin-bottom:1rem;line-height:1.5}
+
+/* ── WA Button ── */
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-size:14px;font-weight:700;padding:13px 20px;border-radius:12px;text-decoration:none;transition:filter .2s,transform .15s}
+.btn-wa:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn-wa:active{transform:translateY(0)}
+
+/* ── Error ── */
+.error-wrap{text-align:center;padding:3rem 1rem}
+.error-emoji{font-size:3rem;margin-bottom:.8rem}
+.error-title{font-size:1.1rem;font-weight:700;margin-bottom:.4rem}
+.error-desc{font-size:13px;color:var(--t2);margin-bottom:1.5rem;line-height:1.5}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">
+    <img src="logo.png" alt="A&T Signboard">
+    <span class="logo-name">A&<span>T</span> Signboard</span>
+  </a>
+  <a href="https://wa.me/60197901150" class="wa-link" target="_blank" rel="noopener">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Need help?
+  </a>
+</header>
+
+<div class="main">
+
+  <!-- Loading -->
+  <div id="state-loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading your order…</p>
+  </div>
+
+  <!-- Error -->
+  <div id="state-error" style="display:none">
+    <div class="card">
+      <div class="card-body error-wrap">
+        <div class="error-emoji">🔍</div>
+        <div class="error-title">Order Not Found</div>
+        <div class="error-desc">We couldn't find order <strong id="err-id-display"></strong>.<br>Please check the order ID or contact us directly.</div>
+        <a href="https://wa.me/60197901150" target="_blank" class="btn-wa" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Contact A&T via WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Found -->
+  <div id="state-order" style="display:none">
+
+    <!-- Order info card -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-label">Order Tracking</div>
+        <div class="order-id-display" id="ord-id">—</div>
+        <div class="order-meta" id="ord-meta">—</div>
+        <div class="prog-wrap"><div class="prog-fill" id="ord-prog" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Steps card -->
+    <div class="card">
+      <div class="card-body" style="padding-bottom:.2rem">
+        <div class="step-list" id="step-list"></div>
+      </div>
+    </div>
+
+    <!-- Warranty card (signboard & neon only) -->
+    <div id="warranty-section" style="display:none">
+      <div class="warranty-card">
+        <div class="warranty-title">🛡️ Warranty Coverage</div>
+        <div class="w-row"><span>Coverage Period</span><strong id="w-months">—</strong></div>
+        <div class="w-row"><span>Start Date</span><strong id="w-start">—</strong></div>
+        <div class="w-row"><span>Valid Until</span><strong id="w-end">—</strong></div>
+        <div class="w-row" style="border:none;margin-top:.3rem"><span>Status</span><span id="w-badge">—</span></div>
+      </div>
+    </div>
+
+    <div class="info-note">
+      📌 This page updates live. Bookmark it to check your order anytime. For enquiries, tap the button below.
+    </div>
+
+    <a href="https://wa.me/60197901150" target="_blank" rel="noopener" class="btn-wa">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Contact A&T via WhatsApp
+    </a>
+
+  </div><!-- /state-order -->
+</div><!-- /main -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const STEPS = [
+  { id:"proceed",   label:"Order Confirmed",    sub:"We've received your order and production begins soon.",   icon:"✓"  },
+  { id:"ironframe", label:"Iron Frame Welding",  sub:"The steel frame structure is being welded.",              icon:"🔥" },
+  { id:"sticker",   label:"Sticker Printing",    sub:"Graphics and lettering are being printed.",               icon:"🖨" },
+  { id:"cutting",   label:"Board Cutting",        sub:"Materials are being cut to exact dimensions.",            icon:"✂" },
+  { id:"edging",    label:"3D Letter Edging",     sub:"Letter edges are being finished and shaped.",             icon:"⬡" },
+  { id:"painting",  label:"Spray Painting",       sub:"Colour coating is being applied.",                       icon:"🎨" },
+  { id:"assembly",  label:"Assembly & Ready",     sub:"Final assembly, quality check and ready for delivery.",   icon:"⚙" },
+];
+
+// Pages that carry warranty
+const WARRANTY_MONTHS = {
+  'ant-signboard-order-v2.html': 12,
+  'ant-neon-order.html': 12,
+};
+
+// ── Helpers ──
+function showState(s) {
+  ['loading','error','order'].forEach(id => {
+    document.getElementById('state-' + id).style.display = id === s ? '' : 'none';
+  });
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-MY', { day:'numeric', month:'short', year:'numeric' });
+}
+
+// ── Render order ──
+function renderOrder(data) {
+  showState('order');
+
+  document.getElementById('ord-id').textContent = data.id || '—';
+
+  const created = data.createdAt ? fmtDate(data.createdAt) : '';
+  const desc    = data.desc ? data.desc.slice(0, 60) + (data.desc.length > 60 ? '…' : '') : '';
+  document.getElementById('ord-meta').textContent = [created, desc].filter(Boolean).join(' · ');
+
+  const steps    = data.steps || {};
+  const doneN    = STEPS.filter(s => steps[s.id]?.status === 'done').length;
+  const progress = Math.round(doneN / STEPS.length * 100);
+  document.getElementById('ord-prog').style.width = progress + '%';
+
+  // Steps
+  document.getElementById('step-list').innerHTML = STEPS.map((step, i) => {
+    const s   = steps[step.id] || { status: 'pending' };
+    const cls = s.status === 'done' ? 'done' : s.status === 'inprogress' ? 'inprogress' : 'pending';
+    const dot = s.status === 'done' ? '✓' : s.status === 'inprogress' ? step.icon : String(i + 1);
+    const dateHtml = (s.status === 'done' && s.completedAt)
+      ? `<div class="step-date">✅ Completed ${fmtDate(s.completedAt)}</div>` : '';
+    return `
+      <div class="step-item ${cls}">
+        <div class="step-connector"></div>
+        <div class="step-dot">${dot}</div>
+        <div class="step-info">
+          <div class="step-label">${step.label}</div>
+          <div class="step-sub">${step.sub}</div>
+          ${dateHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  // Warranty
+  const warranty = data.warranty || {};
+  if (warranty.applicable) {
+    document.getElementById('warranty-section').style.display = '';
+    const months = warranty.months || 12;
+    document.getElementById('w-months').textContent = months + ' months';
+
+    const assembly = steps.assembly || {};
+    if (assembly.status === 'done' && assembly.completedAt) {
+      const start = new Date(assembly.completedAt);
+      const end   = new Date(assembly.completedAt);
+      end.setMonth(end.getMonth() + months);
+      const now      = new Date();
+      const isValid  = end > now;
+      const daysLeft = Math.ceil((end - now) / 864e5);
+
+      document.getElementById('w-start').textContent = fmtDate(assembly.completedAt);
+      document.getElementById('w-end').textContent   = fmtDate(end.toISOString());
+      document.getElementById('w-badge').innerHTML   = isValid
+        ? `<span class="w-badge active">Active · ${daysLeft} days left</span>`
+        : `<span class="w-badge expired">Expired</span>`;
+    } else {
+      document.getElementById('w-start').textContent = 'Upon completion';
+      document.getElementById('w-end').textContent   = months + ' months from delivery';
+      document.getElementById('w-badge').innerHTML   = `<span class="w-badge pending-w">Awaiting completion</span>`;
+    }
+  }
+}
+
+// ── Init ──
+const params  = new URLSearchParams(window.location.search);
+const orderId = params.get('id') || params.get('ID') || '';
+
+if (!orderId) {
+  showState('error');
+  document.getElementById('err-id-display').textContent = '(no order ID provided)';
+} else {
+  onSnapshot(doc(db, 'orders', orderId), snap => {
+    if (!snap.exists()) {
+      showState('error');
+      document.getElementById('err-id-display').textContent = orderId;
+    } else {
+      renderOrder(snap.data());
+    }
+  }, err => {
+    console.error('Firestore error:', err);
+    showState('error');
+    document.getElementById('err-id-display').textContent = orderId;
+  });
+}
+</script>
+</body>
+</html>

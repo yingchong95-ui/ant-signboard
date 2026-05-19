@@ -222,7 +222,7 @@
     return icons[page] || '📦';
   }
 
-  function buildWhatsAppMessage(items) {
+  function buildWhatsAppMessage(items, orderId, trackUrl) {
     var lines = ['Hello A&T Signboard! I would like to order:'];
     var grandTotal = 0;
     items.forEach(function(item, i) {
@@ -237,9 +237,111 @@
     });
     lines.push('');
     lines.push('*Grand Total: RM ' + grandTotal.toFixed(2) + '*');
+    if (orderId) {
+      lines.push('');
+      lines.push('🔖 *Order ID: ' + orderId + '*');
+      lines.push('📦 Track order: ' + trackUrl);
+    }
     lines.push('');
     lines.push('Please confirm availability and payment details. Thank you!');
     return lines.join('\n');
+  }
+
+  // ── Checkout with Firebase ──
+  var ORDER_ID_PENDING = null;
+
+  function generateOrderId() {
+    var now = new Date();
+    var d = now.getFullYear().toString() +
+            String(now.getMonth() + 1).padStart(2, '0') +
+            String(now.getDate()).padStart(2, '0');
+    var r = Math.random().toString(36).substr(2, 4).toUpperCase();
+    return 'SHOP-' + d + '-' + r;
+  }
+
+  function doCheckout() {
+    var items = getCart();
+    if (!items.length) return;
+
+    var btn = document.getElementById('btn-checkout');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving order…'; }
+
+    var orderId  = generateOrderId();
+    var trackUrl = 'https://ant-signboard.netlify.app/track.html?id=' + orderId;
+
+    // Compute grand total
+    var grandTotal = items.reduce(function(s, i) { return s + i.price * i.qty; }, 0);
+
+    // Detect warranty products
+    var warrantyPages = { 'ant-signboard-order-v2.html': 12, 'ant-neon-order.html': 12 };
+    var wItems = items.filter(function(i) { return warrantyPages[i.page]; });
+    var wMonths = wItems.length > 0 ? Math.max.apply(null, wItems.map(function(i) { return warrantyPages[i.page] || 12; })) : 12;
+
+    var orderDoc = {
+      id:         orderId,
+      customer:   'E-Shop Customer',
+      phone:      '',
+      desc:       items.map(function(i) { return i.name + ' ×' + i.qty; }).join(', '),
+      eta:        '',
+      source:     'eshop',
+      products:   items,
+      grandTotal: grandTotal,
+      warranty: {
+        applicable: wItems.length > 0,
+        types:      wItems.map(function(i) { return i.page; }),
+        months:     wMonths
+      },
+      steps: {
+        proceed:   { status:'pending', completedAt:null, note:'' },
+        ironframe: { status:'pending', completedAt:null, note:'' },
+        sticker:   { status:'pending', completedAt:null, note:'' },
+        cutting:   { status:'pending', completedAt:null, note:'' },
+        edging:    { status:'pending', completedAt:null, note:'' },
+        painting:  { status:'pending', completedAt:null, note:'' },
+        assembly:  { status:'pending', completedAt:null, note:'' }
+      },
+      createdAt: new Date().toISOString()
+    };
+
+    var waMsg = buildWhatsAppMessage(items, orderId, trackUrl);
+    var waUrl = 'https://wa.me/60197901150?text=' + encodeURIComponent(waMsg);
+
+    // Try Firebase save; open WhatsApp regardless
+    function proceed() {
+      window.open(waUrl, '_blank');
+      showOrderConfirmation(orderId, trackUrl);
+    }
+
+    if (window._fbSaveEshopOrder) {
+      window._fbSaveEshopOrder(orderDoc).then(proceed).catch(function(e) {
+        console.warn('Firebase save failed (non-fatal):', e);
+        proceed();
+      });
+    } else {
+      proceed();
+    }
+  }
+
+  function showOrderConfirmation(orderId, trackUrl) {
+    var el = document.getElementById('cart-content');
+    if (!el) return;
+    localStorage.removeItem('antCart');
+    el.innerHTML = [
+      '<div style="text-align:center;padding:2.5rem 1rem">',
+      '  <div style="font-size:3rem;margin-bottom:.8rem">🎉</div>',
+      '  <h2 style="font-size:1.2rem;margin-bottom:.4rem">Order Sent!</h2>',
+      '  <p style="color:#6b7280;font-size:.9rem;margin-bottom:1.5rem">WhatsApp has opened with your order details.<br>A&T will confirm shortly.</p>',
+      '  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:1rem;margin-bottom:1.2rem;text-align:left">',
+      '    <div style="font-size:11px;font-weight:600;color:#15803d;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Your Order ID</div>',
+      '    <div style="font-family:monospace;font-size:1.2rem;font-weight:700;color:#0d1f3c;letter-spacing:.06em">' + orderId + '</div>',
+      '    <div style="font-size:12px;color:#6b7280;margin-top:6px">Keep this to track your order progress</div>',
+      '  </div>',
+      '  <a href="' + trackUrl + '" style="display:block;background:#0d1f3c;color:#fff;padding:12px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem;margin-bottom:.8rem">',
+      '    📦 Track My Order',
+      '  </a>',
+      '  <a href="index.html" style="display:block;color:#6b7280;font-size:.85rem;margin-top:.4rem">← Back to shop</a>',
+      '</div>'
+    ].join('');
   }
 
   function render() {
@@ -295,14 +397,11 @@
     summaryHTML.push('<div class="summary-row total"><span>Grand Total</span><span>RM ' + grandTotal.toFixed(2) + '</span></div>');
     summaryHTML.push('</div>');
 
-    var waMsg = encodeURIComponent(buildWhatsAppMessage(items));
-    var waUrl = 'https://wa.me/60197901150?text=' + waMsg;
-
     var checkoutHTML = [
-      '<a href="' + waUrl + '" target="_blank" class="btn-checkout">',
+      '<button id="btn-checkout" class="btn-checkout" onclick="doCheckout()">',
       '  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>',
       '  Send Order via WhatsApp',
-      '</a>',
+      '</button>',
       '<button class="btn-clear" onclick="clearCart()">🗑 Clear Cart</button>',
       '<div class="note-box">',
       '  ⚠️ WhatsApp order is <strong>not confirmed</strong> until A&T replies with a confirmation. Pricing is estimated — final price depends on artwork and production details.',
@@ -317,6 +416,27 @@
   }
 
   render();
+</script>
+
+<!-- Firebase: save e-shop orders -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+window._fbSaveEshopOrder = async function(orderDoc) {
+  await setDoc(doc(db, 'orders', orderDoc.id), orderDoc);
+};
 </script>
 </body>
 </html>
