@@ -310,6 +310,14 @@ header {
   .btn-row { flex-direction: column; gap: .8rem; }
   .btn { width: 100%; }
 }
+/* ── Cart ── */
+.btn-cart{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:.65rem 1.4rem;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:.8rem;width:100%}
+.btn-cart:hover{background:#1a3560}
+.cart-fab{position:fixed;bottom:24px;left:24px;z-index:999;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-size:1.35rem;cursor:pointer;box-shadow:0 4px 18px rgba(13,31,60,.35);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.cart-fab:hover{transform:scale(1.1)}
+.cart-fab-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;display:none}
+.cart-toast{position:fixed;bottom:88px;left:24px;z-index:1000;background:var(--navy);color:#fff;font-size:.82rem;font-weight:500;padding:.55rem 1rem;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none}
+.cart-toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
@@ -722,6 +730,7 @@ header {
           <div class="notice-icon">ℹ️</div>
           <div>Final price subject to artwork review. Our team will confirm before production begins.</div>
         </div>
+        <button class="btn-cart" onclick="addToCart()">🛒 Add to Cart</button>
         <div class="btn-row">
           <div></div>
           <button class="btn btn-primary" onclick="goToStep2()">
@@ -956,6 +965,8 @@ function updateSummaryCard() {
 
   document.getElementById('summary-lines').innerHTML = html;
   document.getElementById('grand-total').textContent = 'RM ' + grand.toFixed(2);
+  window._displayGrand = grand;
+  updateCartBadge();
 }
 
 // ─── Step Navigation ──────────────────────────────────────
@@ -1057,6 +1068,24 @@ function handleFile(input) {
   name.style.display = 'block';
 }
 
+/* ── Cart utilities ── */
+function getCart(){try{return JSON.parse(localStorage.getItem('antCart')||'[]')}catch(e){return[]}}
+function saveCart(items){localStorage.setItem('antCart',JSON.stringify(items))}
+function updateCartBadge(){var b=document.getElementById('cart-fab-badge');if(!b)return;var n=getCart().reduce(function(s,i){return s+(i.qty||1)},0);b.textContent=n;b.style.display=n>0?'flex':'none'}
+function addToCart(){
+  var p=window._displayGrand||0;
+  if(!p){alert('Please select at least one product first.');return;}
+  var keys=Object.keys(selections||{});
+  var desc=keys.map(function(g){var s=selections[g];return productNames[g]+' ×'+s.qty;}).join(', ');
+  var items=getCart();
+  items.push({id:'item-'+Date.now(),name:'Display Set',desc:desc||'Display Set Order',price:p,qty:1,page:'ant-display-set-order.html'});
+  saveCart(items);
+  updateCartBadge();
+  var t=document.getElementById('cart-toast');
+  if(t){t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2200);}
+}
+updateCartBadge();
+
 function toggleCatNav(btn) {
   const dd = document.getElementById('catDropdown');
   btn.classList.toggle('open');
@@ -1072,5 +1101,11 @@ document.addEventListener('click', function(e) {
   }
 });
 </script>
+<!-- Cart FAB -->
+<button class="cart-fab" onclick="location.href='cart.html'" title="View Cart">
+  🛒
+  <span class="cart-fab-badge" id="cart-fab-badge"></span>
+</button>
+<div class="cart-toast" id="cart-toast">✅ Added to cart!</div>
 </body>
 </html>
