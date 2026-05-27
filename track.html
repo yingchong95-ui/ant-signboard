@@ -86,6 +86,37 @@ header{background:var(--navy);padding:0 1.5rem;height:62px;display:flex;align-it
 .error-emoji{font-size:3rem;margin-bottom:.8rem}
 .error-title{font-size:1.1rem;font-weight:700;margin-bottom:.4rem}
 .error-desc{font-size:13px;color:var(--t2);margin-bottom:1.5rem;line-height:1.5}
+
+/* ── Auth header UI ── */
+.track-auth-btn{display:flex;align-items:center;gap:6px;background:#fff;color:#3c4043;border:1px solid rgba(255,255,255,.2);padding:5px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s}
+.track-auth-btn:hover{background:#f0f0f0}
+
+/* ── My Orders ── */
+.mo-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px}
+.mo-user{display:flex;align-items:center;gap:8px}
+.mo-user img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+.mo-user span{font-size:.95rem;font-weight:700}
+.mo-signout{font-size:12px;color:var(--t2);background:none;border:1px solid var(--border);padding:5px 10px;border-radius:7px;cursor:pointer}
+.mo-signout:hover{border-color:var(--red);color:var(--red)}
+.mo-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1rem 1.2rem;margin-bottom:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.mo-id{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:700;color:var(--navy)}
+.mo-meta{font-size:12px;color:var(--t2);margin-top:2px}
+.mo-btn{font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap;padding:4px 10px;border-radius:8px;background:var(--blue-bg)}
+.mo-empty{text-align:center;padding:2.5rem 1rem;color:var(--t2);font-size:13px}
+
+/* ── Search / Sign-in card ── */
+.noid-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:2rem 1.5rem;text-align:center;box-shadow:0 2px 12px rgba(13,31,60,.06)}
+.noid-icon{font-size:2.8rem;margin-bottom:.7rem}
+.noid-title{font-size:1.1rem;font-weight:700;margin-bottom:.3rem}
+.noid-sub{font-size:13px;color:var(--t2);margin-bottom:1.4rem;line-height:1.5}
+.signin-google-btn{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#3c4043;border:1.5px solid #dadce0;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,box-shadow .15s;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.signin-google-btn:hover{background:#f5f5f5;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.divider{display:flex;align-items:center;gap:.8rem;margin:1.2rem 0;color:var(--t3);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.search-row{display:flex;gap:8px}
+.search-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;color:var(--t1)}
+.search-input:focus{border-color:var(--blue)}
+.search-btn{padding:10px 16px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -95,10 +126,20 @@ header{background:var(--navy);padding:0 1.5rem;height:62px;display:flex;align-it
     <img src="logo.png" alt="A&T Signboard">
     <span class="logo-name">A&<span>T</span> Signboard</span>
   </a>
-  <a href="https://wa.me/60197901150" class="wa-link" target="_blank" rel="noopener">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    Need help?
-  </a>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="track-auth-btn" id="btn-signin-hdr">
+      <svg width="14" height="14" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in
+    </button>
+    <div id="auth-pill-hdr" style="display:none;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);padding:4px 8px 4px 5px;border-radius:8px">
+      <img id="hdr-avatar" src="" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover"/>
+      <span id="hdr-name" style="font-size:12px;color:#fff;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+    </div>
+    <a href="https://wa.me/60197901150" class="wa-link" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Need help?
+    </a>
+  </div>
 </header>
 
 <div class="main">
@@ -165,11 +206,46 @@ header{background:var(--navy);padding:0 1.5rem;height:62px;display:flex;align-it
     </a>
 
   </div><!-- /state-order -->
+
+  <!-- No Order ID: sign in or search by ID -->
+  <div id="state-noid" style="display:none">
+    <div class="noid-card">
+      <div class="noid-icon">📦</div>
+      <div class="noid-title">Track Your Order</div>
+      <div class="noid-sub">Sign in with Google to see all your orders, or enter your Order ID below.</div>
+      <button class="signin-google-btn" id="btn-signin-noid">
+        <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Sign in with Google
+      </button>
+      <div class="divider">or enter Order ID</div>
+      <div class="search-row">
+        <input class="search-input" id="search-input" type="text" placeholder="e.g. SHOP-20260526-AB12" autocapitalize="characters"/>
+        <button class="search-btn" id="btn-search-order">Track</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Orders: logged-in view -->
+  <div id="state-myorders" style="display:none">
+    <div class="mo-head">
+      <div class="mo-user">
+        <img id="mo-avatar" src="" alt=""/>
+        <span id="mo-name"></span>
+      </div>
+      <button class="mo-signout" id="btn-signout-mo">Sign out</button>
+    </div>
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">My Orders</h2>
+    <div id="my-orders-list"></div>
+  </div>
+
 </div><!-- /main -->
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, collection, query, where, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
@@ -180,8 +256,10 @@ const firebaseConfig = {
   appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const app      = initializeApp(firebaseConfig);
+const db       = getFirestore(app);
+const auth     = getAuth(app);
+const provider = new GoogleAuthProvider();
 
 const STEPS = [
   { id:"proceed",   label:"Order Confirmed",    sub:"We've received your order and production begins soon.",   icon:"✓"  },
@@ -201,10 +279,12 @@ const WARRANTY_MONTHS = {
 
 // ── Helpers ──
 function showState(s) {
-  ['loading','error','order'].forEach(id => {
-    document.getElementById('state-' + id).style.display = id === s ? '' : 'none';
+  ['loading','error','order','noid','myorders'].forEach(id => {
+    const el = document.getElementById('state-' + id);
+    if (el) el.style.display = id === s ? '' : 'none';
   });
 }
+const $id = id => document.getElementById(id);
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -274,25 +354,120 @@ function renderOrder(data) {
   }
 }
 
+// ── My Orders ──
+async function loadMyOrders(user) {
+  showState('myorders');
+  const av = $id('mo-avatar'), nm = $id('mo-name');
+  if (av) av.src = user.photoURL || '';
+  if (nm) nm.textContent = (user.displayName || user.email || '').split(' ')[0];
+
+  const listEl = $id('my-orders-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="mo-empty">Loading…</div>';
+
+  try {
+    const q    = query(collection(db, 'orders'), where('userId', '==', user.uid));
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      listEl.innerHTML = '<div class="mo-empty">No orders yet. <a href="index.html" style="color:var(--blue)">Start shopping →</a></div>';
+      return;
+    }
+
+    const orders = [];
+    snap.forEach(d => orders.push(d.data()));
+    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    listEl.innerHTML = orders.map(o => {
+      const steps  = o.steps || {};
+      const doneN  = STEPS.filter(s => steps[s.id]?.status === 'done').length;
+      const pct    = Math.round(doneN / STEPS.length * 100);
+      const isDone = doneN === STEPS.length;
+      const prog   = isDone
+        ? `<span style="color:var(--green);font-size:11px;font-weight:700">✅ Completed</span>`
+        : `<span style="color:var(--t2);font-size:11px">${doneN}/${STEPS.length} steps</span>`;
+      return `
+        <div class="mo-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div>
+              <div class="mo-id">${o.id}</div>
+              <div class="mo-meta">${fmtDate(o.createdAt)}${o.desc ? ' · ' + o.desc.slice(0,40) : ''}</div>
+            </div>
+            <a href="track.html?id=${o.id}" class="mo-btn">View →</a>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <div style="flex:1;height:5px;background:var(--border);border-radius:3px">
+              <div style="height:100%;width:${pct}%;background:${isDone?'var(--green)':'var(--blue)'};border-radius:3px;transition:width .5s"></div>
+            </div>
+            ${prog}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('loadMyOrders error:', e);
+    listEl.innerHTML = '<div class="mo-empty">Error loading orders. Please try again.</div>';
+  }
+}
+
+// ── Auth ──
+async function doSignIn() {
+  try { await signInWithPopup(auth, provider); }
+  catch(e) { if (e.code !== 'auth/popup-closed-by-user') console.warn('Sign-in error:', e); }
+}
+async function doSignOut() { await signOut(auth); }
+
+// Wire up buttons
+const bind = (id, fn) => { const el = $id(id); if (el) el.addEventListener('click', fn); };
+bind('btn-signin-hdr',   doSignIn);
+bind('btn-signin-noid',  doSignIn);
+bind('btn-signout-mo',   doSignOut);
+bind('btn-search-order', () => {
+  const val = ($id('search-input')?.value || '').trim().toUpperCase();
+  if (val) window.location.href = 'track.html?id=' + val;
+});
+const si = $id('search-input');
+if (si) si.addEventListener('keydown', e => { if (e.key === 'Enter') $id('btn-search-order')?.click(); });
+
 // ── Init ──
 const params  = new URLSearchParams(window.location.search);
 const orderId = params.get('id') || params.get('ID') || '';
 
-if (!orderId) {
-  showState('error');
-  document.getElementById('err-id-display').textContent = '(no order ID provided)';
-} else {
+// Auth state changes — update header pill + handle no-orderId case
+onAuthStateChanged(auth, user => {
+  const btnHdr  = $id('btn-signin-hdr');
+  const pillHdr = $id('auth-pill-hdr');
+  if (btnHdr)  btnHdr.style.display  = user ? 'none' : '';
+  if (pillHdr) pillHdr.style.display = user ? 'flex' : 'none';
+  if (user) {
+    const hav = $id('hdr-avatar'), hnm = $id('hdr-name');
+    if (hav) hav.src = user.photoURL || '';
+    if (hnm) hnm.textContent = (user.displayName || user.email || '').split(' ')[0];
+  }
+
+  // If there's an orderId in the URL, don't change the main content
+  if (orderId) return;
+
+  // No orderId — show My Orders or sign-in card
+  if (user) {
+    loadMyOrders(user);
+  } else {
+    showState('noid');
+  }
+});
+
+// If there's an orderId, track it live (regardless of auth)
+if (orderId) {
   onSnapshot(doc(db, 'orders', orderId), snap => {
     if (!snap.exists()) {
       showState('error');
-      document.getElementById('err-id-display').textContent = orderId;
+      $id('err-id-display').textContent = orderId;
     } else {
       renderOrder(snap.data());
     }
   }, err => {
     console.error('Firestore error:', err);
     showState('error');
-    document.getElementById('err-id-display').textContent = orderId;
+    $id('err-id-display').textContent = orderId;
   });
 }
 </script>
