@@ -24,6 +24,21 @@ header { background:var(--navy); padding:0 2rem; height:68px; display:flex; alig
 .logo-name { font-size:14px; font-weight:700; color:#fff; letter-spacing:.04em; line-height:1.2; }
 .logo-name span { color:var(--red); }
 .logo-tag { font-size:10px; color:rgba(255,255,255,.4); letter-spacing:.08em; text-transform:uppercase; margin-top:1px; }
+
+/* ── Category nav dropdown ── */
+.cat-nav{position:relative}
+.cat-nav-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:13px;font-weight:500;padding:7px 12px;border-radius:8px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.cat-nav-btn.open{background:rgba(255,255,255,.2)}
+.cat-nav-arrow{font-size:11px;transition:transform .2s}
+.cat-nav-btn.open .cat-nav-arrow{transform:rotate(180deg)}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.cat-nav-dropdown{display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(13,31,60,.18);min-width:210px;z-index:300;overflow:hidden;animation:dropIn .15s ease}
+.cat-nav-dropdown.open{display:block}
+.cat-nav-hdr{padding:8px 14px 6px;font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.cat-nav-item{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:13.5px;color:var(--t1);text-decoration:none;transition:background .12s}
+.cat-nav-item:hover{background:var(--off)}
+.cat-nav-item.active{background:var(--red-bg);color:var(--red);font-weight:600}
+.cat-icon{font-size:16px;width:22px;text-align:center}
 .wa-header { display:flex; align-items:center; gap:6px; background:#25D366; color:#fff; text-decoration:none; padding:8px 13px; border-radius:8px; font-size:13px; font-weight:600; transition:background .15s; }
 .wa-header:hover { background:#1da851; }
 
@@ -193,10 +208,27 @@ textarea { resize:vertical; min-height:70px; line-height:1.5; }
       <div class="logo-tag">We Make Sign Speak Your Name</div>
     </div>
   </div>
-  <a href="https://wa.me/60197901150" class="wa-header" target="_blank" rel="noopener noreferrer">
+<div style="display:flex;align-items:center;gap:8px">
+    <div class="cat-nav">
+      <button class="cat-nav-btn" id="cat-nav-btn" onclick="toggleCatNav()">
+        🗂 <span>Products</span> <span class="cat-nav-arrow">▾</span>
+      </button>
+      <div class="cat-nav-dropdown" id="cat-nav-dropdown">
+        <div class="cat-nav-hdr">All Products</div>
+        <a href="ant-acrylic-order.html" class="cat-nav-item"><span class="cat-icon">🪟</span> Acrylic Products</a>
+        <a href="ant-foamboard-order.html" class="cat-nav-item"><span class="cat-icon">🟦</span> Foamboard</a>
+        <a href="ant-inkjet-order.html" class="cat-nav-item"><span class="cat-icon">🖨️</span> Inkjet Printing</a>
+        <a href="ant-neon-order.html" class="cat-nav-item active"><span class="cat-icon">💡</span> Neon Signs</a>
+        <a href="ant-signboard-order-v2.html" class="cat-nav-item"><span class="cat-icon">🪧</span> Signboard</a>
+        <a href="ant-bomba-signage-order.html" class="cat-nav-item"><span class="cat-icon">🚨</span> Bomba Signage</a>
+        <a href="ant-display-set-order.html" class="cat-nav-item"><span class="cat-icon">🗂️</span> Display Set</a>
+      </div>
+    </div>
+      <a href="https://wa.me/60197901150" class="wa-header" target="_blank" rel="noopener noreferrer">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
     WhatsApp
   </a>
+  </div>
 </header>
 
 <div class="page">
@@ -686,6 +718,19 @@ function submitOrder() {
 
 // Init
 updatePreview();
+
+/* ── Category nav ── */
+function toggleCatNav(){
+  var btn=document.getElementById('cat-nav-btn'),dd=document.getElementById('cat-nav-dropdown');
+  var o=dd.classList.contains('open');
+  dd.classList.toggle('open',!o);btn.classList.toggle('open',!o);
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.cat-nav')){
+    var dd=document.getElementById('cat-nav-dropdown'),btn=document.getElementById('cat-nav-btn');
+    if(dd)dd.classList.remove('open');if(btn)btn.classList.remove('open');
+  }
+});
 </script>
 </body>
 </html>

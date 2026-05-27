@@ -28,8 +28,20 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 .logo-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.04em;line-height:1.1}
 .logo-tagline{font-size:.65rem;font-weight:400;color:rgba(255,255,255,.55);letter-spacing:.06em;text-transform:uppercase}
 .header-right{display:flex;align-items:center;gap:12px}
-.back-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:.8rem;font-weight:500;padding:7px 14px;border-radius:6px;text-decoration:none;transition:background .2s}
-.back-btn:hover{background:rgba(255,255,255,.18)}
+/* ── Category nav dropdown ── */
+.cat-nav{position:relative}
+.cat-nav-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:.8rem;font-weight:500;padding:7px 12px;border-radius:6px;cursor:pointer;transition:background .2s;white-space:nowrap}
+.cat-nav-btn.open{background:rgba(255,255,255,.2)}
+.cat-nav-arrow{font-size:10px;transition:transform .2s}
+.cat-nav-btn.open .cat-nav-arrow{transform:rotate(180deg)}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.cat-nav-dropdown{display:none;position:absolute;top:calc(100% + 10px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(13,31,60,.18);min-width:210px;z-index:300;overflow:hidden;animation:dropIn .15s ease}
+.cat-nav-dropdown.open{display:block}
+.cat-nav-header-lbl{padding:8px 14px 6px;font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.cat-nav-item{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:13.5px;color:var(--t1);text-decoration:none;transition:background .12s}
+.cat-nav-item:hover{background:var(--off)}
+.cat-nav-item.active{background:var(--red-bg);color:var(--red);font-weight:600}
+.cat-icon{font-size:16px;width:22px;text-align:center}
 .wa-btn{display:flex;align-items:center;gap:6px;background:#25D366;color:#fff;font-size:.8rem;font-weight:600;padding:8px 16px;border-radius:6px;text-decoration:none;transition:filter .2s}
 .wa-btn:hover{filter:brightness(1.08)}
 
@@ -225,10 +237,21 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
     </div>
   </div>
   <div class="header-right">
-    <a href="ant-eshop-landing.html" class="back-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      All Products
-    </a>
+    <div class="cat-nav">
+      <button class="cat-nav-btn" id="cat-nav-btn" onclick="toggleCatNav()">
+        🗂 <span>Products</span> <span class="cat-nav-arrow">▾</span>
+      </button>
+      <div class="cat-nav-dropdown" id="cat-nav-dropdown">
+        <div class="cat-nav-header-lbl">All Products</div>
+        <a href="ant-acrylic-order.html" class="cat-nav-item"><span class="cat-icon">🪟</span> Acrylic Products</a>
+        <a href="ant-foamboard-order.html" class="cat-nav-item"><span class="cat-icon">🟦</span> Foamboard</a>
+        <a href="ant-inkjet-order.html" class="cat-nav-item"><span class="cat-icon">🖨️</span> Inkjet Printing</a>
+        <a href="ant-neon-order.html" class="cat-nav-item"><span class="cat-icon">💡</span> Neon Signs</a>
+        <a href="ant-signboard-order-v2.html" class="cat-nav-item"><span class="cat-icon">🪧</span> Signboard</a>
+        <a href="ant-bomba-signage-order.html" class="cat-nav-item active"><span class="cat-icon">🚨</span> Bomba Signage</a>
+        <a href="ant-display-set-order.html" class="cat-nav-item"><span class="cat-icon">🗂️</span> Display Set</a>
+      </div>
+    </div>
     <a href="https://wa.me/60197901150" class="wa-btn" target="_blank" rel="noopener noreferrer">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
       WhatsApp
@@ -480,7 +503,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.347-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
               Chat with Us
             </a>
-            <a href="ant-eshop-landing.html" class="btn btn-ghost">Back to Shop</a>
+            <a href="index.html" class="btn btn-ghost">Back to Shop</a>
           </div>
         </div>
       </div>
@@ -771,6 +794,23 @@ function submitOrder() {
 // ─── Init ────────────────────────────────────────────────────────────────
 renderProducts();
 renderCart();
+
+/* ── Category nav ── */
+function toggleCatNav() {
+  var btn = document.getElementById('cat-nav-btn');
+  var dd  = document.getElementById('cat-nav-dropdown');
+  var isOpen = dd.classList.contains('open');
+  dd.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cat-nav')) {
+    var dd  = document.getElementById('cat-nav-dropdown');
+    var btn = document.getElementById('cat-nav-btn');
+    if (dd)  dd.classList.remove('open');
+    if (btn) btn.classList.remove('open');
+  }
+});
 </script>
 
 <script id="photo-injector">

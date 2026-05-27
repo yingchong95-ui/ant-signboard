@@ -27,19 +27,44 @@ header {
   box-shadow: 0 2px 16px rgba(0,0,0,.28);
 }
 .logo-wrap { display: flex; align-items: center; gap: 11px; }
-.logo-icon { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; object-fit: cover; }
+.logo-icon { width: 42px; height: 42px; flex-shrink: 0; }
 .logo-text { display: flex; flex-direction: column; }
 .logo-name { font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: .04em; line-height: 1.1; }
 .logo-tagline { font-size: 0.65rem; font-weight: 400; color: rgba(255,255,255,.55); letter-spacing: .06em; text-transform: uppercase; }
 .header-right { display: flex; align-items: center; gap: 12px; }
-.back-btn {
+/* Category Nav */
+.cat-nav { position: relative; }
+.cat-nav-btn {
   display: flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
   color: #fff; font-size: 0.8rem; font-weight: 500; padding: 7px 14px;
-  border-radius: 6px; text-decoration: none; cursor: pointer;
-  transition: background .2s;
+  border-radius: 6px; cursor: pointer; transition: background .2s;
+  white-space: nowrap;
 }
-.back-btn:hover { background: rgba(255,255,255,.18); }
+.cat-nav-btn:hover { background: rgba(255,255,255,.18); }
+.cat-nav-btn svg { flex-shrink: 0; transition: transform .2s; }
+.cat-nav-btn.open svg.chevron { transform: rotate(180deg); }
+.cat-nav-dropdown {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--sh-lg); min-width: 210px; z-index: 200; overflow: hidden;
+}
+.cat-nav-dropdown.show { display: block; }
+.cat-nav-header-lbl {
+  font-size: 0.65rem; font-weight: 600; color: var(--t3);
+  text-transform: uppercase; letter-spacing: .06em;
+  padding: 10px 14px 6px;
+}
+.cat-nav-dropdown a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px; color: var(--t1); text-decoration: none;
+  font-size: 0.82rem; font-weight: 500; transition: background .15s;
+}
+.cat-nav-dropdown a:hover { background: var(--off); }
+.cat-nav-dropdown a.active { background: var(--red-bg); color: var(--red); font-weight: 600; }
+@media (max-width: 480px) {
+  .cat-nav-btn span:first-of-type { display: none; }
+}
 .wa-btn {
   display: flex; align-items: center; gap: 6px;
   background: #25D366; color: #fff; font-size: 0.8rem; font-weight: 600;
@@ -292,21 +317,39 @@ header {
 <!-- Header -->
 <header>
   <div class="logo-wrap">
-    <img src="logo.png" class="logo-icon" alt="A&amp;T Signboard Logo" />
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="42" height="42" rx="10" fill="#e63946"/>
+      <text x="21" y="28" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="18" font-weight="700" fill="white">A&T</text>
+    </svg>
     <div class="logo-text">
       <span class="logo-name">A&T Signboard</span>
       <span class="logo-tagline">Printing & Signage</span>
     </div>
   </div>
   <div class="header-right">
-    <a href="ant-eshop-landing.html" class="back-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      All Products
-    </a>
-    <a href="https://wa.me/60197901150" class="wa-btn" target="_blank" rel="noopener noreferrer">
+<div style="display:flex;align-items:center;gap:12px;">
+    <div class="cat-nav">
+      <button class="cat-nav-btn" onclick="toggleCatNav(this)" aria-haspopup="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Catalogue</span>
+        <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="cat-nav-dropdown" id="catDropdown">
+        <div class="cat-nav-header-lbl">Browse Products</div>
+        <a href="ant-signboard-order-v2.html">🪧 Signboard</a>
+        <a href="ant-neon-order.html">💡 LED Neon Sign</a>
+        <a href="ant-acrylic-order.html">✨ Acrylic Sign</a>
+        <a href="ant-foamboard-order.html">📋 Foam Board</a>
+        <a href="ant-inkjet-order.html">🖨️ Inkjet Banner</a>
+        <a href="ant-bomba-signage-order.html">🚒 Bomba Signage</a>
+        <a href="ant-display-set-order.html" class="active">📐 Display Set</a>
+      </div>
+    </div>
+    <a href="https://wa.me/60197901150" class="wa-btn" target="_blank">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
       WhatsApp
     </a>
+  </div>
   </div>
 </header>
 
@@ -804,11 +847,11 @@ header {
           <div class="success-sub">We've received your Display Set order. Our team will review and contact you within 1 business day to confirm details and payment.</div>
           <div class="order-id" id="success-order-id">ORDER-XXXXXXX</div>
           <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
-            <a href="https://wa.me/60197901150" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/60123456789" class="btn btn-primary" target="_blank">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.555 4.122 1.524 5.855L0 24l6.294-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.001-1.371l-.36-.213-3.735.982.999-3.648-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
               Chat with Us
             </a>
-            <a href="ant-eshop-landing.html" class="btn btn-ghost">Back to Shop</a>
+            <a href="index.html" class="btn btn-ghost">Back to Shop</a>
           </div>
         </div>
       </div>
@@ -1013,6 +1056,21 @@ function handleFile(input) {
   name.textContent = file.name;
   name.style.display = 'block';
 }
+
+function toggleCatNav(btn) {
+  const dd = document.getElementById('catDropdown');
+  btn.classList.toggle('open');
+  dd.classList.toggle('show');
+}
+document.addEventListener('click', function(e) {
+  const nav = document.querySelector('.cat-nav');
+  if (nav && !nav.contains(e.target)) {
+    const btn = nav.querySelector('.cat-nav-btn');
+    const dd  = document.getElementById('catDropdown');
+    if (btn) btn.classList.remove('open');
+    if (dd)  dd.classList.remove('show');
+  }
+});
 </script>
 </body>
 </html>
