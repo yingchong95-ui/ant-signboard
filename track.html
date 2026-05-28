@@ -117,6 +117,26 @@ header{background:var(--navy);padding:0 1.5rem;height:62px;display:flex;align-it
 .search-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;color:var(--t1)}
 .search-input:focus{border-color:var(--blue)}
 .search-btn{padding:10px 16px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+/* ── Payment card ── */
+.pay-card{background:#fff;border:2px solid #e63946;border-radius:16px;overflow:hidden;margin-bottom:1rem;box-shadow:0 4px 20px rgba(230,57,70,.12)}
+.pay-card-head{background:#e63946;padding:1rem 1.4rem;display:flex;align-items:center;gap:10px;color:#fff}
+.pay-card-head-icon{font-size:1.4rem}
+.pay-card-title{font-size:.95rem;font-weight:700}
+.pay-card-sub{font-size:.75rem;opacity:.85}
+.pay-card-body{padding:1.4rem}
+.pay-amount{text-align:center;margin-bottom:1rem}
+.pay-amount-label{font-size:.75rem;color:#5a6478;font-weight:500;margin-bottom:2px}
+.pay-amount-val{font-size:2rem;font-weight:800;color:#0d1f3c}
+.pay-qr-wrap{text-align:center;margin-bottom:1.2rem}
+.pay-qr-wrap img{width:200px;height:200px;object-fit:contain;border-radius:12px;border:1px solid #e3e7ef}
+.pay-bank{background:#f6f8fc;border-radius:10px;padding:1rem;margin-bottom:1rem}
+.pay-bank-row{display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid #e3e7ef;font-size:.82rem}
+.pay-bank-row:last-child{border-bottom:none}
+.pay-bank-label{color:#5a6478}
+.pay-bank-val{font-weight:600;color:#0d1f3c;text-align:right;max-width:200px}
+.pay-note{font-size:.75rem;color:#5a6478;text-align:center;margin-bottom:1rem;line-height:1.5}
+.pay-wa-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;border:none;border-radius:10px;padding:.85rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none;width:100%;transition:filter .2s}
+.pay-wa-btn:hover{filter:brightness(1.08)}
 </style>
 </head>
 <body>
@@ -182,6 +202,48 @@ header{background:var(--navy);padding:0 1.5rem;height:62px;display:flex;align-it
     <div class="card">
       <div class="card-body" style="padding-bottom:.2rem">
         <div class="step-list" id="step-list"></div>
+      </div>
+    </div>
+
+    <!-- Payment card (shows when awaiting payment) -->
+    <div id="payment-card" style="display:none">
+      <div class="pay-card">
+        <div class="pay-card-head">
+          <div class="pay-card-head-icon">💳</div>
+          <div>
+            <div class="pay-card-title">Payment Required</div>
+            <div class="pay-card-sub">Please pay to confirm your order and start production</div>
+          </div>
+        </div>
+        <div class="pay-card-body">
+          <div class="pay-amount">
+            <div class="pay-amount-label">Order Total</div>
+            <div class="pay-amount-val" id="pay-amount-val">RM —</div>
+          </div>
+          <div class="pay-qr-wrap">
+            <img src="duitnow-qr.png" alt="DuitNow QR Code" />
+            <div style="font-size:.7rem;color:#5a6478;margin-top:.5rem">Scan with any banking app or e-wallet</div>
+          </div>
+          <div class="pay-bank">
+            <div class="pay-bank-row">
+              <span class="pay-bank-label">Bank</span>
+              <span class="pay-bank-val">PUBLIC BANK BERHAD</span>
+            </div>
+            <div class="pay-bank-row">
+              <span class="pay-bank-label">Account No.</span>
+              <span class="pay-bank-val">3201985324</span>
+            </div>
+            <div class="pay-bank-row">
+              <span class="pay-bank-label">Account Name</span>
+              <span class="pay-bank-val">A&T SIGNBOARD & PRINTING SDN BHD</span>
+            </div>
+          </div>
+          <div class="pay-note">After payment, send your receipt via WhatsApp so we can confirm and begin production immediately.</div>
+          <a id="pay-wa-link" href="https://wa.me/60197901150" target="_blank" class="pay-wa-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Send Receipt via WhatsApp
+          </a>
+        </div>
       </div>
     </div>
 
@@ -262,7 +324,8 @@ const auth     = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 const STEPS = [
-  { id:"proceed",   label:"Order Confirmed",    sub:"We've received your order and production begins soon.",   icon:"✓"  },
+  { id:"proceed",   label:"Order Confirmed",    sub:"We've received your order and are reviewing the details.", icon:"✓"  },
+  { id:"payment",   label:"Awaiting Payment",   sub:"Please complete payment to begin production.",             icon:"💳" },
   { id:"ironframe", label:"Iron Frame Welding",  sub:"The steel frame structure is being welded.",              icon:"🔥" },
   { id:"sticker",   label:"Sticker Printing",    sub:"Graphics and lettering are being printed.",               icon:"🖨" },
   { id:"cutting",   label:"Board Cutting",        sub:"Materials are being cut to exact dimensions.",            icon:"✂" },
@@ -324,6 +387,21 @@ function renderOrder(data) {
         </div>
       </div>`;
   }).join('');
+
+  // Payment card
+  const payStep = steps.payment || {};
+  const payCard = document.getElementById('payment-card');
+  if (payCard) {
+    const showPay = payStep.status === 'inprogress';
+    payCard.style.display = showPay ? '' : 'none';
+    if (showPay) {
+      const amt = data.total ? 'RM ' + Number(data.total).toFixed(2) : 'RM —';
+      document.getElementById('pay-amount-val').textContent = amt;
+      const ordId = data.id || '';
+      const waMsg = encodeURIComponent('Hi A&T, I have made payment for Order ' + ordId + '. Please find my receipt attached.');
+      document.getElementById('pay-wa-link').href = 'https://wa.me/60197901150?text=' + waMsg;
+    }
+  }
 
   // Warranty
   const warranty = data.warranty || {};
