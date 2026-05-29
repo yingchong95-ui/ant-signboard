@@ -643,11 +643,11 @@ ${PRODUCTS.map(p=>`- ${p.name}（${p.price}）：${p.tags}`).join('\n')}
 
 回答规则：
 1. 用简体中文或英文（跟用户语言一致）
-2. 回答简洁，不超过100字
+2. 闲聊或推荐时简洁（100 字内）；报价时可分行列出明细
 3. 推荐产品时加上链接格式：[产品名](url)
-4. 价格只给起步价，说明需联系确认
-5. 鼓励用户通过 WhatsApp (+60197901150) 确认详细报价
-6. 如果问题超出产品范围，说明并引导联系客服`;
+4. 用户想知道价格时：先问清必要参数（尺寸、材料、数量、款式、是否安装等），参数齐了再调用 calculate_price 工具算出精确价格，并把单价、面积、明细、总价讲清楚。不要凭空报价
+5. 报价后务必说明这是估价，最终以 WhatsApp (+60 19-790 1150) 确认为准
+6. 如果问题超出产品范围，礼貌说明并引导联系客服`;
 
 // ─── Claude API call (via Netlify proxy — key is server-side only) ──
 const AI_URL = '/api/gemini';
@@ -663,11 +663,11 @@ async function callClaude(userMsg) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      // ✅ 修复3：Anthropic 格式字段名：system / messages / max_tokens
-      //   旧: system_instruction / contents / generationConfig.maxOutputTokens
+      // Anthropic 格式字段名：system / messages / max_tokens
       system: SYSTEM_PROMPT,
       messages: chatHistory,
-      max_tokens: 300
+      max_tokens: 800,
+      enable_pricing: true   // 开启 calculate_price 工具，AI 可算精确价格
     })
   });
 
@@ -793,6 +793,7 @@ async function heroAiSearch() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',  // 简单分类任务用便宜的 Haiku
         system: HERO_SYSTEM,
         messages: [{ role: 'user', content: query }],
         max_tokens: 200
