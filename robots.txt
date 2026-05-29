@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /cart.html
+Disallow: /track.html
+
+Sitemap: https://ant-signboard.netlify.app/sitemap.xml

@@ -3,7 +3,26 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Signboard — A&T Signboard & Printing</title>
+<title>Custom Signboard — A&T Signboard & Printing | Order Online</title>
+<meta name="description" content="Custom signboards — flat panel, aluminium strip, lightbox & wall lettering, with AI design assistance. Get an instant quote & order online — JB, KL & Singapore."/>
+<meta name="theme-color" content="#0d1f3c"/>
+<link rel="canonical" href="https://ant-signboard.netlify.app/ant-signboard-order-v2.html"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="A&T Signboard & Printing"/>
+<meta property="og:title" content="Custom Signboard — A&T Signboard & Printing"/>
+<meta property="og:description" content="Custom signboards — flat panel, aluminium strip, lightbox & wall lettering, with AI design. Order online."/>
+<meta property="og:url" content="https://ant-signboard.netlify.app/ant-signboard-order-v2.html"/>
+<meta property="og:image" content="https://ant-signboard.netlify.app/og-image.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:locale" content="en_MY"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://ant-signboard.netlify.app/og-image.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<style>:focus-visible{outline:2px solid #4285f4;outline-offset:2px;border-radius:4px}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -456,6 +475,14 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
   .btn-row{flex-direction:column;gap:.8rem}
   .btn{width:100%}
 }
+/* ── Cart ── */
+.btn-cart{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:.65rem 1.4rem;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:.6rem;width:100%}
+.btn-cart:hover{background:#1a3560}
+.cart-fab{position:fixed;bottom:24px;left:24px;z-index:999;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-size:1.35rem;cursor:pointer;box-shadow:0 4px 18px rgba(13,31,60,.35);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.cart-fab:hover{transform:scale(1.1)}
+.cart-fab-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;display:none}
+.cart-toast{position:fixed;bottom:88px;left:24px;z-index:1000;background:var(--navy);color:#fff;font-size:.82rem;font-weight:500;padding:.55rem 1rem;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none}
+.cart-toast.show{opacity:1;transform:translateY(0)}
 </style>
 </head>
 <body>
@@ -729,6 +756,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
         <div class="pe-price" id="pePrice">RM 0</div>
         <div class="pe-sqft" id="peSqft"></div>
         <div class="pe-note">Final price subject to design complexity, materials & installation. Our team will confirm before production.</div>
+        <button class="btn-cart" onclick="addToCart()">🛒 Add to Cart</button>
       </div>
 
       <button class="next-btn" onclick="goStep(2)">
@@ -1414,6 +1442,9 @@ function calcPrice() {
     priceEl.textContent = `RM ${minPrice.toLocaleString()} — RM ${maxPrice.toLocaleString()}`;
   }
   sqftEl.textContent = `${w}ft × ${h}ft = ${sqft} sq ft · Based on 20ft × 4ft reference`;
+  window._sbMinPrice = minPrice;
+  window._sbMaxPrice = maxPrice;
+  updateCartBadge();
 }
 // ── End Price Estimator ──────────────────────────
 
@@ -1525,6 +1556,25 @@ function handleFile(input) {
 
 render();
 
+/* ── Cart utilities ── */
+function getCart(){try{return JSON.parse(localStorage.getItem('antCart')||'[]')}catch(e){return[]}}
+function saveCart(items){localStorage.setItem('antCart',JSON.stringify(items))}
+function updateCartBadge(){var b=document.getElementById('cart-fab-badge');if(!b)return;var n=getCart().reduce(function(s,i){return s+(i.qty||1)},0);b.textContent=n;b.style.display=n>0?'flex':'none'}
+function addToCart(){
+  var p=window._sbMinPrice||0;
+  if(!p){alert('Please enter your signboard size first to get a price estimate.');return;}
+  var boardNames={'lightbox':'LED Lightbox Signboard','wall':'Wall Signboard','flat':'Flat Signboard','alum':'Aluminium Signboard'};
+  var bKey=typeof S!=='undefined'?S.board:'';
+  var svcName=(boardNames[bKey]||'Signboard')+' (Estimate)';
+  var items=getCart();
+  items.push({id:'item-'+Date.now(),name:svcName,desc:'From RM '+p.toLocaleString()+(window._sbMaxPrice&&window._sbMaxPrice!==p?' — RM '+window._sbMaxPrice.toLocaleString():''),price:p,qty:1,page:'ant-signboard-order-v2.html'});
+  saveCart(items);
+  updateCartBadge();
+  var t=document.getElementById('cart-toast');
+  if(t){t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2200);}
+}
+updateCartBadge();
+
 /* ── Category nav ── */
 function toggleCatNav() {
   var btn = document.getElementById('cat-nav-btn');
@@ -1542,5 +1592,11 @@ document.addEventListener('click', function(e) {
   }
 });
 </script>
+<!-- Cart FAB -->
+<button class="cart-fab" onclick="location.href='cart.html'" title="View Cart">
+  🛒
+  <span class="cart-fab-badge" id="cart-fab-badge"></span>
+</button>
+<div class="cart-toast" id="cart-toast">✅ Added to cart!</div>
 </body>
 </html>
