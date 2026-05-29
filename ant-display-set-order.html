@@ -338,6 +338,7 @@ header {
 .cart-toast{position:fixed;bottom:88px;left:24px;z-index:1000;background:var(--navy);color:#fff;font-size:.82rem;font-weight:500;padding:.55rem 1rem;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none}
 .cart-toast.show{opacity:1;transform:translateY(0)}
 </style>
+<script src="analytics.js"></script>
 </head>
 <body>
 
@@ -1126,5 +1127,6 @@ document.addEventListener('click', function(e) {
   <span class="cart-fab-badge" id="cart-fab-badge"></span>
 </button>
 <div class="cart-toast" id="cart-toast">✅ Added to cart!</div>
+<script src="ai-widget.js" defer></script>
 </body>
 </html>

@@ -50,7 +50,20 @@
     "addressRegion": "Johor",
     "addressCountry": "MY"
   },
-  "sameAs": ["https://jbsignboard.com"]
+  "sameAs": ["https://jbsignboard.com"],
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5.0",
+    "reviewCount": "5",
+    "bestRating": "5"
+  },
+  "review": [
+    {"@type":"Review","reviewRating":{"@type":"Rating","ratingValue":"5"},"author":{"@type":"Organization","name":"kyogi Company"},"reviewBody":"Great performance from this supplier. The quality and service."},
+    {"@type":"Review","reviewRating":{"@type":"Rating","ratingValue":"5"},"author":{"@type":"Person","name":"Muhamad Firdaus"},"reviewBody":"Good Service & Best Workers. Really recommend for the Company to make a signboard."},
+    {"@type":"Review","reviewRating":{"@type":"Rating","ratingValue":"5"},"author":{"@type":"Person","name":"Kho Yih Jui"},"reviewBody":"Very good job, competitive pricing, nice workers with nice attitude, good service."},
+    {"@type":"Review","reviewRating":{"@type":"Rating","ratingValue":"5"},"author":{"@type":"Person","name":"Fazireen N"},"reviewBody":"Hasil kerja memuaskan, kemas dan mudah berurusan."},
+    {"@type":"Review","reviewRating":{"@type":"Rating","ratingValue":"5"},"author":{"@type":"Person","name":"Axim Wu"},"reviewBody":"Good services and good material."}
+  ]
 }
 </script>
 <style>
@@ -357,6 +370,7 @@ footer a:hover{color:#fff}
   .ai-panel{width:calc(100vw - 2rem);right:1rem;bottom:9rem}
 }
 </style>
+<script src="analytics.js"></script>
 </head>
 <body>
 
@@ -570,6 +584,117 @@ footer a:hover{color:#fff}
     </div>
   </div>
 </div>
+
+<!-- Testimonials -->
+<style>
+.tm-section{max-width:1100px;margin:0 auto;padding:3rem 1.5rem 1rem}
+.tm-head{text-align:center;margin-bottom:2rem}
+.tm-head .section-title{font-size:1.2rem;font-weight:700;margin-bottom:.3rem}
+.tm-head .section-sub{color:var(--t2);font-size:.87rem}
+.tm-rating{display:inline-flex;align-items:center;gap:.5rem;margin-top:.8rem;background:#fff;border:1px solid var(--border);border-radius:30px;padding:6px 16px;box-shadow:var(--sh-sm)}
+.tm-rating .stars{color:#fbbc04;font-size:1rem;letter-spacing:1px}
+.tm-rating b{font-weight:700}.tm-rating span{color:var(--t2);font-size:.8rem}
+.tm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.2rem}
+.tm-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:1.3rem;box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:.7rem}
+.tm-card .tm-stars{color:#fbbc04;font-size:.95rem;letter-spacing:1px}
+.tm-quote{font-size:.9rem;color:var(--t1);line-height:1.6;flex:1}
+.tm-who{display:flex;align-items:center;gap:10px;margin-top:.3rem}
+.tm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d1f3c,#1a3560);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+.tm-name{font-size:.85rem;font-weight:600;color:var(--t1);line-height:1.2}
+.tm-src{font-size:.7rem;color:var(--t3);display:flex;align-items:center;gap:3px}
+.tm-g{color:#4285f4;font-weight:700}
+</style>
+<section class="tm-section" aria-label="Customer reviews">
+  <div class="tm-head">
+    <div class="section-title">What Our Customers Say</div>
+    <div class="section-sub">Real reviews from businesses across Johor &amp; beyond</div>
+    <div class="tm-rating"><span class="stars">★★★★★</span> <b>5.0</b> <span>· verified Google reviews</span></div>
+  </div>
+  <div class="tm-grid">
+    <div class="tm-card">
+      <div class="tm-stars">★★★★★</div>
+      <div class="tm-quote">"Great performance from this supplier. The quality and service 👍"</div>
+      <div class="tm-who"><div class="tm-avatar">K</div><div><div class="tm-name">kyogi Company</div><div class="tm-src"><span class="tm-g">G</span> Google Review</div></div></div>
+    </div>
+    <div class="tm-card">
+      <div class="tm-stars">★★★★★</div>
+      <div class="tm-quote">"Good Service &amp; Best Workers. Really recommend for the Company to make a signboard."</div>
+      <div class="tm-who"><div class="tm-avatar">M</div><div><div class="tm-name">Muhamad Firdaus</div><div class="tm-src"><span class="tm-g">G</span> Google Review</div></div></div>
+    </div>
+    <div class="tm-card">
+      <div class="tm-stars">★★★★★</div>
+      <div class="tm-quote">"Very good job 👍 competitive pricing, nice workers with nice attitude, good service."</div>
+      <div class="tm-who"><div class="tm-avatar">K</div><div><div class="tm-name">Kho Yih Jui</div><div class="tm-src"><span class="tm-g">G</span> Google Review</div></div></div>
+    </div>
+    <div class="tm-card">
+      <div class="tm-stars">★★★★★</div>
+      <div class="tm-quote">"Hasil kerja memuaskan, kemas dan mudah berurusan."</div>
+      <div class="tm-who"><div class="tm-avatar">F</div><div><div class="tm-name">Fazireen N</div><div class="tm-src"><span class="tm-g">G</span> Google Local Guide</div></div></div>
+    </div>
+    <div class="tm-card">
+      <div class="tm-stars">★★★★★</div>
+      <div class="tm-quote">"Good services and good material."</div>
+      <div class="tm-who"><div class="tm-avatar">A</div><div><div class="tm-name">Axim Wu</div><div class="tm-src"><span class="tm-g">G</span> Google Review</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<style>
+.faq-section{max-width:760px;margin:0 auto;padding:3rem 1.5rem}
+.faq-section .section-title{font-size:1.2rem;font-weight:700;margin-bottom:.3rem;text-align:center}
+.faq-section .section-sub{color:var(--t2);font-size:.87rem;text-align:center;margin-bottom:2rem}
+.faq-item{background:#fff;border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:.7rem;overflow:hidden;box-shadow:var(--sh-sm)}
+.faq-item summary{list-style:none;cursor:pointer;padding:1rem 1.2rem;font-size:.92rem;font-weight:600;color:var(--t1);display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';font-size:1.3rem;color:var(--red);font-weight:400;transition:transform .2s;flex-shrink:0}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-item .faq-a{padding:0 1.2rem 1.1rem;font-size:.86rem;color:var(--t2);line-height:1.6}
+.faq-item .faq-a a{color:var(--red);text-decoration:none;font-weight:600}
+</style>
+<section class="faq-section" aria-label="Frequently asked questions">
+  <div class="section-title">Frequently Asked Questions</div>
+  <div class="section-sub">Everything you need to know before you order</div>
+
+  <details class="faq-item">
+    <summary>Which areas do you serve?</summary>
+    <div class="faq-a">We serve Johor Bahru (Ulu Tiram), Kuala Lumpur (Subang Jaya) and Singapore — for both printing and signage works.</div>
+  </details>
+  <details class="faq-item">
+    <summary>How do I place an order?</summary>
+    <div class="faq-a">Pick a product, configure your size, material and options to get an instant quote, then submit your details and artwork. Our team confirms the order, you make payment, and we produce and deliver or arrange self-collection.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Can I get a price before ordering?</summary>
+    <div class="faq-a">Yes. Every product page gives you an instant price estimate as you configure it, or you can ask our AI assistant for a quick quote and product recommendation right here on the site.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Do you deliver, or is it self-collect?</summary>
+    <div class="faq-a">Both. You can self-collect at our workshop or have it delivered. On-site installation is available in the JB area for selected products such as lightboxes and large signage.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Can you handle custom designs?</summary>
+    <div class="faq-a">Absolutely. You can upload your own artwork, or use our AI-assisted design tools for custom signboards and LED neon signs.</div>
+  </details>
+  <details class="faq-item">
+    <summary>How long does production take?</summary>
+    <div class="faq-a">Lead time depends on the product type and quantity. We'll confirm the exact turnaround when we review your order — message us on <a href="https://wa.me/60197901150" target="_blank" rel="noopener noreferrer">WhatsApp</a> if you have a deadline.</div>
+  </details>
+</section>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"Which areas do you serve?","acceptedAnswer":{"@type":"Answer","text":"We serve Johor Bahru (Ulu Tiram), Kuala Lumpur (Subang Jaya) and Singapore, for both printing and signage works."}},
+    {"@type":"Question","name":"How do I place an order?","acceptedAnswer":{"@type":"Answer","text":"Pick a product, configure size, material and options for an instant quote, then submit your details and artwork. We confirm the order, you pay, and we produce and deliver or arrange self-collection."}},
+    {"@type":"Question","name":"Can I get a price before ordering?","acceptedAnswer":{"@type":"Answer","text":"Yes. Every product page gives an instant price estimate, or you can ask the AI assistant for a quick quote and recommendation."}},
+    {"@type":"Question","name":"Do you deliver, or is it self-collect?","acceptedAnswer":{"@type":"Answer","text":"Both self-collect and delivery are available. On-site installation is available in the JB area for selected products."}},
+    {"@type":"Question","name":"Can you handle custom designs?","acceptedAnswer":{"@type":"Answer","text":"Yes. Upload your own artwork, or use our AI-assisted design tools for signboards and LED neon signs."}},
+    {"@type":"Question","name":"How long does production take?","acceptedAnswer":{"@type":"Answer","text":"Lead time depends on product type and quantity, confirmed when we review your order."}}
+  ]
+}
+</script>
 
 <footer>
   <p style="margin-bottom:4px">© 2025 A&T Signboard & Printing &nbsp;·&nbsp; <a href="https://jbsignboard.com" target="_blank" rel="noopener noreferrer">jbsignboard.com</a></p>
