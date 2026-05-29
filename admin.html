@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin — A&T Signboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1f3c;--red:#e63946;--red-bg:#fff0f1;
+  --green:#16a34a;--green-bg:#edfdf4;
+  --orange:#ea580c;--orange-bg:#fff7ed;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --border:#e3e7ef;--off:#f6f8fc;
+  --t1:#0d1f3c;--t2:#5a6478;--t3:#9aa3b2;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-height:100vh}
+
+/* ── Login screen ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(13,31,60,.12)}
+.login-logo{text-align:center;margin-bottom:1.8rem}
+.login-logo-box{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:var(--navy);border-radius:14px;font-size:1.6rem;margin-bottom:.8rem}
+.login-title{font-size:1.15rem;font-weight:700;color:var(--navy)}
+.login-sub{font-size:.8rem;color:var(--t2);margin-top:3px}
+.form-group{margin-bottom:1rem}
+.form-label{font-size:.78rem;font-weight:600;color:var(--t2);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--t1);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--navy)}
+.login-btn{width:100%;padding:.8rem;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.login-btn:hover{background:#1a3560}
+.login-err{display:none;background:var(--red-bg);border:1px solid #fca5a5;color:var(--red);font-size:.8rem;padding:.6rem .9rem;border-radius:8px;margin-top:.8rem;text-align:center}
+
+/* ── Main layout ── */
+.admin-wrap{display:none}
+header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-logo{font-size:.95rem;font-weight:700;color:#fff}
+.header-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase}
+.logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer}
+.logout-btn:hover{background:rgba(255,255,255,.18)}
+
+.main{max-width:900px;margin:0 auto;padding:1.5rem}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:6px;margin-bottom:1.5rem;background:#fff;border:1px solid var(--border);border-radius:10px;padding:5px}
+.tab-btn{flex:1;padding:.55rem;border:none;background:transparent;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .2s;position:relative}
+.tab-btn.active{background:var(--navy);color:#fff}
+.tab-count{position:absolute;top:3px;right:8px;background:var(--red);color:#fff;font-size:.55rem;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px}
+.tab-btn.active .tab-count{background:rgba(255,255,255,.3)}
+.tab-count.show{display:flex}
+
+/* ── Stats bar ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.5rem}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;text-align:center}
+.stat-val{font-size:1.5rem;font-weight:800;color:var(--navy)}
+.stat-label{font-size:.7rem;color:var(--t2);font-weight:500;margin-top:2px}
+
+/* ── Order card ── */
+.order-card{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:.9rem;overflow:hidden;transition:box-shadow .2s}
+.order-card:hover{box-shadow:0 4px 20px rgba(13,31,60,.1)}
+.order-header{padding:1rem 1.2rem;display:flex;align-items:center;gap:12px;cursor:pointer}
+.order-id{font-size:.75rem;font-weight:700;color:var(--t3);font-family:monospace}
+.order-name{font-size:.9rem;font-weight:600;color:var(--t1)}
+.order-desc{font-size:.75rem;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.order-total{font-size:.95rem;font-weight:700;color:var(--navy);margin-left:auto;white-space:nowrap}
+.order-date{font-size:.7rem;color:var(--t3);margin-top:2px;text-align:right}
+.order-status-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.chip-new{background:#fef3c7;color:#92400e}
+.chip-payment{background:var(--orange-bg);color:var(--orange)}
+.chip-production{background:var(--blue-bg);color:var(--blue)}
+.chip-done{background:var(--green-bg);color:var(--green)}
+
+/* ── Order body ── */
+.order-body{display:none;border-top:1px solid var(--border);padding:1.2rem}
+.order-body.open{display:block}
+.order-items{background:var(--off);border-radius:8px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.8rem}
+.order-item-row{display:flex;justify-content:space-between;padding:.25rem 0;border-bottom:1px solid var(--border)}
+.order-item-row:last-child{border-bottom:none;font-weight:700;padding-top:.5rem}
+
+/* ── Status pipeline ── */
+.pipeline{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.pipe-step{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.4rem .6rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;min-width:70px;text-align:center}
+.pipe-step.done{border-color:var(--green);background:var(--green-bg)}
+.pipe-step.inprogress{border-color:var(--orange);background:var(--orange-bg)}
+.pipe-icon{font-size:1rem}
+.pipe-label{font-size:.6rem;font-weight:600;color:var(--t2);line-height:1.2}
+.pipe-step.done .pipe-label{color:var(--green)}
+.pipe-step.inprogress .pipe-label{color:var(--orange)}
+
+/* ── Action buttons ── */
+.actions-title{font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem}
+.actions-grid{display:flex;flex-wrap:wrap;gap:.5rem}
+.action-btn{display:inline-flex;align-items:center;gap:5px;padding:.5rem .9rem;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;color:var(--t1)}
+.action-btn:hover{border-color:var(--navy);background:var(--off)}
+.action-btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.action-btn.primary:hover{background:#1a3560}
+.action-btn.success{background:var(--green);color:#fff;border-color:var(--green)}
+.action-btn.success:hover{background:#15803d}
+.action-btn.warn{background:var(--orange);color:#fff;border-color:var(--orange)}
+.action-btn.warn:hover{background:#c2410c}
+.action-btn.danger{background:var(--red);color:#fff;border-color:var(--red)}
+.action-btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── Loading / empty ── */
+.loading-wrap{text-align:center;padding:3rem 1rem;color:var(--t2)}
+.empty-wrap{text-align:center;padding:3rem 1rem}
+.empty-icon{font-size:2.5rem;margin-bottom:.8rem}
+.empty-text{font-size:.9rem;color:var(--t2)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:.7rem 1.2rem;border-radius:10px;font-size:.85rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.25);z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:600px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .order-desc{max-width:180px}
+  .tabs{gap:3px}
+  .tab-btn{font-size:.72rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Login ── -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-box">🪧</div>
+      <div class="login-title">A&T Admin Panel</div>
+      <div class="login-sub">Manage orders & production status</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="pw-input">Password</label>
+      <input class="form-input" type="password" id="pw-input" placeholder="Enter admin password" autocomplete="current-password"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="login-err">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ── Admin Panel ── -->
+<div class="admin-wrap" id="admin-wrap">
+  <header>
+    <div class="header-left">
+      <span class="header-logo">A&T Admin</span>
+      <span class="header-badge">Owner Panel</span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </header>
+
+  <div class="main">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total Orders</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-new" style="color:var(--orange)">—</div><div class="stat-label">New Orders</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-payment" style="color:var(--red)">—</div><div class="stat-label">Awaiting Payment</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-production" style="color:var(--blue)">—</div><div class="stat-label">In Production</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-all" onclick="switchTab('all')">All <span class="tab-count" id="cnt-all"></span></button>
+      <button class="tab-btn" id="tab-new" onclick="switchTab('new')">New <span class="tab-count" id="cnt-new"></span></button>
+      <button class="tab-btn" id="tab-payment" onclick="switchTab('payment')">Payment <span class="tab-count" id="cnt-payment"></span></button>
+      <button class="tab-btn" id="tab-production" onclick="switchTab('production')">Production <span class="tab-count" id="cnt-production"></span></button>
+      <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Done</button>
+    </div>
+
+    <!-- Orders list -->
+    <div id="orders-wrap">
+      <div class="loading-wrap">Loading orders…</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// Listen to all orders
+window._startListening = function() {
+  const q = query(collection(db, 'eshopOrders'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, snap => {
+    const orders = snap.docs.map(d => ({ ...d.data(), _docId: d.id }));
+    window._onOrders(orders);
+  }, err => {
+    console.error(err);
+    window._onOrders([]);
+  });
+};
+
+// Update a step status
+window._updateStep = async function(docId, stepId, status) {
+  const ref = doc(db, 'eshopOrders', docId);
+  const upd = {};
+  upd['steps.' + stepId + '.status'] = status;
+  if (status === 'done') upd['steps.' + stepId + '.completedAt'] = new Date().toISOString();
+  await updateDoc(ref, upd);
+};
+</script>
+
+<script>
+// ── Auth ──────────────────────────────────────────────
+const ADMIN_HASH = 'f22bdebcc55594f266548260a7baa2e6725c180a3263f281e8a3173778e7e043';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  if (!pw) return;
+  const hash = await sha256(pw);
+  if (hash === ADMIN_HASH) {
+    sessionStorage.setItem('ant_admin', '1');
+    showAdmin();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  sessionStorage.removeItem('ant_admin');
+  location.reload();
+}
+
+function showAdmin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-wrap').style.display   = 'block';
+  if (window._startListening) window._startListening();
+  else { setTimeout(showAdmin, 200); return; }
+}
+
+// Auto-login if session active
+if (sessionStorage.getItem('ant_admin') === '1') showAdmin();
+
+// ── State ──────────────────────────────────────────────
+let allOrders = [];
+let currentTab = 'all';
+
+// ── Order helpers ──────────────────────────────────────
+const STEP_DEFS = [
+  { id:'proceed',   icon:'✓',  label:'Confirmed'  },
+  { id:'payment',   icon:'💳', label:'Payment'    },
+  { id:'ironframe', icon:'🔥', label:'Frame'      },
+  { id:'sticker',   icon:'🖨', label:'Sticker'    },
+  { id:'cutting',   icon:'✂', label:'Cutting'    },
+  { id:'edging',    icon:'⬡', label:'Edging'     },
+  { id:'painting',  icon:'🎨', label:'Painting'   },
+  { id:'assembly',  icon:'⚙', label:'Assembly'   },
+];
+
+function getOrderStatus(o) {
+  const s = o.steps || {};
+  const allDone = STEP_DEFS.every(d => s[d.id]?.status === 'done');
+  if (allDone) return 'done';
+  const inProd = ['ironframe','sticker','cutting','edging','painting','assembly'].some(
+    id => s[id]?.status === 'inprogress' || s[id]?.status === 'done'
+  );
+  if (inProd) return 'production';
+  if (s.payment?.status === 'inprogress') return 'payment';
+  return 'new';
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-MY', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function chipHtml(status) {
+  const map = {
+    new:        ['chip-new',        '🆕 New Order'],
+    payment:    ['chip-payment',    '💳 Awaiting Payment'],
+    production: ['chip-production', '⚙ In Production'],
+    done:       ['chip-done',       '✅ Completed'],
+  };
+  const [cls, label] = map[status] || ['chip-new','New'];
+  return `<span class="order-status-chip ${cls}">${label}</span>`;
+}
+
+// ── Render ──────────────────────────────────────────────
+window._onOrders = function(orders) {
+  allOrders = orders;
+  updateStats(orders);
+  renderOrders();
+};
+
+function updateStats(orders) {
+  const counts = { new:0, payment:0, production:0, done:0 };
+  orders.forEach(o => counts[getOrderStatus(o)]++);
+
+  document.getElementById('stat-total').textContent      = orders.length;
+  document.getElementById('stat-new').textContent        = counts.new;
+  document.getElementById('stat-payment').textContent    = counts.payment;
+  document.getElementById('stat-production').textContent = counts.production;
+
+  const setCount = (id, n) => {
+    const el = document.getElementById(id);
+    el.textContent = n;
+    el.classList.toggle('show', n > 0);
+  };
+  setCount('cnt-all',        orders.length);
+  setCount('cnt-new',        counts.new);
+  setCount('cnt-payment',    counts.payment);
+  setCount('cnt-production', counts.production);
+}
+
+function renderOrders() {
+  const filtered = currentTab === 'all' ? allOrders :
+                   allOrders.filter(o => getOrderStatus(o) === currentTab);
+
+  const wrap = document.getElementById('orders-wrap');
+  if (!filtered.length) {
+    wrap.innerHTML = `<div class="empty-wrap"><div class="empty-icon">📭</div><div class="empty-text">No orders in this category</div></div>`;
+    return;
+  }
+  wrap.innerHTML = filtered.map(o => orderCardHtml(o)).join('');
+}
+
+function orderCardHtml(o) {
+  const status  = getOrderStatus(o);
+  const steps   = o.steps || {};
+  const total   = o.total ? 'RM ' + Number(o.total).toFixed(2) : '—';
+  const pipeHtml = STEP_DEFS.map(d => {
+    const s   = steps[d.id]?.status || 'pending';
+    const cls = s === 'done' ? 'done' : s === 'inprogress' ? 'inprogress' : '';
+    return `<div class="pipe-step ${cls}"><span class="pipe-icon">${s==='done'?'✅':d.icon}</span><span class="pipe-label">${d.label}</span></div>`;
+  }).join('');
+
+  const actionsHtml = buildActions(o, steps, status);
+
+  const items = (o.items || []).map(i =>
+    `<div class="order-item-row"><span>${escHtml(i.name)} ×${i.qty}</span><span>RM ${(i.price*i.qty).toFixed(2)}</span></div>`
+  ).join('') + `<div class="order-item-row"><span>Grand Total</span><span>${total}</span></div>`;
+
+  return `
+  <div class="order-card">
+    <div class="order-header" onclick="toggleOrder('${o._docId}')">
+      <div style="flex:1;min-width:0">
+        <div class="order-id">${escHtml(o.id||o._docId)}</div>
+        <div class="order-name">${escHtml(o.customer||'Customer')}</div>
+        <div class="order-desc">${escHtml(o.desc||'')}</div>
+        <div style="margin-top:4px">${chipHtml(status)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="order-total">${total}</div>
+        <div class="order-date">${fmtDate(o.createdAt)}</div>
+      </div>
+    </div>
+    <div class="order-body" id="body-${o._docId}">
+      <div class="order-items">${items}</div>
+      <div class="pipeline">${pipeHtml}</div>
+      <div class="actions-title">Quick Actions</div>
+      <div class="actions-grid">${actionsHtml}</div>
+    </div>
+  </div>`;
+}
+
+function buildActions(o, steps, status) {
+  const id = o._docId;
+  const s  = steps;
+  const btns = [];
+
+  // Confirm order
+  if (s.proceed?.status !== 'done') {
+    btns.push(`<button class="action-btn primary" onclick="confirmOrder('${id}','${o.id||''}',${o.total||0})">✓ Confirm Order</button>`);
+  }
+
+  // Request payment (only after proceed done, payment not yet started)
+  if (s.proceed?.status === 'done' && (!s.payment?.status || s.payment?.status === 'pending')) {
+    btns.push(`<button class="action-btn warn" onclick="requestPayment('${id}','${o.id||''}',${o.total||0})">💳 Request Payment</button>`);
+  }
+
+  // Payment received
+  if (s.payment?.status === 'inprogress') {
+    btns.push(`<button class="action-btn success" onclick="markStep('${id}','payment','done')">✅ Payment Received</button>`);
+  }
+
+  // Production steps (show next pending one)
+  const prodSteps = ['ironframe','sticker','cutting','edging','painting','assembly'];
+  const nextProd = prodSteps.find(pid => s[pid]?.status !== 'done');
+  if (s.payment?.status === 'done' && nextProd) {
+    const def = STEP_DEFS.find(d=>d.id===nextProd);
+    const curr = s[nextProd]?.status || 'pending';
+    if (curr === 'pending') {
+      btns.push(`<button class="action-btn primary" onclick="markStep('${id}','${nextProd}','inprogress')">${def.icon} Start ${def.label}</button>`);
+    } else if (curr === 'inprogress') {
+      btns.push(`<button class="action-btn success" onclick="markStep('${id}','${nextProd}','done')">✅ Done: ${def.label}</button>`);
+    }
+  }
+
+  // WA notify button
+  btns.push(`<button class="action-btn" onclick="waNotify('${o.id||o._docId}','${o.customer||''}')">📲 WhatsApp Customer</button>`);
+
+  return btns.join('');
+}
+
+// ── Actions ──────────────────────────────────────────────
+async function confirmOrder(docId, orderId, total) {
+  await markStep(docId, 'proceed', 'done', false);
+  showToast('✅ Order confirmed!');
+}
+
+async function requestPayment(docId, orderId, total) {
+  await window._updateStep(docId, 'payment', 'inprogress');
+  showToast('💳 Payment request marked — notify customer via WhatsApp');
+}
+
+async function markStep(docId, stepId, status, toast=true) {
+  try {
+    await window._updateStep(docId, stepId, status);
+    if (toast) showToast('✅ Updated: ' + stepId);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
+}
+
+function waNotify(orderId, customer) {
+  const msg = encodeURIComponent(`Hi ${customer || 'there'}, your A&T Signboard order ${orderId} has been updated. Track it here: https://ant-signboard.netlify.app/track.html?id=${orderId}`);
+  window.open('https://wa.me/60197901150?text=' + msg, '_blank');
+}
+
+// ── Toggle card ──────────────────────────────────────────
+function toggleOrder(docId) {
+  const body = document.getElementById('body-' + docId);
+  if (body) body.classList.toggle('open');
+}
+
+// ── Tabs ──────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  ['all','new','payment','production','done'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  });
+  renderOrders();
+}
+
+// ── Toast ────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Utils ──────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
