@@ -1599,6 +1599,12 @@ document.addEventListener('click', function(e) {
   <span class="cart-fab-badge" id="cart-fab-badge"></span>
 </button>
 <div class="cart-toast" id="cart-toast">✅ Added to cart!</div>
+<script>
+/* ── Unified checkout: route submit through shared cart ── */
+(function(){
+  window.submitOrder = function(){ try{ if(typeof addToCart==='function') addToCart(); }catch(e){} if(window._sbMinPrice) location.href='cart.html'; };
+})();
+</script>
 <script src="ai-widget.js" defer></script>
 </body>
 </html>

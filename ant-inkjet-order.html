@@ -1012,6 +1012,23 @@ document.addEventListener('click',function(e){
     if(dd)dd.classList.remove('open');if(btn)btn.classList.remove('open');
   }
 });
+/* ── Cart utilities + unified checkout (added) ── */
+function getCart(){ try{ return JSON.parse(localStorage.getItem('antCart')||'[]'); }catch(e){ return []; } }
+function saveCart(items){ localStorage.setItem('antCart', JSON.stringify(items)); updateCartBadge(); }
+function updateCartBadge(){ var items=getCart(); var t=items.reduce(function(s,i){return s+(i.qty||1);},0); var el=document.getElementById('cart-fab-count'); if(el){ el.textContent=t; el.style.display=t>0?'flex':'none'; } }
+function addToCart(){
+  if(!order.total){ alert('请先填写尺寸/选项以获取报价 · Please configure your product first.'); return; }
+  var items=getCart();
+  items.push({ id:'item-'+Date.now(), name:order.service||(document.title.split('—')[0]||'Product').trim(),
+    desc:(order.summaryRows||[]).map(function(r){return r[0]+': '+r[1];}).join(', '),
+    price:order.total, qty:1, page:location.pathname.split('/').pop() });
+  saveCart(items);
+  var toast=document.getElementById('cart-toast'); if(toast){ toast.style.display='flex'; setTimeout(function(){toast.style.display='none';},3000); }
+}
+function addAndCheckout(){ addToCart(); if(order.total) location.href='cart.html'; }
+goStep2 = addAndCheckout;
+submitOrder = addAndCheckout;
+updateCartBadge();
 </script>
 <script src="ai-widget.js" defer></script>
 </body>

@@ -876,6 +876,24 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<script>
+/* ── Unified checkout: convert bomba's internal cart into the shared cart ── */
+(function(){
+  function getCart(){ try{ return JSON.parse(localStorage.getItem('antCart')||'[]'); }catch(e){ return []; } }
+  function toCheckout(){
+    var keys = (typeof cart!=='undefined') ? Object.keys(cart) : [];
+    if(!keys.length){ alert('请先选择至少一个标志 · Please add at least one sign.'); return; }
+    var items = getCart();
+    keys.forEach(function(k){ var c=cart[k];
+      items.push({ id:'item-'+Date.now()+'-'+k, name:'Bomba — '+c.name, desc:c.category+', '+c.sizeLabel, price:c.price, qty:c.qty, page:'ant-bomba-signage-order.html' });
+    });
+    localStorage.setItem('antCart', JSON.stringify(items));
+    location.href='cart.html';
+  }
+  window.goToStep2 = toCheckout;
+  window.submitOrder = toCheckout;
+})();
+</script>
 <script src="ai-widget.js" defer></script>
 </body>
 </html>

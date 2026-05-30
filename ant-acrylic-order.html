@@ -983,6 +983,10 @@ document.addEventListener('click', function(e) {
     if (btn) btn.classList.remove('open');
   }
 });
+/* ── Unified checkout: route proceed/submit through the cart ── */
+function addAndCheckout(){ addToCart(); if(order.total) location.href='cart.html'; }
+goStep2 = addAndCheckout;
+submitOrder = addAndCheckout;
 </script>
 <script src="ai-widget.js" defer></script>
 </body>

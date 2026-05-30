@@ -342,12 +342,15 @@
         var itemLines = items.map(function(i) {
           return '• ' + i.name + ' x' + i.qty + ' = RM ' + (i.price * i.qty).toFixed(2);
         }).join('\n');
-        emailjs.send('Service_A01', 'template_fj72ou4', {
-          order_id:    orderId,
-          grand_total: grandTotal.toFixed(2),
-          order_items: itemLines,
-          track_url:   trackUrl,
-          order_time:  new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' })
+        emailjs.send('service_A01', 'template_fj72ou4', {
+          order_id:       orderId,
+          grand_total:    grandTotal.toFixed(2),
+          order_items:    itemLines,
+          track_url:      trackUrl,
+          order_time:     new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' }),
+          customer_name:  orderDoc.customer || 'E-Shop Customer',
+          customer_email: orderDoc.userEmail || '(not signed in)',
+          customer_phone: orderDoc.phone || '(via WhatsApp)'
         }).catch(function(e) { console.warn('[EmailJS] send error:', e); });
       } catch(e) { console.warn('[EmailJS] error:', e); }
       window.open(waUrl, '_blank');
