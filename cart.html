@@ -289,6 +289,10 @@
     var items = getCart();
     if (!items.length) return;
 
+    saveCust();
+    if (!custInfo.name.trim())  { alert('请填写姓名 · Please enter your name.');           var nmEl=document.getElementById('cust-name');  if(nmEl)nmEl.focus(); return; }
+    if (!custInfo.phone.trim()) { alert('请填写电话/WhatsApp · Please enter your phone.');  var phEl=document.getElementById('cust-phone'); if(phEl)phEl.focus(); return; }
+
     var btn = document.getElementById('btn-checkout');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving order…'; }
 
@@ -306,10 +310,10 @@
     var cu = window._fbCurrentUser || null;
     var orderDoc = {
       id:         orderId,
-      customer:   (cu && cu.displayName) ? cu.displayName : 'E-Shop Customer',
-      phone:      '',
+      customer:   custInfo.name.trim() || (cu && cu.displayName) || 'E-Shop Customer',
+      phone:      custInfo.phone.trim(),
       userId:     cu ? cu.uid   : null,
-      userEmail:  cu ? cu.email : null,
+      userEmail:  custInfo.email.trim() || (cu ? cu.email : null),
       desc:       items.map(function(i) { return i.name + ' ×' + i.qty; }).join(', '),
       eta:        '',
       source:     'eshop',
@@ -333,6 +337,9 @@
     };
 
     var waMsg = buildWhatsAppMessage(items, orderId, trackUrl);
+    waMsg = waMsg.replace('Hello A&T Signboard! I would like to order:',
+      'Hello A&T Signboard! I would like to order:\n👤 ' + custInfo.name.trim() +
+      (custInfo.phone.trim() ? ' · 📞 ' + custInfo.phone.trim() : ''));
     var waUrl = 'https://wa.me/60197901150?text=' + encodeURIComponent(waMsg);
 
     // Try Firebase save; open WhatsApp regardless
@@ -354,7 +361,7 @@
         }).catch(function(e) { console.warn('[EmailJS] send error:', e); });
       } catch(e) { console.warn('[EmailJS] error:', e); }
       window.open(waUrl, '_blank');
-      showOrderConfirmation(orderId, trackUrl);
+      showOrderConfirmation(orderId, trackUrl, grandTotal);
     }
 
     if (window._fbSaveEshopOrder) {
@@ -367,27 +374,59 @@
     }
   }
 
-  function showOrderConfirmation(orderId, trackUrl) {
+  function showOrderConfirmation(orderId, trackUrl, grandTotal) {
     var el = document.getElementById('cart-content');
     if (!el) return;
     localStorage.removeItem('antCart');
+    var amount = (typeof grandTotal === 'number') ? grandTotal.toFixed(2) : '';
+    var payMsg = 'Hi A&T 👋 I have made payment for Order ' + orderId
+               + (amount ? ' (RM ' + amount + ')' : '') + '. Here is my payment receipt:';
+    var payWaUrl = 'https://wa.me/60197901150?text=' + encodeURIComponent(payMsg);
     el.innerHTML = [
-      '<div style="text-align:center;padding:2.5rem 1rem">',
-      '  <div style="font-size:3rem;margin-bottom:.8rem">🎉</div>',
-      '  <h2 style="font-size:1.2rem;margin-bottom:.4rem">Order Sent!</h2>',
-      '  <p style="color:#6b7280;font-size:.9rem;margin-bottom:1.5rem">WhatsApp has opened with your order details.<br>A&T will confirm shortly.</p>',
-      '  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:1rem;margin-bottom:1.2rem;text-align:left">',
-      '    <div style="font-size:11px;font-weight:600;color:#15803d;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Your Order ID</div>',
-      '    <div style="font-family:monospace;font-size:1.2rem;font-weight:700;color:#0d1f3c;letter-spacing:.06em">' + orderId + '</div>',
-      '    <div style="font-size:12px;color:#6b7280;margin-top:6px">Keep this to track your order progress</div>',
+      '<div style="text-align:center;padding:2rem 1rem 2.5rem">',
+      '  <div style="font-size:2.6rem;margin-bottom:.6rem">🎉</div>',
+      '  <h2 style="font-size:1.2rem;margin-bottom:.3rem">Order Placed!</h2>',
+      '  <p style="color:#6b7280;font-size:.88rem;margin-bottom:1.2rem">Complete payment below to confirm your order.</p>',
+      '  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:.9rem;margin-bottom:1.4rem;text-align:left">',
+      '    <div style="font-size:11px;font-weight:600;color:#15803d;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Your Order ID</div>',
+      '    <div style="font-family:monospace;font-size:1.15rem;font-weight:700;color:#0d1f3c;letter-spacing:.06em">' + orderId + '</div>',
       '  </div>',
-      '  <a href="' + trackUrl + '" style="display:block;background:#0d1f3c;color:#fff;padding:12px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem;margin-bottom:.8rem">',
+
+      // ── Payment section ──
+      '  <div style="background:#fff;border:2px solid #e63946;border-radius:16px;padding:1.3rem 1rem;margin-bottom:1.2rem">',
+      '    <div style="font-size:12px;font-weight:700;color:#e63946;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.3rem">💳 Scan to Pay · DuitNow</div>',
+      (amount
+        ? '    <div style="font-size:1.8rem;font-weight:800;color:#0d1f3c;margin-bottom:.9rem">RM ' + amount + '</div>'
+        : '    <div style="font-size:.9rem;color:#6b7280;margin-bottom:.9rem">Pay your order total</div>'),
+      '    <img src="duitnow-qr.png" alt="DuitNow payment QR code for A&T Signboard" width="230" height="auto" loading="lazy" style="width:230px;max-width:80%;height:auto;border-radius:12px;border:1px solid #e3e7ef;display:block;margin:0 auto .9rem" />',
+      '    <div style="text-align:left;font-size:.82rem;color:#5a6478;line-height:1.7;max-width:300px;margin:0 auto">',
+      '      <div><b>1.</b> Open any banking / e-wallet app</div>',
+      '      <div><b>2.</b> Scan the DuitNow QR above</div>',
+      (amount ? '      <div><b>3.</b> Enter amount <b style="color:#0d1f3c">RM ' + amount + '</b> &amp; pay</div>'
+              : '      <div><b>3.</b> Enter your order amount &amp; pay</div>'),
+      '      <div><b>4.</b> Send the receipt to us on WhatsApp 👇</div>',
+      '    </div>',
+      '  </div>',
+
+      '  <a href="' + payWaUrl + '" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;padding:13px;border-radius:10px;text-decoration:none;font-weight:700;font-size:.92rem;margin-bottom:.7rem">',
+      '    ✅ I Have Paid — Send Receipt',
+      '  </a>',
+      '  <a href="' + trackUrl + '" style="display:block;background:#0d1f3c;color:#fff;padding:12px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem;margin-bottom:.6rem">',
       '    📦 Track My Order',
       '  </a>',
-      '  <a href="index.html" style="display:block;color:#6b7280;font-size:.85rem;margin-top:.4rem">← Back to shop</a>',
+      '  <a href="index.html" style="display:block;color:#6b7280;font-size:.85rem;margin-top:.3rem">← Back to shop</a>',
       '</div>'
     ].join('');
   }
+
+  // Customer contact — required at checkout, persists across cart re-renders
+  var custInfo = { name:'', phone:'', email:'' };
+  window.saveCust = function() {
+    var n=document.getElementById('cust-name'), p=document.getElementById('cust-phone'), e=document.getElementById('cust-email');
+    if(n) custInfo.name  = n.value;
+    if(p) custInfo.phone = p.value;
+    if(e) custInfo.email = e.value;
+  };
 
   function render() {
     var items = getCart();
@@ -453,7 +492,21 @@
       '</div>'
     ].join('');
 
-    el.innerHTML = itemsHTML + summaryHTML.join('') + checkoutHTML;
+    var cu0 = window._fbCurrentUser || null;
+    if(!custInfo.name  && cu0 && cu0.displayName) custInfo.name  = cu0.displayName;
+    if(!custInfo.email && cu0 && cu0.email)       custInfo.email = cu0.email;
+    var inStyle = 'width:100%;box-sizing:border-box;border:1px solid #e3e7ef;border-radius:9px;padding:10px 12px;font-size:14px;font-family:inherit';
+    var contactHTML = [
+      '<div class="contact-card" style="background:#fff;border:1px solid #e3e7ef;border-radius:14px;padding:1rem 1.1rem;margin:1rem 0">',
+      '  <div style="font-size:13px;font-weight:700;color:#0d1f3c">📇 Your Contact Details</div>',
+      '  <div style="font-size:11.5px;color:#9aa3b2;margin-bottom:.7rem">So we can confirm your order &amp; quotation</div>',
+      '  <input id="cust-name" type="text" placeholder="Name *" value="' + escHtml(custInfo.name) + '" oninput="saveCust()" autocomplete="name" style="' + inStyle + ';margin-bottom:.5rem" />',
+      '  <input id="cust-phone" type="tel" inputmode="tel" placeholder="Phone / WhatsApp *" value="' + escHtml(custInfo.phone) + '" oninput="saveCust()" autocomplete="tel" style="' + inStyle + ';margin-bottom:.5rem" />',
+      '  <input id="cust-email" type="email" placeholder="Email (optional)" value="' + escHtml(custInfo.email) + '" oninput="saveCust()" autocomplete="email" style="' + inStyle + '" />',
+      '</div>'
+    ].join('');
+
+    el.innerHTML = itemsHTML + summaryHTML.join('') + contactHTML + checkoutHTML;
   }
 
   function escHtml(s) {
