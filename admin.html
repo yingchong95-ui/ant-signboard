@@ -345,7 +345,8 @@ function renderOrders() {
 function orderCardHtml(o) {
   const status  = getOrderStatus(o);
   const steps   = o.steps || {};
-  const total   = o.total ? 'RM ' + Number(o.total).toFixed(2) : '—';
+  const _tot    = o.total || o.grandTotal;
+  const total   = _tot ? 'RM ' + Number(_tot).toFixed(2) : '—';
   const pipeHtml = STEP_DEFS.map(d => {
     const s   = steps[d.id]?.status || 'pending';
     const cls = s === 'done' ? 'done' : s === 'inprogress' ? 'inprogress' : '';
@@ -354,7 +355,7 @@ function orderCardHtml(o) {
 
   const actionsHtml = buildActions(o, steps, status);
 
-  const items = (o.items || []).map(i =>
+  const items = (o.items || o.products || []).map(i =>
     `<div class="order-item-row"><span>${escHtml(i.name)} ×${i.qty}</span><span>RM ${(i.price*i.qty).toFixed(2)}</span></div>`
   ).join('') + `<div class="order-item-row"><span>Grand Total</span><span>${total}</span></div>`;
 
@@ -377,6 +378,12 @@ function orderCardHtml(o) {
       <div class="pipeline">${pipeHtml}</div>
       <div class="actions-title">Quick Actions</div>
       <div class="actions-grid">${actionsHtml}</div>
+      <div class="actions-title" style="margin-top:.8rem">🤖 AI Tools</div>
+      <div class="actions-grid">
+        <button class="action-btn" onclick="aiProduce('${o._docId}')">🛠 生产单 Production Sheet</button>
+        <button class="action-btn" onclick="aiFollowUp('${o._docId}')">💬 跟进话术 Follow-up</button>
+      </div>
+      <div class="ai-out" id="ai-out-${o._docId}" style="display:none"></div>
     </div>
   </div>`;
 }
@@ -388,12 +395,12 @@ function buildActions(o, steps, status) {
 
   // Confirm order
   if (s.proceed?.status !== 'done') {
-    btns.push(`<button class="action-btn primary" onclick="confirmOrder('${id}','${o.id||''}',${o.total||0})">✓ Confirm Order</button>`);
+    btns.push(`<button class="action-btn primary" onclick="confirmOrder('${id}','${o.id||''}',${o.total||o.grandTotal||0})">✓ Confirm Order</button>`);
   }
 
   // Request payment (only after proceed done, payment not yet started)
   if (s.proceed?.status === 'done' && (!s.payment?.status || s.payment?.status === 'pending')) {
-    btns.push(`<button class="action-btn warn" onclick="requestPayment('${id}','${o.id||''}',${o.total||0})">💳 Request Payment</button>`);
+    btns.push(`<button class="action-btn warn" onclick="requestPayment('${id}','${o.id||''}',${o.total||o.grandTotal||0})">💳 Request Payment</button>`);
   }
 
   // Payment received
@@ -473,6 +480,55 @@ function showToast(msg) {
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+/* ══ AI Tools: production sheet + follow-up draft (calls /api/gemini) ══ */
+function _findOrder(docId){ return (allOrders||[]).find(function(o){ return o._docId===docId; }); }
+function _orderItemsText(o){
+  var its = o.items || o.products || [];
+  var t = its.map(function(i){ return '- '+(i.name||'')+' ×'+(i.qty||1)+(i.desc?(' ('+i.desc+')'):'')+' = RM '+(((i.price||0)*(i.qty||1)).toFixed(2)); }).join('\n');
+  return t || (o.desc || '(no details)');
+}
+async function _aiCall(system, userMsg){
+  var res = await fetch('/api/gemini', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ system:system, messages:[{role:'user',content:userMsg}], max_tokens:700 })
+  });
+  if(!res.ok) throw new Error('api');
+  var data = await res.json();
+  return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n') || '(empty)';
+}
+async function aiProduce(docId){
+  var o=_findOrder(docId); if(!o) return;
+  var outId='ai-out-'+docId, out=document.getElementById(outId);
+  out.style.display='block'; out.innerHTML='<div style="color:#5a6478;font-size:.8rem;padding:.6rem">🤖 生成生产单中…</div>';
+  var sys='你是 A&T 招牌印刷厂的生产助理。根据订单生成一张给工坊师傅看的【生产单】：逐件列出材料、尺寸、工艺步骤、注意事项，简洁分点，用中文，方便打印。只依据订单已有信息，不要编造缺失的数据。';
+  var msg='订单号：'+(o.id||docId)+'\n客户：'+(o.customer||'')+'\n产品明细：\n'+_orderItemsText(o);
+  try{ _renderAiOut(outId, '🛠 生产单 Production Sheet', await _aiCall(sys,msg), null); }
+  catch(e){ out.innerHTML='<div style="color:#e63946;font-size:.8rem;padding:.6rem">生成失败，请重试。</div>'; }
+}
+async function aiFollowUp(docId){
+  var o=_findOrder(docId); if(!o) return;
+  var outId='ai-out-'+docId, out=document.getElementById(outId);
+  out.style.display='block'; out.innerHTML='<div style="color:#5a6478;font-size:.8rem;padding:.6rem">🤖 起草跟进消息中…</div>';
+  var sys='你是 A&T 招牌的客服。为以下待跟进订单起草一条友好、专业、简短的 WhatsApp 跟进消息，提醒客户确认订单或付款，并表示乐意解答疑问。语气自然、不要催促感。跟随客户可能的语言（中/英/马来文皆可）。只输出消息正文，不要额外说明。';
+  var msg='客户：'+(o.customer||'')+'\n订单号：'+(o.id||docId)+'\n产品：'+(o.desc||_orderItemsText(o))+'\n金额：RM '+Number(o.total||o.grandTotal||0).toFixed(2);
+  try{
+    var text=await _aiCall(sys,msg);
+    var phone=(o.phone||'').replace(/[^0-9]/g,'');
+    var waBtn = phone ? '<a class="action-btn success" href="https://wa.me/'+phone+'?text='+encodeURIComponent(text)+'" target="_blank" rel="noopener" style="text-decoration:none">📲 发送给客户</a>' : '';
+    _renderAiOut(outId, '💬 跟进话术 Follow-up', text, waBtn);
+  }catch(e){ out.innerHTML='<div style="color:#e63946;font-size:.8rem;padding:.6rem">生成失败，请重试。</div>'; }
+}
+function _renderAiOut(outId, title, text, extraBtn){
+  var out=document.getElementById(outId);
+  out.innerHTML = '<div style="background:#f6f8fc;border:1px solid #e3e7ef;border-radius:10px;padding:.8rem;margin-top:.6rem">'
+    + '<div style="font-size:.72rem;font-weight:700;color:#0d1f3c;margin-bottom:.4rem">'+title+'</div>'
+    + '<div style="white-space:pre-wrap;font-size:.8rem;color:#0d1f3c;line-height:1.55" id="'+outId+'-txt">'+escHtml(text)+'</div>'
+    + '<div style="display:flex;gap:6px;margin-top:.6rem;flex-wrap:wrap">'
+    + '<button class="action-btn" onclick="_copyAi(\''+outId+'-txt\')">📋 复制</button>'+(extraBtn||'')
+    + '</div></div>';
+}
+function _copyAi(id){ var t=document.getElementById(id); if(t){ navigator.clipboard.writeText(t.textContent).then(function(){ if(typeof showToast==='function') showToast('📋 已复制'); }); } }
 </script>
 </body>
 </html>
