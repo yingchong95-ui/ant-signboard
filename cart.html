@@ -360,6 +360,31 @@
           customer_phone: orderDoc.phone || '(via WhatsApp)'
         }).catch(function(e) { console.warn('[EmailJS] send error:', e); });
       } catch(e) { console.warn('[EmailJS] error:', e); }
+
+      // ── Google Sheets archive (Apps Script web app) ──
+      // ⬇⬇⬇ 把你部署 Apps Script 后得到的网址粘贴到这里（替换占位文字）⬇⬇⬇
+      var SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxjwqhvhO4HmdKIz8Dg2xbpnyZXKRnnVyWZ6bQ30-6xoon5sq-0ZGq2RNSRX0uQ4d0/exec';
+      try {
+        if (SHEETS_WEBHOOK_URL.indexOf('http') === 0) {
+          fetch(SHEETS_WEBHOOK_URL, {
+            method: 'POST', mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              order_time:     new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' }),
+              order_id:       orderId,
+              customer_name:  orderDoc.customer,
+              customer_phone: orderDoc.phone,
+              customer_email: orderDoc.userEmail,
+              order_items:    itemLines,
+              grand_total:    grandTotal.toFixed(2),
+              status:         'New',
+              source:         'eshop',
+              track_url:      trackUrl
+            })
+          }).catch(function(){});
+        }
+      } catch(e) { console.warn('[Sheets] error:', e); }
+
       window.open(waUrl, '_blank');
       showOrderConfirmation(orderId, trackUrl, grandTotal);
     }
