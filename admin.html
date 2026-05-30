@@ -201,7 +201,7 @@ const db  = getFirestore(app);
 
 // Listen to all orders
 window._startListening = function() {
-  const q = query(collection(db, 'eshopOrders'), orderBy('createdAt', 'desc'));
+  const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
   onSnapshot(q, snap => {
     const orders = snap.docs.map(d => ({ ...d.data(), _docId: d.id }));
     window._onOrders(orders);
@@ -213,7 +213,7 @@ window._startListening = function() {
 
 // Update a step status
 window._updateStep = async function(docId, stepId, status) {
-  const ref = doc(db, 'eshopOrders', docId);
+  const ref = doc(db, 'orders', docId);
   const upd = {};
   upd['steps.' + stepId + '.status'] = status;
   if (status === 'done') upd['steps.' + stepId + '.completedAt'] = new Date().toISOString();
