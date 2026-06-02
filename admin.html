@@ -375,6 +375,7 @@ function orderCardHtml(o) {
     </div>
     <div class="order-body" id="body-${o._docId}">
       <div class="order-items">${items}</div>
+      ${ (o.files && o.files.length) ? '<div style="padding:.2rem 1.2rem .6rem;font-size:.78rem">📎 <b>Artwork:</b> ' + o.files.map(function(f){ return '<a href="'+f.url+'" target="_blank" rel="noopener" style="color:#1a73e8;margin-right:10px">'+escHtml(f.name)+'</a>'; }).join('') + '</div>' : '' }
       <div class="pipeline">${pipeHtml}</div>
       <div class="actions-title">Quick Actions</div>
       <div class="actions-grid">${actionsHtml}</div>

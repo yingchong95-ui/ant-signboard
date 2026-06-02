@@ -285,7 +285,7 @@
     return 'SHOP-' + d + '-' + r;
   }
 
-  function doCheckout() {
+  async function doCheckout() {
     var items = getCart();
     if (!items.length) return;
 
@@ -298,6 +298,22 @@
 
     var orderId  = generateOrderId();
     var trackUrl = 'https://ant-signboard.netlify.app/track.html?id=' + orderId;
+
+    // ── Upload artwork files (if any) → download links ──
+    var fileLinks = [];
+    if (custFiles.length && window._fbUploadFile) {
+      if (btn) btn.textContent = '⏳ Uploading file…';
+      for (var fi = 0; fi < custFiles.length; fi++) {
+        try {
+          var fUrl = await window._fbUploadFile(custFiles[fi], orderId);
+          fileLinks.push({ name: custFiles[fi].name, url: fUrl });
+        } catch (e) { console.warn('[Upload] failed:', e); }
+      }
+      if (btn) btn.textContent = '⏳ Saving order…';
+    }
+    var fileText = fileLinks.length
+      ? fileLinks.map(function(f){ return f.name + ': ' + f.url; }).join('\n')
+      : '(no file uploaded)';
 
     // Compute grand total
     var grandTotal = items.reduce(function(s, i) { return s + i.price * i.qty; }, 0);
@@ -319,6 +335,7 @@
       source:     'eshop',
       products:   items,
       grandTotal: grandTotal,
+      files:      fileLinks,
       warranty: {
         applicable: wItems.length > 0,
         types:      wItems.map(function(i) { return i.page; }),
@@ -340,6 +357,7 @@
     waMsg = waMsg.replace('Hello A&T Signboard! I would like to order:',
       'Hello A&T Signboard! I would like to order:\n👤 ' + custInfo.name.trim() +
       (custInfo.phone.trim() ? ' · 📞 ' + custInfo.phone.trim() : ''));
+    if (fileLinks.length) waMsg += '\n\n📎 Artwork:\n' + fileLinks.map(function(f){ return f.url; }).join('\n');
     var waUrl = 'https://wa.me/60197901150?text=' + encodeURIComponent(waMsg);
 
     // Try Firebase save; open WhatsApp regardless
@@ -357,7 +375,8 @@
           order_time:     new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' }),
           customer_name:  orderDoc.customer || 'E-Shop Customer',
           customer_email: orderDoc.userEmail || '(not signed in)',
-          customer_phone: orderDoc.phone || '(via WhatsApp)'
+          customer_phone: orderDoc.phone || '(via WhatsApp)',
+          order_files:    fileText
         }).catch(function(e) { console.warn('[EmailJS] send error:', e); });
       } catch(e) { console.warn('[EmailJS] error:', e); }
 
@@ -375,7 +394,7 @@
               customer_name:  orderDoc.customer,
               customer_phone: orderDoc.phone,
               customer_email: orderDoc.userEmail,
-              order_items:    itemLines,
+              order_items:    itemLines + (fileLinks.length ? '\n📎 ' + fileLinks.map(function(f){ return f.url; }).join('  ') : ''),
               grand_total:    grandTotal.toFixed(2),
               status:         'New',
               source:         'eshop',
@@ -451,6 +470,15 @@
     if(n) custInfo.name  = n.value;
     if(p) custInfo.phone = p.value;
     if(e) custInfo.email = e.value;
+  };
+  // Selected artwork files — kept in JS so they survive cart re-renders
+  var custFiles = [];
+  window.onCustFile = function(input) {
+    custFiles = Array.prototype.slice.call(input.files || []);
+    var el = document.getElementById('cust-file-list');
+    if (el) el.textContent = custFiles.length
+      ? ('✓ 已选 ' + custFiles.length + ' 个文件: ' + custFiles.map(function(f){ return f.name; }).join(', '))
+      : '';
   };
 
   function render() {
@@ -528,6 +556,10 @@
       '  <input id="cust-name" type="text" placeholder="Name *" value="' + escHtml(custInfo.name) + '" oninput="saveCust()" autocomplete="name" style="' + inStyle + ';margin-bottom:.5rem" />',
       '  <input id="cust-phone" type="tel" inputmode="tel" placeholder="Phone / WhatsApp *" value="' + escHtml(custInfo.phone) + '" oninput="saveCust()" autocomplete="tel" style="' + inStyle + ';margin-bottom:.5rem" />',
       '  <input id="cust-email" type="email" placeholder="Email (optional)" value="' + escHtml(custInfo.email) + '" oninput="saveCust()" autocomplete="email" style="' + inStyle + '" />',
+      '  <div style="font-size:12px;font-weight:600;color:#0d1f3c;margin:.8rem 0 .3rem">📎 上传设计稿 Upload artwork (optional)</div>',
+      '  <input id="cust-file" type="file" multiple accept=".pdf,.ai,.psd,.eps,.svg,.jpg,.jpeg,.png,.tif,.tiff,image/*,application/pdf,application/postscript" onchange="onCustFile(this)" style="' + inStyle + ';padding:8px" />',
+      '  <div id="cust-file-list" style="font-size:11.5px;color:#16a34a;margin-top:.35rem;word-break:break-word">' + (custFiles.length ? ('✓ 已选 ' + custFiles.length + ' 个文件: ' + custFiles.map(function(f){ return escHtml(f.name); }).join(', ')) : '') + '</div>',
+      '  <div style="font-size:11px;color:#9aa3b2;margin-top:.2rem">PDF / AI / PSD / JPEG 等 · 可多选 · 单个最大 200MB</div>',
       '</div>'
     ].join('');
 
@@ -570,6 +602,8 @@
 import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -583,12 +617,21 @@ const firebaseConfig = {
 };
 const app      = initializeApp(firebaseConfig);
 const db       = getFirestore(app);
+const storage  = getStorage(app);
 const auth     = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 // Firestore
 window._fbSaveEshopOrder = async (orderDoc) => {
   await setDoc(doc(db, 'orders', orderDoc.id), orderDoc);
+};
+
+// Upload an artwork file to Storage, return its download URL
+window._fbUploadFile = async (file, orderId) => {
+  const safeName = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const r = storageRef(storage, 'orders/' + orderId + '/' + Date.now() + '_' + safeName);
+  await uploadBytes(r, file);
+  return await getDownloadURL(r);
 };
 
 // Auth — exposed to regular scripts via window
