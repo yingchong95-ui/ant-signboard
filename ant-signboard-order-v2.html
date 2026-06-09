@@ -23,7 +23,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <style>:focus-visible{outline:2px solid #4285f4;outline-offset:2px;border-radius:4px}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600;700;800&family=Bebas+Neue&family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -483,6 +484,56 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 .cart-fab-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:.6rem;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;display:none}
 .cart-toast{position:fixed;bottom:88px;left:24px;z-index:1000;background:var(--navy);color:#fff;font-size:.82rem;font-weight:500;padding:.55rem 1rem;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none}
 .cart-toast.show{opacity:1;transform:translateY(0)}
+
+/* ── Canvas Editor ── */
+.canvas-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:.7rem 1rem;background:#f6f8fc;border-bottom:1px solid var(--border);border-radius:var(--r-md) var(--r-md) 0 0}
+.ct-group{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;color:var(--t2)}
+.ct-group select,.ct-group input[type=range]{font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 6px;background:#fff;color:var(--t1);cursor:pointer}
+.ct-group input[type=range]{width:80px;cursor:pointer;accent-color:var(--red)}
+.ct-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.ct-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:.72rem;font-weight:600;color:var(--t1);cursor:pointer;transition:all .15s;white-space:nowrap}
+.ct-btn:hover{border-color:var(--red);color:var(--red)}
+.ct-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.canvas-wrap{position:relative;background:#222;border-radius:0 0 var(--r-md) var(--r-md);overflow:hidden;line-height:0}
+.canvas-wrap canvas{display:block;max-width:100%}
+.canvas-hint{font-size:.68rem;color:var(--t3);text-align:center;padding:.5rem;background:#f6f8fc;border-top:1px solid var(--border)}
+.logo-upload-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;background:#fff;border:1.5px dashed var(--border);border-radius:6px;font-size:.72rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s}
+.logo-upload-btn:hover{border-color:var(--red);color:var(--red)}
+.logo-upload-btn.has-logo{border-style:solid;border-color:var(--green);color:var(--green)}
+
+/* ── Mockup scene ── */
+.mockup-scene{display:none;border-radius:var(--r-md);overflow:hidden;background:#1c1c24}
+.mockup-sky{height:20px;background:linear-gradient(to bottom,#87ceeb,#b0d8f0)}
+.mockup-building{background:#e8e3da;padding:24px 18px 0;display:flex;flex-direction:column;align-items:center;position:relative}
+.mockup-building::before,.mockup-building::after{content:'';position:absolute;top:8px;width:28px;height:48px;background:#c8bfae;border-radius:3px}
+.mockup-building::before{left:18px}
+.mockup-building::after{right:18px}
+.mockup-mount{background:#555;border:3px solid #333;border-radius:3px;box-shadow:0 4px 20px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.4);width:100%;max-width:560px;position:relative;margin:0 auto}
+.mockup-mount img{width:100%;display:block;border-radius:1px}
+.mockup-shadow{height:14px;background:linear-gradient(to bottom,rgba(0,0,0,.2),transparent);margin:0 10px}
+.mockup-street{height:28px;background:linear-gradient(to bottom,#999,#777)}
+.mockup-street-line{height:3px;background:repeating-linear-gradient(90deg,#f5f5f5 0,#f5f5f5 20px,transparent 20px,transparent 40px);margin:6px 0;opacity:.7}
+.canvas-label{font-size:.64rem;color:rgba(255,255,255,.35);text-align:center;padding:3px;letter-spacing:.06em}
+
+/* ── Real example gallery ── */
+.example-gallery{margin-top:.9rem;padding:.85rem .9rem;background:#f6f8fc;border:1px solid var(--border);border-radius:var(--r-md)}
+.eg-title{font-size:.78rem;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:6px;margin-bottom:.55rem}
+.eg-title .eg-badge{font-size:.62rem;font-weight:700;color:#fff;background:var(--green);border-radius:20px;padding:2px 8px;letter-spacing:.02em}
+.eg-track{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.eg-track::-webkit-scrollbar{height:6px}
+.eg-track::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px}
+.eg-thumb{flex:0 0 auto;width:118px;cursor:pointer;border-radius:8px;overflow:hidden;background:#fff;border:1px solid var(--border);transition:transform .15s,box-shadow .15s}
+.eg-thumb:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12);border-color:var(--red)}
+.eg-thumb img{display:block;width:100%;height:84px;object-fit:cover}
+.eg-thumb .eg-cap{display:block;font-size:.6rem;line-height:1.25;color:var(--t2);padding:5px 7px 6px;font-weight:600}
+.eg-hint{font-size:.64rem;color:var(--t3);margin:.5rem 0 0;text-align:center}
+.eg-modal{display:none;position:fixed;inset:0;background:rgba(10,14,26,.88);z-index:9999;align-items:center;justify-content:center;padding:5vh 4vw;cursor:zoom-out}
+.eg-modal.show{display:flex}
+.eg-modal-inner{max-width:min(880px,92vw);max-height:90vh;display:flex;flex-direction:column;align-items:center;gap:.6rem}
+.eg-modal-inner img{max-width:100%;max-height:78vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.eg-modal-cap{color:#fff;font-size:.8rem;font-weight:600;text-align:center;background:rgba(0,0,0,.4);padding:.4rem .9rem;border-radius:20px}
+.eg-modal-close{position:absolute;top:18px;right:22px;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.12);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.eg-modal-close:hover{background:rgba(255,255,255,.25)}
 </style>
 <script src="analytics.js"></script>
 </head>
@@ -528,15 +579,11 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 </div>
 
 <!-- Step Bar -->
-<div class="step-bar">
-  <div class="steps">
-    <div class="step"><div class="step-num active" id="sn1">1</div><div class="step-label active" id="sl1">Design</div></div>
-    <div class="step-sep"></div>
-    <div class="step"><div class="step-num" id="sn2">2</div><div class="step-label" id="sl2">Size & Notes</div></div>
-    <div class="step-sep"></div>
-    <div class="step"><div class="step-num" id="sn3">3</div><div class="step-label" id="sl3">Contact</div></div>
-    <div class="step-sep"></div>
-    <div class="step"><div class="step-num" id="sn4">4</div><div class="step-label" id="sl4">Confirm</div></div>
+<div class="step-bar" style="justify-content:flex-start;gap:1rem">
+  <div class="step"><div class="step-num active">1</div><div class="step-label active">Design &amp; Configure</div></div>
+  <div style="font-size:.8rem;color:var(--t3);margin-left:auto;display:flex;align-items:center;gap:4px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    Drag elements on canvas to reposition
   </div>
 </div>
 
@@ -691,6 +738,12 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
         </div>
       </div>
 
+      <div class="example-gallery" id="exampleGallery" style="display:none">
+        <div class="eg-title"><span>📸 Real Examples From Our Workshop</span> <span class="eg-badge">Our Past Work</span></div>
+        <div class="eg-track" id="egTrack"></div>
+        <p class="eg-hint">Tap a photo to view full size — actual signs we've made for past clients</p>
+      </div>
+
       <div class="sec" style="margin-top:.1rem">Colours</div>
       <div class="cpair">
         <div class="cg" id="bg-colour-group">
@@ -759,22 +812,81 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
         <div class="pe-note">Final price subject to design complexity, materials & installation. Our team will confirm before production.</div>
         <button class="btn-cart" onclick="addToCart()">🛒 Add to Cart</button>
       </div>
-
-      <button class="next-btn" onclick="goStep(2)">
-        Continue to Size & Notes
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </button>
     </div>
   </div>
 
   <!-- Preview -->
   <div class="prev-col">
     <div class="prev-card">
-      <div class="prev-head">
-        <div class="prev-title"><div class="live-dot"></div>Live Preview</div>
-        <div class="prev-tag" id="prevTag">Flat Panel · Frontlit</div>
+      <div class="prev-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div class="prev-title"><div class="live-dot"></div>Live Designer</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="prev-tag" id="prevTag">Flat Panel · Frontlit</div>
+          <button class="ct-btn" id="mockupToggleBtn" onclick="toggleMockup()" title="Toggle mockup view">🏪 Mockup</button>
+        </div>
       </div>
-      <div class="sb-scene" id="sbScene">
+
+      <!-- Canvas toolbar -->
+      <div class="canvas-toolbar">
+        <div class="ct-group">
+          <span>Font</span>
+          <select id="fontFamilyPicker" onchange="updateCanvasFont()">
+            <option value="DM Sans">DM Sans</option>
+            <option value="Oswald">Oswald</option>
+            <option value="Montserrat">Montserrat</option>
+            <option value="Bebas Neue">Bebas Neue</option>
+            <option value="Playfair Display">Playfair Display</option>
+            <option value="Raleway">Raleway</option>
+            <option value="Arial">Arial</option>
+            <option value="Impact">Impact</option>
+          </select>
+        </div>
+        <div class="ct-sep"></div>
+        <div class="ct-group">
+          <span>Name</span>
+          <input type="range" id="nameSizeSlider" min="14" max="80" value="36" oninput="updateNameSize(this.value)">
+          <span id="nameSizeVal">36</span>
+        </div>
+        <div class="ct-group">
+          <span>Slogan</span>
+          <input type="range" id="sloganSizeSlider" min="8" max="40" value="14" oninput="updateSloganSize(this.value)">
+          <span id="sloganSizeVal">14</span>
+        </div>
+        <div class="ct-sep"></div>
+        <!-- Alum strip orientation (only shown when alum board selected) -->
+        <div class="ct-group" id="alumDirGroup" style="display:none">
+          <span>Strips</span>
+          <button class="ct-btn active" id="alumDirH" onclick="setAlumDir('horizontal')" title="Horizontal strips">≡ H</button>
+          <button class="ct-btn" id="alumDirV" onclick="setAlumDir('vertical')" title="Vertical strips">‖ V</button>
+        </div>
+        <div class="ct-sep" id="alumDirSep" style="display:none"></div>
+        <label class="logo-upload-btn" id="logoUploadLabel" title="Upload logo onto canvas">
+          🖼 Logo
+          <input type="file" id="logoFileInput" accept=".png,.jpg,.jpeg,.svg" style="display:none" onchange="addLogoToCanvas(this)">
+        </label>
+        <button class="ct-btn" onclick="clearLogo()" id="clearLogoBtn" style="display:none" title="Remove logo">✕ Logo</button>
+        <div class="ct-sep"></div>
+        <button class="ct-btn" id="nightBtn" onclick="toggleNight()" title="Night preview — shows lighting effects more clearly">🌙 Night</button>
+      </div>
+
+      <!-- Fabric.js canvas -->
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="designCanvas"></canvas>
+      </div>
+      <div class="canvas-hint">Click any element to select · Drag to reposition · Use sliders to resize text</div>
+
+      <!-- Mockup scene (hidden by default) -->
+      <div class="mockup-scene" id="mockupScene">
+        <div class="mockup-sky"></div>
+        <div class="mockup-building">
+          <div class="canvas-label">▲ SHOPFRONT SIGNBOARD PLACEMENT</div>
+          <div class="mockup-mount"><img id="mockupPreviewImg" src="" alt="signboard preview"/></div>
+          <div class="mockup-shadow"></div>
+        </div>
+        <div class="mockup-street"><div class="mockup-street-line"></div></div>
+      </div>
+
+      <div class="sb-scene" id="sbScene" style="display:none">
         <div class="sb-wrap">
           <div class="sb-panel" id="sbPanel"></div>
           <div class="sb-texture" id="sbTexture" style="display:none">
@@ -802,9 +914,9 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
       </div>
     </div>
     <div class="info-card">
-      <div class="info-title">📌 Preview Notes</div>
-      This is a <strong>visual mockup</strong> — colours and layout are approximate. Your actual signboard will be professionally designed by our team based on your inputs.<br/>
-      <strong>Logo:</strong> Upload your logo file in the next step — our designer will incorporate it into the final artwork.
+      <div class="info-title">📌 Designer Tips</div>
+      Drag text &amp; logo elements to reposition. Use the font &amp; size controls above. Click <strong>🏪 Mockup</strong> to preview on a shopfront. Colours update in real-time from your selections on the left.<br/>
+      <em style="color:var(--t3);font-size:.8rem">Final artwork will be professionally designed by our team based on your inputs.</em>
     </div>
   </div>
 
@@ -812,7 +924,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 </div>
 </div><!-- /step1 -->
 
-<!-- ══ STEP 2: Size & Notes ══ -->
+<!-- Steps 2-4 removed — using Add to Cart flow -->
 <div id="step2" style="display:none">
 <div class="page" style="max-width:720px">
   <div class="card">
@@ -974,6 +1086,340 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 </div><!-- /success -->
 
 <script>
+/* ══ Fabric.js Canvas Designer ══ */
+var fc, fcBg, fcName, fcSlogan, fcBiz, fcSsm, fcLogo = null;
+var mockupVisible = false;
+var nightMode = false;
+var alumDir = 'horizontal'; // 'horizontal' | 'vertical'
+
+function initCanvas() {
+  var wrap = document.getElementById('canvasWrap');
+  var w = wrap.offsetWidth || 580;
+  var h = Math.round(w * 0.20); // 6m × 1.2m = 5:1 ratio
+  fc = new fabric.Canvas('designCanvas', { width: w, height: h, selection: true });
+
+  // Background rect
+  fcBg = new fabric.Rect({ left:0, top:0, width:w, height:h, fill:'#1a2d5a', selectable:false, evented:false, rx:0, ry:0 });
+  fc.add(fcBg);
+
+  // Company name — vertically centered
+  fcName = new fabric.IText('Your Company Name', {
+    left: w/2, top: h*0.42, originX:'center', originY:'center',
+    fontSize:Math.round(h*0.38), fontWeight:'700', fill:'#ffffff', fontFamily:'DM Sans',
+    textAlign:'center', hasControls:true, lockRotation:true,
+    cornerColor:'#e63946', cornerSize:8, transparentCorners:false
+  });
+
+  // Slogan
+  fcSlogan = new fabric.IText('Your Slogan Here', {
+    left: w/2, top: h*0.78, originX:'center', originY:'center',
+    fontSize:Math.round(h*0.18), fontWeight:'400', fill:'rgba(255,255,255,0.75)', fontFamily:'DM Sans',
+    textAlign:'center', hasControls:true, lockRotation:true,
+    cornerColor:'#e63946', cornerSize:8, transparentCorners:false
+  });
+
+  // Biz type (small, top-left)
+  fcBiz = new fabric.Text('', {
+    left: w*0.02, top: h*0.12, originX:'left', originY:'center',
+    fontSize:Math.round(h*0.14), fill:'rgba(255,255,255,0.5)', fontFamily:'DM Sans',
+    selectable:true, hasControls:false, lockRotation:true
+  });
+
+  // SSM (small, bottom-right)
+  fcSsm = new fabric.Text('', {
+    left: w*0.98, top: h*0.88, originX:'right', originY:'center',
+    fontSize:Math.round(h*0.11), fill:'rgba(255,255,255,0.35)', fontFamily:'DM Sans',
+    selectable:true, hasControls:false, lockRotation:true
+  });
+
+  fc.add(fcName, fcSlogan, fcBiz, fcSsm);
+  fc.renderAll();
+}
+
+function hexToRgb(hex) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return {r:r, g:g, b:b};
+}
+function rgbaFg(alpha) {
+  var c = hexToRgb(S.fg || '#ffffff');
+  return 'rgba('+c.r+','+c.g+','+c.b+','+alpha+')';
+}
+
+function updateCanvasColors() { updateCanvasAppearance(); }
+
+function updateCanvasAppearance() {
+  if (!fc) return;
+  var w = fc.width, h = fc.height;
+
+  // Remove old effect objects (strips, light overlays)
+  fc.getObjects().forEach(function(o) { if (o.__fx) fc.remove(o); });
+
+  // ── Background ──
+  fcBg.set('fill', S.bg);
+
+  // ── Aluminium strip effect ──
+  // Real world: 236"×48" board → ~58 strips vertical, 8-12 strips horizontal
+  // Each strip ≈ 4" (10cm) wide. Canvas represents same proportion.
+  if (S.board === 'alum') {
+    var isVert = (alumDir === 'vertical');
+    // Scale strip count: vertical=58 strips at 6m, horizontal=10 strips at 1.2m
+    // Cap at pixel minimum so each strip is visible (min 4px per strip)
+    var count = isVert
+      ? Math.min(58, Math.max(Math.round(w / 6), 20))   // 6px min per strip
+      : Math.min(12, Math.max(Math.round(h / 10), 6));  // 10px min per strip
+    var stripSize = isVert ? (w / count) : (h / count);
+    // Groove = ~8% of strip width (the gap/channel between extrusions)
+    var grooveW = Math.max(1, Math.round(stripSize * 0.08));
+
+    // Draw groove lines only (fast, scales to 58 strips without performance hit)
+    for (var i = 1; i < count; i++) {
+      var pos = i * stripSize;
+      // Dark groove line
+      var groove = new fabric.Line(
+        isVert ? [pos, 0, pos, h] : [0, pos, w, pos],
+        { stroke:'rgba(0,0,0,0.60)', strokeWidth: grooveW,
+          selectable:false, evented:false, __fx:true }
+      );
+      groove.__fx = true; fc.add(groove);
+
+      // Thin bright highlight edge just after groove (the "lip" of the next strip)
+      var hlPos = pos + grooveW;
+      var hl = new fabric.Line(
+        isVert ? [hlPos, 0, hlPos, h] : [0, hlPos, w, hlPos],
+        { stroke:'rgba(255,255,255,0.30)', strokeWidth: Math.max(1, Math.round(grooveW*0.4)),
+          selectable:false, evented:false, __fx:true }
+      );
+      hl.__fx = true; fc.add(hl);
+    }
+
+    // Metallic sheen overlay — repeating gradient across full panel to show strip faces
+    var sheenRect = new fabric.Rect({ left:0, top:0, width:w, height:h,
+      fill: new fabric.Gradient({ type:'linear', gradientUnits:'pixels',
+        coords: isVert ? {x1:0,y1:0,x2:stripSize,y2:0} : {x1:0,y1:0,x2:0,y2:stripSize},
+        colorStops:[
+          { offset:0,    color:'rgba(255,255,255,0.15)' },
+          { offset:0.35, color:'rgba(255,255,255,0.05)' },
+          { offset:0.70, color:'rgba(0,0,0,0.06)' },
+          { offset:1,    color:'rgba(0,0,0,0.14)' }
+        ]
+      }), selectable:false, evented:false, __fx:true
+    });
+    sheenRect.__fx = true; fc.add(sheenRect);
+
+    // Silver metallic frame border
+    var frameThick = Math.max(5, Math.round(h * 0.10));
+    var frame = new fabric.Rect({
+      left:0, top:0, width:w, height:h, fill:'transparent',
+      stroke:'rgba(210,220,232,0.92)', strokeWidth:frameThick,
+      rx:1, ry:1, selectable:false, evented:false, __fx:true
+    });
+    frame.__fx = true; fc.add(frame);
+  }
+
+  // ── Lighting effects ──
+  var nameShadow = null, sloganShadow = null;
+
+  if (S.light === 'frontlit') {
+    var isWarm = S.led === 'warm';
+    var glowRgb = isWarm ? '255,200,80' : '210,235,255';
+    var glowA   = isWarm ? '0.9'        : '0.8';
+
+    // Spotlight radial overlay from top-center
+    var spotlight = new fabric.Rect({
+      left:0, top:0, width:w, height:h,
+      fill: new fabric.Gradient({
+        type:'radial', gradientUnits:'pixels',
+        coords:{ x1:w/2, y1:0, r1:0, x2:w/2, y2:h*0.4, r2:w*0.65 },
+        colorStops:[
+          { offset:0,   color: isWarm ? 'rgba(255,200,80,0.22)' : 'rgba(210,235,255,0.18)' },
+          { offset:0.6, color: isWarm ? 'rgba(255,180,60,0.06)' : 'rgba(200,225,255,0.04)' },
+          { offset:1,   color:'rgba(0,0,0,0)' }
+        ]
+      }),
+      selectable:false, evented:false, __fx:true
+    });
+    fc.add(spotlight);
+
+    nameShadow   = new fabric.Shadow({ color:'rgba('+glowRgb+','+glowA+')', blur:18, offsetX:0, offsetY:2 });
+    sloganShadow = new fabric.Shadow({ color:'rgba('+glowRgb+',0.5)',        blur:10, offsetX:0, offsetY:1 });
+
+  } else if (S.light === 'backlit') {
+    // ── Backlit = HALO-LIT letters (Annie Sammies / 26th Avenue / FLO Clinic style) ──
+    // The letters themselves stay a SOLID, DARK silhouette (opaque acrylic face).
+    // Light escapes from BEHIND/around their edges only, casting a soft coloured
+    // halo glow that hugs each letter's outline onto the panel — NOT a wash across
+    // the whole board.
+    var isWarm = S.led === 'warm';
+    var haloRgb = isWarm ? '255,196,90' : '226,240,255';
+
+    // 1. A gentle, tight halo bloom directly behind the name (where the glow is brightest)
+    //    — small radius so it reads as "glow hugging the letters", not a panel-wide wash
+    var haloBloom = new fabric.Rect({
+      left:0, top:0, width:w, height:h,
+      fill: new fabric.Gradient({ type:'radial', gradientUnits:'pixels',
+        coords:{ x1:w/2, y1:h*0.42, r1:0, x2:w/2, y2:h*0.42, r2:w*0.24 },
+        colorStops:[
+          { offset:0,   color: 'rgba('+haloRgb+',0.20)' },
+          { offset:0.6, color: 'rgba('+haloRgb+',0.07)' },
+          { offset:1,   color:'rgba(0,0,0,0)' }
+        ]
+      }), selectable:false, evented:false, __fx:true
+    });
+    haloBloom.__fx = true; fc.add(haloBloom);
+
+    // 2. Halo glow shadow — hugs the actual letterforms' edges (this is what makes
+    //    it read as "light glowing out from behind the letters")
+    nameShadow   = new fabric.Shadow({ color:'rgba('+haloRgb+',0.92)', blur:30, offsetX:0, offsetY:0 });
+    sloganShadow = new fabric.Shadow({ color:'rgba('+haloRgb+',0.70)', blur:18, offsetX:0, offsetY:0 });
+    // Letter fill stays as the user's chosen colour (S.fg) — applied below with all other modes
+
+  } else {
+    // Non-lit: no shadow
+    nameShadow   = null;
+    sloganShadow = null;
+  }
+
+  // Apply text colours and shadows — always use user's chosen colour regardless of lighting mode
+  fcName.set({ fill: S.fg,           shadow: nameShadow });
+  fcSlogan.set({ fill: rgbaFg(0.80), shadow: sloganShadow });
+  fcBiz.set({ fill: rgbaFg(0.55),   shadow: null });
+  fcSsm.set({ fill: rgbaFg(0.35),   shadow: null });
+
+  // Push all __fx objects behind text layers
+  fc.getObjects().forEach(function(o) {
+    if (o.__fx) { fc.sendToBack(o); }
+  });
+  // Background always lowest
+  fc.sendToBack(fcBg);
+
+  fc.renderAll();
+  if (mockupVisible) refreshMockup();
+}
+
+function updateCanvasText(nameVal, sloganVal, bizVal, ssmVal) {
+  if (!fc) return;
+  if (nameVal !== undefined)   fcName.set('text',   nameVal   || 'Your Company Name');
+  if (sloganVal !== undefined) fcSlogan.set('text', sloganVal || '');
+  if (bizVal !== undefined)    fcBiz.set('text',    bizVal    || '');
+  if (ssmVal !== undefined)    fcSsm.set('text',    ssmVal    || '');
+  fc.renderAll();
+  if (mockupVisible) refreshMockup();
+}
+
+function updateCanvasFont() {
+  if (!fc) return;
+  var f = document.getElementById('fontFamilyPicker').value;
+  [fcName, fcSlogan, fcBiz, fcSsm].forEach(function(o){ if(o) o.set('fontFamily', f); });
+  fc.renderAll();
+}
+
+function updateNameSize(v) {
+  document.getElementById('nameSizeVal').textContent = v;
+  if (fcName) { fcName.set('fontSize', parseInt(v)); fc.renderAll(); }
+  if (mockupVisible) refreshMockup();
+}
+
+function updateSloganSize(v) {
+  document.getElementById('sloganSizeVal').textContent = v;
+  if (fcSlogan) { fcSlogan.set('fontSize', parseInt(v)); fc.renderAll(); }
+}
+
+function addLogoToCanvas(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    fabric.Image.fromURL(e.target.result, function(img) {
+      if (fcLogo) fc.remove(fcLogo);
+      var maxW = fc.width * 0.25, maxH = fc.height * 0.4;
+      var scale = Math.min(maxW / img.width, maxH / img.height, 1);
+      img.set({ left: fc.width * 0.12, top: fc.height * 0.5, originX:'center', originY:'center', scaleX:scale, scaleY:scale, cornerColor:'#e63946', cornerSize:8, transparentCorners:false, lockRotation:true });
+      fcLogo = img;
+      fc.add(fcLogo);
+      fc.setActiveObject(fcLogo);
+      fc.renderAll();
+      document.getElementById('logoUploadLabel').classList.add('has-logo');
+      document.getElementById('clearLogoBtn').style.display = 'flex';
+      if (mockupVisible) refreshMockup();
+    });
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function clearLogo() {
+  if (fcLogo) { fc.remove(fcLogo); fcLogo = null; fc.renderAll(); }
+  document.getElementById('logoUploadLabel').classList.remove('has-logo');
+  document.getElementById('clearLogoBtn').style.display = 'none';
+  document.getElementById('logoFileInput').value = '';
+}
+
+function setAlumDir(dir) {
+  alumDir = dir;
+  document.getElementById('alumDirH').classList.toggle('active', dir === 'horizontal');
+  document.getElementById('alumDirV').classList.toggle('active', dir === 'vertical');
+  updateCanvasAppearance();
+}
+
+function toggleNight() {
+  nightMode = !nightMode;
+  var btn  = document.getElementById('nightBtn');
+  var wrap = document.getElementById('canvasWrap');
+  var mockupBuilding = document.querySelector('.mockup-building');
+  var mockupSky = document.querySelector('.mockup-sky');
+  if (nightMode) {
+    btn.classList.add('active');
+    btn.textContent = '☀️ Day';
+    wrap.style.background = '#060810';
+    if (mockupBuilding) mockupBuilding.style.background = '#1a1510';
+    if (mockupSky)      mockupSky.style.background = 'linear-gradient(to bottom,#0a0a18,#12121e)';
+    // Darken canvas background to night — keep user's chosen S.bg but dim it
+    fc.backgroundColor = '#060810';
+    fc.renderAll();
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '🌙 Night';
+    wrap.style.background = '#222';
+    if (mockupBuilding) mockupBuilding.style.background = '#e8e3da';
+    if (mockupSky)      mockupSky.style.background = 'linear-gradient(to bottom,#87ceeb,#b0d8f0)';
+    fc.backgroundColor = '';
+    fc.renderAll();
+  }
+  if (mockupVisible) refreshMockup();
+}
+
+function refreshMockup() {
+  if (!fc) return;
+  var dataUrl = fc.toDataURL({ format:'png', multiplier:2 });
+  document.getElementById('mockupPreviewImg').src = dataUrl;
+}
+
+function toggleMockup() {
+  mockupVisible = !mockupVisible;
+  var scene = document.getElementById('mockupScene');
+  var wrap  = document.getElementById('canvasWrap');
+  var hint  = document.querySelector('.canvas-hint');
+  var btn   = document.getElementById('mockupToggleBtn');
+  if (mockupVisible) {
+    refreshMockup();
+    scene.style.display = 'block';
+    wrap.style.display  = 'none';
+    hint.style.display  = 'none';
+    btn.classList.add('active');
+    btn.textContent = '✏️ Edit';
+  } else {
+    scene.style.display = 'none';
+    wrap.style.display  = 'block';
+    hint.style.display  = 'block';
+    btn.classList.remove('active');
+    btn.textContent = '🏪 Mockup';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initCanvas();
+});
+
+/* ══ End Fabric.js ══ */
+
 const S = {bg:'#1a2d5a',fg:'#ffffff',bgL:'Navy Blue',fgL:'White',light:'frontlit',board:'flat',led:'white'};
 const boardLabels  = {
   flat:'Flat Panel + 3D', alum:'Alum Strip + 3D',
@@ -1159,6 +1605,10 @@ function render() {
   document.getElementById('pSlogan').textContent = sloganVal;
   document.getElementById('pSSM').textContent    = ssmVal;
 
+  // Update Fabric.js canvas
+  updateCanvasText(nameVal, sloganVal, bizVal, ssmVal);
+  updateCanvasColors();
+
   const nameEl = document.getElementById('pName');
   const bizEl  = document.getElementById('pBiz');
   const sloEl  = document.getElementById('pSlogan');
@@ -1295,8 +1745,14 @@ function setBoard(b) {
     if(el) el.classList.toggle('on',x===b);
   });
 
-  // Alum strip texture
+  // Alum strip texture (legacy CSS preview)
   document.getElementById('sbTexture').style.display = b==='alum' ? 'block' : 'none';
+
+  // Show/hide alum strip direction toggle in canvas toolbar
+  var alumDirGroup = document.getElementById('alumDirGroup');
+  var alumDirSep   = document.getElementById('alumDirSep');
+  if (alumDirGroup) alumDirGroup.style.display = b==='alum' ? 'flex' : 'none';
+  if (alumDirSep)   alumDirSep.style.display   = b==='alum' ? 'block' : 'none';
 
   // Frame: show CSS bevel for flat/alum, metallic for lightbox/dslightbox, none for wall
   const cssFr = document.getElementById('sbFrameCss');
@@ -1328,6 +1784,7 @@ function setBoard(b) {
   if(bgColGrp) bgColGrp.style.display = b==='wall' ? 'none' : 'block';
 
   render();
+  refreshExampleGallery();
 }
 
 // ── Artwork Upload ────────────────────────────────
@@ -1466,12 +1923,79 @@ function setLight(l) {
   document.getElementById('led-section').style.opacity = l==='nonlit' ? '.35' : '1';
   render();
   calcPrice();
+  refreshExampleGallery();
 }
 function setLED(l) {
   S.led=l;
   ['white','warm'].forEach(x=>document.getElementById('led-'+x).classList.toggle('on',x===l));
   render();
 }
+
+// ── Real example photo gallery (actual past work) ───────────────
+var EXAMPLE_PHOTOS = {
+  alum: [
+    {src:'photos/ex-alum-1.jpg',  label:'Schneider Electric — vertical alum strip'},
+    {src:'photos/ex-alum-2.jpeg', label:'7E Electrical & Hardware — horizontal strip'},
+    {src:'photos/ex-alum-3.jpeg', label:'KH Tyre Molek — horizontal strip'},
+    {src:'photos/ex-alum-4.jpeg', label:'TTMC MediClinic — strip + backlit 3D letters'}
+  ],
+  frontlit: [
+    {src:'photos/ex-frontlit-1.jpeg', label:'KIPMALL — frontlit channel letters'},
+    {src:'photos/ex-frontlit-2.jpeg', label:'AZantz Services — illuminated 3D logo panel'}
+  ],
+  backlit: [
+    {src:'photos/ex-backlit-1.jpeg', label:'Annie Sammies — letters with halo glow'},
+    {src:'photos/ex-backlit-2.jpeg', label:'26th Avenue — 3D letters, warm halo on wall'},
+    {src:'photos/ex-backlit-3.jpeg', label:'FLO Clinic — letters glowing on coloured panel'}
+  ]
+};
+
+function refreshExampleGallery() {
+  var gallery = document.getElementById('exampleGallery');
+  var track   = document.getElementById('egTrack');
+  if (!gallery || !track) return;
+
+  var groups = [];
+  if (S.board === 'alum') groups.push('alum');
+  if (S.light === 'frontlit') groups.push('frontlit');
+  if (S.light === 'backlit')  groups.push('backlit');
+
+  var items = [];
+  groups.forEach(function(key){
+    (EXAMPLE_PHOTOS[key] || []).forEach(function(it){ items.push(it); });
+  });
+
+  if (!items.length) { gallery.style.display = 'none'; track.innerHTML=''; return; }
+
+  track.innerHTML = '';
+  items.forEach(function(it){
+    var card = document.createElement('div');
+    card.className = 'eg-thumb';
+    card.innerHTML = '<img src="'+it.src+'" alt="'+it.label.replace(/"/g,'')+'" loading="lazy"/><span class="eg-cap">'+it.label+'</span>';
+    card.onclick = function(){ openExampleModal(it.src, it.label); };
+    track.appendChild(card);
+  });
+  gallery.style.display = 'block';
+}
+
+function openExampleModal(src, label) {
+  var modal = document.getElementById('egModal');
+  var img   = document.getElementById('egModalImg');
+  var cap   = document.getElementById('egModalCap');
+  if (!modal || !img) return;
+  img.src = src;
+  img.alt = label || '';
+  if (cap) cap.textContent = label || '';
+  modal.classList.add('show');
+}
+function closeExampleModal(e) {
+  if (e) e.stopPropagation();
+  var modal = document.getElementById('egModal');
+  if (modal) modal.classList.remove('show');
+}
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeExampleModal();
+});
 
 // ── Steps ──
 function goStep(n) {
@@ -1556,6 +2080,7 @@ function handleFile(input) {
 }
 
 render();
+refreshExampleGallery();
 
 /* ── Cart utilities ── */
 function getCart(){try{return JSON.parse(localStorage.getItem('antCart')||'[]')}catch(e){return[]}}
@@ -1599,6 +2124,15 @@ document.addEventListener('click', function(e) {
   <span class="cart-fab-badge" id="cart-fab-badge"></span>
 </button>
 <div class="cart-toast" id="cart-toast">✅ Added to cart!</div>
+
+<!-- Real example photo viewer -->
+<div class="eg-modal" id="egModal" onclick="closeExampleModal(event)">
+  <div class="eg-modal-close" onclick="closeExampleModal(event)">✕</div>
+  <div class="eg-modal-inner" onclick="event.stopPropagation()">
+    <img id="egModalImg" src="" alt="Real signboard example"/>
+    <div class="eg-modal-cap" id="egModalCap"></div>
+  </div>
+</div>
 <script>
 /* ── Unified checkout: route submit through shared cart ── */
 (function(){
