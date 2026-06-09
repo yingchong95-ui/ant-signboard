@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>A&T Signboard & Printing — Custom Signage & Printing | Order Online</title>
 <meta name="description" content="Professional custom signboards, banners, acrylic, foamboard, inkjet, LED neon & fire-safety (Bomba) signage. Get an instant quote & order online — serving Johor Bahru, Kuala Lumpur & Singapore."/>
-<meta name="theme-color" content="#0d1f3c"/>
+<meta name="theme-color" content="#0F172A"/>
 <link rel="canonical" href="https://ant-signboard.netlify.app/"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-  :focus-visible{outline:2px solid #4285f4;outline-offset:2px;border-radius:4px}
+  :focus-visible{outline:2px solid #0369A1;outline-offset:2px;border-radius:4px}
   @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
 </style>
 <script type="application/ld+json">
@@ -69,20 +69,25 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0d1f3c;--red:#e63946;--red-dark:#c1121f;--red-bg:#fff0f1;
-  --white:#fff;--off:#f6f8fc;--border:#e3e7ef;
-  --t1:#0d1f3c;--t2:#5a6478;--t3:#9aa3b2;
-  --green:#16a34a;
-  --gemini:#4285f4;--gemini-dark:#1a73e8;--gemini-bg:#e8f0fe;
-  --sh-sm:0 1px 4px rgba(13,31,60,.06);
-  --sh-md:0 4px 20px rgba(13,31,60,.10);
-  --sh-lg:0 8px 40px rgba(13,31,60,.13);
+  --navy:#0b1322;--red:#DC2626;--red-dark:#B91C1C;--red-bg:#2a1216;
+  --white:#101a30;--off:#0a0e1a;--border:#1e2a44;
+  --t1:#eef2f8;--t2:#9aa6bd;--t3:#6b7890;
+  --green:#22c55e;
+  --gemini:#0369A1;--gemini-dark:#075985;--gemini-bg:#0e2740;
+  --card:#101a30;--neon:#22d3ee;--neon2:#e879f9;
+  --sh-sm:0 1px 4px rgba(0,0,0,.4);
+  --sh-md:0 6px 24px rgba(0,0,0,.5);
+  --sh-lg:0 12px 48px rgba(0,0,0,.6);
   --r-sm:8px;--r-md:12px;--r-lg:18px;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-height:100vh;line-height:1.6}
 
 /* Header */
-header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.28)}
+header{background:linear-gradient(100deg,#080b14 0%,#0e1830 45%,#080b14 100%);background-size:200% 100%;animation:hdr-shift 20s ease-in-out infinite;padding:0 2rem;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.5)}
+@keyframes hdr-shift{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent 0%,var(--red) 22%,var(--gemini) 50%,var(--red) 78%,transparent 100%);background-size:200% 100%;animation:hdr-line 6s linear infinite;opacity:.85;pointer-events:none}
+@keyframes hdr-line{to{background-position:200% 0}}
+@media (prefers-reduced-motion:reduce){header,header::after{animation:none}}
 .logo-wrap{display:flex;align-items:center;gap:11px}
 .logo-box{width:42px;height:42px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0}
 .logo-text{display:flex;flex-direction:column}
@@ -92,29 +97,50 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 .wa-btn:hover{filter:brightness(1.08)}
 .cart-hdr-btn{position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:1.15rem;cursor:pointer;text-decoration:none;transition:background .2s;flex-shrink:0}
 .cart-hdr-btn:hover{background:rgba(255,255,255,.22)}
-.cart-hdr-badge{position:absolute;top:-5px;right:-5px;background:#e63946;color:#fff;font-size:.55rem;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 3px}
+.cart-hdr-badge{position:absolute;top:-5px;right:-5px;background:#DC2626;color:#fff;font-size:.55rem;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 3px}
 
 
 /* Hero */
-.hero{background:linear-gradient(135deg,var(--navy) 0%,#1a3560 100%);padding:4rem 2rem 3.5rem;text-align:center;color:#fff;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(230,57,70,.12) 0%,transparent 70%);pointer-events:none}
-.hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,.04) 0%,transparent 70%);pointer-events:none}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(230,57,70,.18);border:1px solid rgba(230,57,70,.35);color:#ff8b91;font-size:.72rem;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:1.2rem;letter-spacing:.08em;text-transform:uppercase}
-.hero h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;margin-bottom:.8rem;line-height:1.2}
-.hero h1 span{color:var(--red)}
+.hero{background:radial-gradient(1100px 600px at 72% 18%,rgba(34,211,238,.10),transparent 60%),radial-gradient(900px 520px at 18% 88%,rgba(232,121,249,.10),transparent 60%),linear-gradient(160deg,#0a0e1a 0%,#070a14 55%,#0a0f1e 100%);padding:4.5rem 2rem 4rem;text-align:center;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-90px;right:-70px;width:420px;height:420px;background:radial-gradient(circle,rgba(34,211,238,.30) 0%,transparent 68%);filter:blur(28px);pointer-events:none;z-index:1;animation:float-glow-a 11s ease-in-out infinite}
+.hero::after{content:'';position:absolute;bottom:-80px;left:-70px;width:380px;height:380px;background:radial-gradient(circle,rgba(232,121,249,.26) 0%,transparent 68%);filter:blur(28px);pointer-events:none;z-index:1;animation:float-glow-b 14s ease-in-out infinite}
+@keyframes float-glow-a{0%,100%{transform:translate(0,0) scale(1);opacity:.85}50%{transform:translate(-34px,26px) scale(1.18);opacity:1}}
+@keyframes float-glow-b{0%,100%{transform:translate(0,0) scale(1);opacity:.75}50%{transform:translate(30px,-20px) scale(1.22);opacity:1}}
+/* hero entrance + vitality */
+.hero-inner>*{animation:hero-rise .75s cubic-bezier(.2,.7,.2,1) both}
+.hero-inner>*:nth-child(1){animation-delay:.05s}
+.hero-inner>*:nth-child(2){animation-delay:.15s}
+.hero-inner>*:nth-child(3){animation-delay:.26s}
+.hero-inner>*:nth-child(4){animation-delay:.38s}
+.hero-inner>*:nth-child(5){animation-delay:.50s}
+.hero-inner>*:nth-child(6){animation-delay:.60s}
+@keyframes hero-rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){
+  .hero,.hero::before,.hero::after,.hero-inner>*,.hero h1 span,.hero-ai-label .gemini-dot{animation:none!important}
+  .hero h1 span{-webkit-text-fill-color:#22d3ee;color:#22d3ee}
+}
+.hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.hero-bg img{width:100%;height:100%;object-fit:cover;object-position:center 32%;opacity:.16;transform:scale(1.04);filter:saturate(1.1)}
+.hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(165deg,rgba(7,10,20,.93) 0%,rgba(7,10,20,.84) 45%,rgba(10,15,30,.92) 100%)}
+.hero-inner{position:relative;z-index:2}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(220,38,38,.18);border:1px solid rgba(220,38,38,.38);color:#fca5a5;font-size:.72rem;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:1.2rem;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-size:clamp(2rem,4.6vw,3.1rem);font-weight:800;margin-bottom:.8rem;line-height:1.18;text-shadow:0 0 24px rgba(120,180,255,.18)}
+.hero h1 span{background:linear-gradient(90deg,#22d3ee 0%,#e879f9 50%,#22d3ee 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:hero-shine 5s linear infinite;filter:drop-shadow(0 0 16px rgba(34,211,238,.45))}
+@keyframes hero-shine{to{background-position:200% center}}
 .hero p{color:rgba(255,255,255,.65);font-size:.95rem;max-width:520px;margin:0 auto 2rem}
 .hero-stats{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;margin-bottom:2.5rem}
 .hero-stat{text-align:center}
-.hero-stat-num{font-size:1.4rem;font-weight:800;color:#fff;line-height:1}
+.hero-stat-num{font-size:1.4rem;font-weight:800;color:#fff;line-height:1;text-shadow:0 0 14px rgba(34,211,238,.35)}
 .hero-stat-label{font-size:.7rem;color:rgba(255,255,255,.45);margin-top:3px;letter-spacing:.04em}
 
 /* ── PLAN B: Hero AI Search Box ── */
 .hero-ai-box{
   position:relative;max-width:580px;margin:0 auto;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(34,211,238,.22);
   border-radius:16px;padding:1.2rem 1.4rem;
-  backdrop-filter:blur(12px);
+  backdrop-filter:blur(16px);
+  box-shadow:0 0 40px rgba(34,211,238,.10),0 8px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);
 }
 .hero-ai-label{
   display:flex;align-items:center;gap:7px;
@@ -122,8 +148,8 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
   color:rgba(255,255,255,.5);margin-bottom:.8rem;
 }
 .hero-ai-label .gemini-dot{
-  width:7px;height:7px;border-radius:50%;background:var(--gemini);
-  box-shadow:0 0 8px rgba(66,133,244,.8);animation:pulse-dot 2s infinite;
+  width:7px;height:7px;border-radius:50%;background:#22d3ee;
+  box-shadow:0 0 10px rgba(34,211,238,.95);animation:pulse-dot 2s infinite;
 }
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
 .hero-ai-input-row{display:flex;gap:.6rem;align-items:stretch}
@@ -133,14 +159,15 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
   font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;
 }
 .hero-ai-input::placeholder{color:rgba(255,255,255,.35)}
-.hero-ai-input:focus{border-color:rgba(66,133,244,.7);background:rgba(255,255,255,.13)}
+.hero-ai-input:focus{border-color:rgba(34,211,238,.7);background:rgba(255,255,255,.13);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
 .hero-ai-btn{
   display:flex;align-items:center;gap:6px;
-  background:var(--gemini);color:#fff;border:none;cursor:pointer;
-  padding:.7rem 1.2rem;border-radius:10px;font-size:.85rem;font-weight:600;
-  font-family:'DM Sans',sans-serif;transition:background .2s,transform .15s;white-space:nowrap;
+  background:linear-gradient(135deg,#0369A1 0%,#22d3ee 100%);color:#04141c;border:none;cursor:pointer;
+  padding:.7rem 1.2rem;border-radius:10px;font-size:.85rem;font-weight:700;
+  font-family:'DM Sans',sans-serif;transition:box-shadow .2s,transform .15s,filter .2s;white-space:nowrap;
+  box-shadow:0 0 20px rgba(34,211,238,.5),0 4px 14px rgba(3,105,161,.4);
 }
-.hero-ai-btn:hover{background:var(--gemini-dark);transform:translateY(-1px)}
+.hero-ai-btn:hover{filter:brightness(1.08);box-shadow:0 0 28px rgba(34,211,238,.7),0 6px 18px rgba(3,105,161,.5);transform:translateY(-1px)}
 .hero-ai-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 .hero-ai-result{
   margin-top:1rem;font-size:.83rem;line-height:1.6;color:rgba(255,255,255,.85);
@@ -181,12 +208,12 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 
 /* Product Card */
 .product-card{
-  background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
   box-shadow:var(--sh-sm);transition:all .25s;overflow:hidden;
   display:flex;flex-direction:column;text-decoration:none;color:inherit;
   position:relative;
 }
-.product-card:hover{box-shadow:var(--sh-lg);transform:translateY(-3px);border-color:#d0d7e4}
+.product-card:hover{box-shadow:0 0 24px rgba(34,211,238,.18),var(--sh-lg);transform:translateY(-3px);border-color:rgba(34,211,238,.45)}
 .product-card.coming-soon{opacity:.6;cursor:default;pointer-events:none}
 .product-card.coming-soon:hover{transform:none;box-shadow:var(--sh-sm)}
 /* AI highlight state */
@@ -266,7 +293,7 @@ footer a:hover{color:#fff}
 .ai-fab{
   position:fixed;bottom:5.5rem;right:1.5rem;z-index:200;
   width:56px;height:56px;
-  background:linear-gradient(135deg,#4285f4,#1a73e8);
+  background:linear-gradient(135deg,#0369A1,#075985);
   border-radius:50%;border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 4px 16px rgba(66,133,244,.45);transition:transform .2s,box-shadow .2s;
@@ -278,7 +305,7 @@ footer a:hover{color:#fff}
 .ai-panel{
   position:fixed;bottom:9.5rem;right:1.5rem;z-index:300;
   width:360px;max-width:calc(100vw - 2rem);
-  background:#fff;border-radius:20px;
+  background:var(--card);border-radius:20px;
   box-shadow:0 20px 60px rgba(13,31,60,.2),0 0 0 1px rgba(13,31,60,.07);
   display:flex;flex-direction:column;overflow:hidden;
   transform:scale(.9) translateY(20px);opacity:0;pointer-events:none;
@@ -288,7 +315,7 @@ footer a:hover{color:#fff}
 .ai-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
 
 .ai-panel-header{
-  background:linear-gradient(135deg,#0d1f3c,#1a3560);
+  background:linear-gradient(135deg,#0F172A,#1E293B);
   padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;flex-shrink:0;
 }
 .ai-panel-avatar{
@@ -356,7 +383,7 @@ footer a:hover{color:#fff}
 /* Notification dot */
 .ai-fab-dot{
   position:absolute;top:2px;right:2px;width:12px;height:12px;
-  background:#e63946;border-radius:50%;border:2px solid #fff;
+  background:#DC2626;border-radius:50%;border:2px solid #fff;
   display:none;
 }
 .ai-fab-dot.show{display:block}
@@ -394,6 +421,10 @@ footer a:hover{color:#fff}
 
 <!-- Hero -->
 <div class="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <img src="photos/team-hero.jpeg" alt="" loading="eager" decoding="async"/>
+  </div>
+  <div class="hero-inner">
   <div class="hero-badge">🏪 A&T Online Shop</div>
   <h1>Custom Signage &<br/><span>Printing Solutions</span></h1>
   <p>Professional signboards, printing & display solutions — get an instant quote and place your order online</p>
@@ -425,7 +456,178 @@ footer a:hover{color:#fff}
     </div>
     <div class="hero-ai-result" id="heroAiResult"></div>
   </div>
+  </div><!-- /hero-inner -->
 </div>
+
+<!-- Portfolio / Real Work Showcase -->
+<style>
+.pf-section{padding:3.6rem 0 1.2rem;overflow:hidden}
+.pf-head{max-width:640px;margin:0 auto 1.7rem;padding:0 1.5rem;text-align:center}
+.pf-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:.6rem}
+.pf-head h2{font-size:1.4rem;font-weight:800;color:var(--t1);margin-bottom:.5rem;line-height:1.3}
+.pf-head p{color:var(--t2);font-size:.88rem;max-width:460px;margin:0 auto;line-height:1.6}
+.pf-track{display:flex;gap:1.1rem;overflow-x:auto;padding:.4rem 1.5rem 1.3rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.pf-track::-webkit-scrollbar{height:6px}
+.pf-track::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px}
+.pf-card{position:relative;flex:0 0 auto;width:268px;height:330px;border-radius:var(--r-lg);overflow:hidden;cursor:zoom-in;scroll-snap-align:start;box-shadow:var(--sh-md);transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s;border:1px solid var(--border)}
+.pf-card:hover{transform:translateY(-6px);box-shadow:var(--sh-lg)}
+.pf-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.pf-card:hover img{transform:scale(1.08)}
+.pf-glass{position:absolute;left:10px;right:10px;bottom:10px;padding:.8rem 1rem;border-radius:14px;
+  background:rgba(13,31,60,.4);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);
+  border:1px solid rgba(255,255,255,.2);color:#fff}
+.pf-glass .pf-tag{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.62);margin-bottom:.2rem}
+.pf-glass .pf-name{font-size:.9rem;font-weight:700;line-height:1.3}
+.pf-hint{text-align:center;font-size:.72rem;color:var(--t3);margin:0 0 .4rem}
+
+/* Lightbox */
+.pf-modal{display:none;position:fixed;inset:0;background:rgba(8,12,24,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:6vh 5vw;cursor:zoom-out}
+.pf-modal.show{display:flex}
+.pf-modal-inner{position:relative;max-width:min(880px,92vw);max-height:88vh;display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.pf-modal-inner img{max-width:100%;max-height:76vh;border-radius:14px;box-shadow:0 25px 70px rgba(0,0,0,.5)}
+.pf-modal-cap{color:#fff;font-size:.85rem;font-weight:600;text-align:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:.5rem 1.1rem;border-radius:24px}
+.pf-modal-close{position:absolute;top:18px;right:22px;color:#fff;font-size:1.4rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.1);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.16);z-index:2}
+.pf-modal-close:hover{background:rgba(255,255,255,.2)}
+</style>
+<section class="pf-section" aria-label="Real projects gallery">
+  <div class="pf-head">
+    <div class="pf-eyebrow">✦ Our Craftsmanship</div>
+    <h2>Real Signs. Real Clients. Real Craft.</h2>
+    <p>Every project below was designed, fabricated and installed by our own team in Johor — not stock photography.</p>
+  </div>
+  <div class="pf-track" id="pfTrack">
+    <div class="pf-card" data-src="photos/ex-alum-1.jpg" data-cap="Schneider Electric — Vertical aluminium strip signboard">
+      <img src="photos/ex-alum-1.jpg" alt="Schneider Electric vertical aluminium strip signboard, fabricated in our workshop" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">Aluminium Strip</div><div class="pf-name">Schneider Electric</div></div>
+    </div>
+    <div class="pf-card" data-src="photos/ex-backlit-1.jpeg" data-cap="Annie Sammies Cafe & Bakes — Backlit halo-glow lightbox signboard">
+      <img src="photos/ex-backlit-1.jpeg" alt="Annie Sammies Cafe backlit lightbox signboard with glowing script lettering" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">Backlit Lightbox</div><div class="pf-name">Annie Sammies Cafe &amp; Bakes</div></div>
+    </div>
+    <div class="pf-card" data-src="photos/ex-frontlit-1.jpeg" data-cap="KIPMALL — Frontlit illuminated channel-letter signboard">
+      <img src="photos/ex-frontlit-1.jpeg" alt="KIPMALL frontlit illuminated channel letter signboard glowing red at night" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">Frontlit Channel Letters</div><div class="pf-name">KIPMALL</div></div>
+    </div>
+    <div class="pf-card" data-src="photos/ex-backlit-2.jpeg" data-cap="26th Avenue Bukit Indah — Architectural halo-lit 3D letters">
+      <img src="photos/ex-backlit-2.jpeg" alt="26th Avenue Bukit Indah architectural wall sign with warm halo-lit 3D letters" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">Halo-Lit 3D Letters</div><div class="pf-name">26th Avenue, Bukit Indah</div></div>
+    </div>
+    <div class="pf-card" data-src="photos/ex-alum-4.jpeg" data-cap="TTMC MediClinic — Aluminium strip panel with backlit 3D letters">
+      <img src="photos/ex-alum-4.jpeg" alt="TTMC MediClinic aluminium strip signboard with illuminated blue and green 3D letters" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">Strip + Backlit Letters</div><div class="pf-name">TTMC MediClinic</div></div>
+    </div>
+    <div class="pf-card" data-src="photos/ex-frontlit-2.jpeg" data-cap="AZantz Services — Illuminated 3D logo signboard">
+      <img src="photos/ex-frontlit-2.jpeg" alt="AZantz Services illuminated dimensional logo and lettering signboard" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">3D Logo Signboard</div><div class="pf-name">AZantz Services Sdn. Bhd.</div></div>
+    </div>
+    <div class="pf-card" data-src="photos/ex-backlit-3.jpeg" data-cap="FLO Clinic — Halo-glow backlit lettering on coloured panel">
+      <img src="photos/ex-backlit-3.jpeg" alt="FLO Clinic backlit signboard with warm halo glow around dark lettering on a purple panel" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">Backlit Halo Glow</div><div class="pf-name">FLO Clinic</div></div>
+    </div>
+    <div class="pf-card" data-src="photos/ex-alum-3.jpeg" data-cap="KH Tyre Molek Service Centre — Horizontal aluminium strip signboard">
+      <img src="photos/ex-alum-3.jpeg" alt="KH Tyre Molek Service Centre horizontal aluminium strip signboard in orange" loading="lazy"/>
+      <div class="pf-glass"><div class="pf-tag">Aluminium Strip</div><div class="pf-name">KH Tyre Molek Service Centre</div></div>
+    </div>
+  </div>
+  <p class="pf-hint">← Scroll to explore our work · Tap any photo to view full size →</p>
+</section>
+
+<!-- Lightbox modal -->
+<div class="pf-modal" id="pfModal" onclick="closePfModal(event)">
+  <div class="pf-modal-close" onclick="closePfModal(event)">✕</div>
+  <div class="pf-modal-inner" onclick="event.stopPropagation()">
+    <img id="pfModalImg" src="" alt="Real signboard project photo"/>
+    <div class="pf-modal-cap" id="pfModalCap"></div>
+  </div>
+</div>
+
+<!-- Craft Process / Storytelling -->
+<style>
+.cp-section{background:linear-gradient(160deg,var(--navy) 0%,#162033 55%,#1E293B 100%);padding:4rem 1.5rem;position:relative;overflow:hidden}
+.cp-section::before{content:'';position:absolute;top:-100px;right:-100px;width:360px;height:360px;background:radial-gradient(circle,rgba(230,57,70,.13) 0%,transparent 70%);pointer-events:none}
+.cp-section::after{content:'';position:absolute;bottom:-80px;left:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 70%);pointer-events:none}
+.cp-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.cp-head{text-align:center;margin-bottom:2.6rem}
+.cp-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#ff8b91;margin-bottom:.6rem}
+.cp-head h2{font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:.5rem}
+.cp-head p{color:rgba(255,255,255,.55);font-size:.88rem;max-width:480px;margin:0 auto;line-height:1.6}
+.cp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem}
+.cp-card{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
+  border-radius:var(--r-lg);padding:1.5rem 1.3rem;display:flex;flex-direction:column;gap:.65rem;
+  transition:transform .3s,background .3s,border-color .3s}
+.cp-card:hover{transform:translateY(-5px);background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.26)}
+.cp-num{width:34px;height:34px;border-radius:10px;background:rgba(230,57,70,.2);border:1px solid rgba(230,57,70,.4);color:#ff8b91;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;letter-spacing:.02em}
+.cp-card h3{font-size:.95rem;font-weight:700;color:#fff;line-height:1.3}
+.cp-card p{font-size:.78rem;color:rgba(255,255,255,.55);line-height:1.6}
+@media(max-width:880px){.cp-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.cp-grid{grid-template-columns:1fr}}
+</style>
+<section class="cp-section" aria-label="Our craft process">
+  <div class="cp-inner">
+    <div class="cp-head">
+      <div class="cp-eyebrow">◆ How We Craft Your Sign</div>
+      <h2>From Concept to Installation — All In-House</h2>
+      <p>A hands-on process refined over 10+ years. Every sign passes through our own Ulu Tiram workshop — not a middleman — so we control quality at every step.</p>
+    </div>
+    <div class="cp-grid">
+      <div class="cp-card">
+        <div class="cp-num">01</div>
+        <h3>Consultation &amp; Concept</h3>
+        <p>We get to know your brand, space and budget — over WhatsApp or in person — then sketch initial concepts together.</p>
+      </div>
+      <div class="cp-card">
+        <div class="cp-num">02</div>
+        <h3>Design &amp; Proofing</h3>
+        <p>Our designers turn the concept into a precise digital proof — colours, materials and dimensions confirmed before production begins.</p>
+      </div>
+      <div class="cp-card">
+        <div class="cp-num">03</div>
+        <h3>In-House Fabrication</h3>
+        <p>Cut, printed, assembled and finished by our own craftsmen at our workshop — full control over quality, start to finish.</p>
+      </div>
+      <div class="cp-card">
+        <div class="cp-num">04</div>
+        <h3>Delivery &amp; Installation</h3>
+        <p>We deliver and professionally install on-site across Johor Bahru, Kuala Lumpur and Singapore — or arrange easy self-collection.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Our Team -->
+<style>
+.team-section{background:var(--off);padding:4.5rem 1.5rem}
+.team-inner{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1fr 1.1fr;gap:2.8rem;align-items:center}
+.team-eyebrow{color:var(--red);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.7rem}
+.team-copy h2{font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;color:var(--t1);line-height:1.2;margin-bottom:.9rem}
+.team-copy h2 span{color:var(--gemini)}
+.team-copy p{color:var(--t2);font-size:.95rem;line-height:1.7;margin-bottom:1.6rem;max-width:460px}
+.team-stats{display:flex;gap:2.2rem;flex-wrap:wrap}
+.team-stat-num{font-size:1.5rem;font-weight:800;color:var(--neon);line-height:1;text-shadow:0 0 12px rgba(34,211,238,.4)}
+.team-stat-label{font-size:.72rem;color:var(--t2);margin-top:4px;letter-spacing:.03em}
+.team-photo{margin:0;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);border:1px solid var(--border);position:relative}
+.team-photo img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.team-photo:hover img{transform:scale(1.03)}
+@media(max-width:780px){.team-inner{grid-template-columns:1fr;gap:1.8rem}.team-photo{order:-1}.team-copy p{max-width:none}}
+</style>
+<section class="team-section" aria-label="Our team">
+  <div class="team-inner">
+    <div class="team-copy">
+      <div class="team-eyebrow">◆ The People Behind A&amp;T</div>
+      <h2>One Team, Every Sign — <span>Made in Johor</span></h2>
+      <p>From designers to installers, every project is handled by our own in-house crew. No outsourcing, no middlemen — just a tight-knit team that takes pride in getting your signage right.</p>
+      <div class="team-stats">
+        <div class="team-stat"><div class="team-stat-num">100%</div><div class="team-stat-label">In-House</div></div>
+        <div class="team-stat"><div class="team-stat-num">10+</div><div class="team-stat-label">Years Together</div></div>
+        <div class="team-stat"><div class="team-stat-num">JB · KL · SG</div><div class="team-stat-label">We Cover</div></div>
+      </div>
+    </div>
+    <figure class="team-photo">
+      <img src="photos/team-group.jpeg" alt="The A&amp;T Signboard team" loading="lazy" decoding="async"/>
+    </figure>
+  </div>
+</section>
 
 <!-- Products -->
 <div class="section">
@@ -523,7 +725,7 @@ footer a:hover{color:#fff}
     <!-- Signboard -->
     <a href="ant-signboard-order-v2.html" class="product-card" data-product="signboard" data-tags="signboard flat panel aluminium lightbox wall lettering shop front business custom">
       <div class="new-badge">NEW ✦ AI</div>
-      <div class="card-banner" style="background:linear-gradient(135deg,#0d1f3c 0%,#1a3560 100%)">🪧</div>
+      <div class="card-banner" style="background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%)">🪧</div>
       <div class="ai-badge">✦ AI推荐</div>
       <div class="card-body">
         <div class="card-category">Signboard</div>
@@ -591,15 +793,15 @@ footer a:hover{color:#fff}
 .tm-head{text-align:center;margin-bottom:2rem}
 .tm-head .section-title{font-size:1.2rem;font-weight:700;margin-bottom:.3rem}
 .tm-head .section-sub{color:var(--t2);font-size:.87rem}
-.tm-rating{display:inline-flex;align-items:center;gap:.5rem;margin-top:.8rem;background:#fff;border:1px solid var(--border);border-radius:30px;padding:6px 16px;box-shadow:var(--sh-sm)}
+.tm-rating{display:inline-flex;align-items:center;gap:.5rem;margin-top:.8rem;background:var(--card);border:1px solid var(--border);border-radius:30px;padding:6px 16px;box-shadow:var(--sh-sm)}
 .tm-rating .stars{color:#fbbc04;font-size:1rem;letter-spacing:1px}
 .tm-rating b{font-weight:700}.tm-rating span{color:var(--t2);font-size:.8rem}
 .tm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.2rem}
-.tm-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:1.3rem;box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:.7rem}
+.tm-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.3rem;box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:.7rem}
 .tm-card .tm-stars{color:#fbbc04;font-size:.95rem;letter-spacing:1px}
 .tm-quote{font-size:.9rem;color:var(--t1);line-height:1.6;flex:1}
 .tm-who{display:flex;align-items:center;gap:10px;margin-top:.3rem}
-.tm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d1f3c,#1a3560);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+.tm-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0F172A,#1E293B);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
 .tm-name{font-size:.85rem;font-weight:600;color:var(--t1);line-height:1.2}
 .tm-src{font-size:.7rem;color:var(--t3);display:flex;align-items:center;gap:3px}
 .tm-g{color:#4285f4;font-weight:700}
@@ -644,7 +846,7 @@ footer a:hover{color:#fff}
 .faq-section{max-width:760px;margin:0 auto;padding:3rem 1.5rem}
 .faq-section .section-title{font-size:1.2rem;font-weight:700;margin-bottom:.3rem;text-align:center}
 .faq-section .section-sub{color:var(--t2);font-size:.87rem;text-align:center;margin-bottom:2rem}
-.faq-item{background:#fff;border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:.7rem;overflow:hidden;box-shadow:var(--sh-sm)}
+.faq-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:.7rem;overflow:hidden;box-shadow:var(--sh-sm)}
 .faq-item summary{list-style:none;cursor:pointer;padding:1rem 1.2rem;font-size:.92rem;font-weight:600;color:var(--t1);display:flex;justify-content:space-between;align-items:center;gap:1rem}
 .faq-item summary::-webkit-details-marker{display:none}
 .faq-item summary::after{content:'+';font-size:1.3rem;color:var(--red);font-weight:400;transition:transform .2s;flex-shrink:0}
@@ -988,6 +1190,30 @@ function resetCards() {
 document.getElementById('heroAiInput').addEventListener('keydown', e=>{
   if (e.key === 'Enter') heroAiSearch();
 });
+
+// Portfolio lightbox
+(function(){
+  var track = document.getElementById('pfTrack');
+  var modal = document.getElementById('pfModal');
+  var img   = document.getElementById('pfModalImg');
+  var cap   = document.getElementById('pfModalCap');
+  if (!track || !modal) return;
+  track.querySelectorAll('.pf-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      img.src = card.getAttribute('data-src');
+      img.alt = card.getAttribute('data-cap') || '';
+      cap.textContent = card.getAttribute('data-cap') || '';
+      modal.classList.add('show');
+    });
+  });
+  window.closePfModal = function(e){
+    if (e) e.stopPropagation();
+    modal.classList.remove('show');
+  };
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') window.closePfModal();
+  });
+})();
 
 // Cart badge
 (function(){
