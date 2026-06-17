@@ -255,14 +255,32 @@ header{background:var(--navy);padding:0 1.5rem;height:62px;display:flex;align-it
       </div>
     </div>
 
-    <!-- Warranty card (signboard & neon only) -->
+    <!-- Warranty card -->
     <div id="warranty-section" style="display:none">
       <div class="warranty-card">
         <div class="warranty-title">🛡️ Warranty Coverage</div>
-        <div class="w-row"><span>Coverage Period</span><strong id="w-months">—</strong></div>
-        <div class="w-row"><span>Start Date</span><strong id="w-start">—</strong></div>
-        <div class="w-row"><span>Valid Until</span><strong id="w-end">—</strong></div>
-        <div class="w-row" style="border:none;margin-top:.3rem"><span>Status</span><span id="w-badge">—</span></div>
+        <div id="w-install-note" style="font-size:11.5px;color:var(--amber);margin-bottom:.8rem;line-height:1.5"></div>
+        <div class="w-row">
+          <span>🎨 Colour</span>
+          <div style="text-align:right">
+            <strong id="w-colour-period" style="font-size:12px">12 months</strong>
+            <div id="w-colour-badge" style="margin-top:3px"></div>
+          </div>
+        </div>
+        <div class="w-row">
+          <span>💡 LED Lighting</span>
+          <div style="text-align:right">
+            <strong id="w-led-period" style="font-size:12px">12 months</strong>
+            <div id="w-led-badge" style="margin-top:3px"></div>
+          </div>
+        </div>
+        <div class="w-row" style="border:none">
+          <span>⚡ Transformer</span>
+          <div style="text-align:right">
+            <strong id="w-trans-period" style="font-size:12px">6 months</strong>
+            <div id="w-trans-badge" style="margin-top:3px"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -411,31 +429,43 @@ function renderOrder(data) {
     }
   }
 
-  // Warranty
-  const warranty = data.warranty || {};
-  if (warranty.applicable) {
-    document.getElementById('warranty-section').style.display = '';
-    const months = warranty.months || 12;
-    document.getElementById('w-months').textContent = months + ' months';
+  // Warranty — 3 components, start from jobdone (installation) date
+  const jobdone  = steps.jobdone || {};
+  const wSection = document.getElementById('warranty-section');
+  if (wSection) {
+    wSection.style.display = '';
+    const note = document.getElementById('w-install-note');
 
-    const assembly = steps.assembly || {};
-    if (assembly.status === 'done' && assembly.completedAt) {
-      const start = new Date(assembly.completedAt);
-      const end   = new Date(assembly.completedAt);
-      end.setMonth(end.getMonth() + months);
-      const now      = new Date();
-      const isValid  = end > now;
-      const daysLeft = Math.ceil((end - now) / 864e5);
+    if (jobdone.status === 'done' && jobdone.completedAt) {
+      const installDate = new Date(jobdone.completedAt);
+      if (note) note.textContent = '✅ Installation completed on ' + fmtDate(jobdone.completedAt);
 
-      document.getElementById('w-start').textContent = fmtDate(assembly.completedAt);
-      document.getElementById('w-end').textContent   = fmtDate(end.toISOString());
-      document.getElementById('w-badge').innerHTML   = isValid
-        ? `<span class="w-badge active">Active · ${daysLeft} days left</span>`
-        : `<span class="w-badge expired">Expired</span>`;
+      const setW = (monthsCount, periodId, badgeId) => {
+        const end = new Date(installDate);
+        end.setMonth(end.getMonth() + monthsCount);
+        const now = new Date();
+        const isValid  = end > now;
+        const daysLeft = Math.ceil((end - now) / 864e5);
+        const pEl = document.getElementById(periodId);
+        const bEl = document.getElementById(badgeId);
+        if (pEl) pEl.textContent = monthsCount + ' months · until ' +
+          end.toLocaleDateString('en-MY', { day:'numeric', month:'short', year:'numeric' });
+        if (bEl) bEl.innerHTML = isValid
+          ? `<span class="w-badge active">${daysLeft} days left</span>`
+          : `<span class="w-badge expired">Expired</span>`;
+      };
+
+      setW(12, 'w-colour-period', 'w-colour-badge');
+      setW(12, 'w-led-period',    'w-led-badge');
+      setW(6,  'w-trans-period',  'w-trans-badge');
+
     } else {
-      document.getElementById('w-start').textContent = 'Upon completion';
-      document.getElementById('w-end').textContent   = months + ' months from delivery';
-      document.getElementById('w-badge').innerHTML   = `<span class="w-badge pending-w">Awaiting completion</span>`;
+      if (note) note.textContent = '⏳ Warranty activates after installation is completed.';
+      const pend = `<span class="w-badge pending-w">Awaiting installation</span>`;
+      ['w-colour-badge','w-led-badge','w-trans-badge'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = pend;
+      });
     }
   }
 }

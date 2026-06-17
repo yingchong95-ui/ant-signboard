@@ -181,11 +181,21 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
       <button class="tab-btn" id="tab-production" onclick="switchTab('production')">Production <span class="tab-count" id="cnt-production"></span></button>
       <button class="tab-btn" id="tab-delivery" onclick="switchTab('delivery')">Delivery 🚚 <span class="tab-count" id="cnt-delivery"></span></button>
       <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Done</button>
+      <button class="tab-btn" id="tab-warranty" onclick="switchTab('warranty')">🛡 Warranty</button>
     </div>
 
     <!-- Orders list -->
     <div id="orders-wrap">
       <div class="loading-wrap">Loading orders…</div>
+    </div>
+
+    <!-- Warranty panel -->
+    <div id="warranty-wrap" style="display:none">
+      <div style="font-size:.8rem;color:var(--t2);margin-bottom:1rem;line-height:1.5">
+        🛡️ All completed installations with their warranty periods.<br>
+        <b>Colour &amp; LED Lighting:</b> 12 months · <b>Transformer:</b> 6 months · Start from installation date.
+      </div>
+      <div id="warranty-orders-list"></div>
     </div>
   </div>
 </div>
@@ -515,10 +525,71 @@ function toggleOrder(docId) {
 // ── Tabs ──────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
-  ['all','new','payment','production','delivery','done'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  ['all','new','payment','production','delivery','done','warranty'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.classList.toggle('active', t === tab);
   });
-  renderOrders();
+  const isWarranty = tab === 'warranty';
+  document.getElementById('orders-wrap').style.display  = isWarranty ? 'none' : '';
+  document.getElementById('warranty-wrap').style.display = isWarranty ? '' : 'none';
+  if (isWarranty) renderWarrantyPanel();
+  else renderOrders();
+}
+
+// ── Warranty Panel ─────────────────────────────────────────
+function renderWarrantyPanel() {
+  const wrap = document.getElementById('warranty-orders-list');
+  if (!wrap) return;
+
+  const done = allOrders.filter(o => o.steps?.jobdone?.status === 'done');
+  if (!done.length) {
+    wrap.innerHTML = '<div class="empty-wrap"><div class="empty-icon">🛡️</div><div class="empty-text">No completed installations yet.</div></div>';
+    return;
+  }
+
+  // Sort newest installation first
+  done.sort((a,b) => new Date(b.steps.jobdone.completedAt) - new Date(a.steps.jobdone.completedAt));
+
+  const wRow = (months, label, installDate) => {
+    const end = new Date(installDate);
+    end.setMonth(end.getMonth() + months);
+    const now = new Date();
+    const isValid  = end > now;
+    const daysLeft = Math.ceil((end - now) / 864e5);
+    const expiryStr = end.toLocaleDateString('en-MY', { day:'numeric', month:'short', year:'numeric' });
+    const badge = isValid
+      ? `<span style="font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--green);color:#fff">${daysLeft}d left</span>`
+      : `<span style="font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--red);color:#fff">Expired</span>`;
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.8rem">
+        <span style="color:var(--t2)">${label} <span style="color:var(--t3)">(${months}mo)</span></span>
+        <div style="text-align:right">
+          <div style="font-size:.72rem;color:var(--t2);margin-bottom:2px">Until ${expiryStr}</div>
+          ${badge}
+        </div>
+      </div>`;
+  };
+
+  wrap.innerHTML = done.map(o => {
+    const installIso = o.steps.jobdone.completedAt;
+    const installStr = new Date(installIso).toLocaleDateString('en-MY', { day:'numeric', month:'short', year:'numeric' });
+    const tot = o.total || o.grandTotal;
+    return `
+    <div class="order-card" style="padding:1rem 1.2rem;margin-bottom:.8rem">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.8rem">
+        <div>
+          <div class="order-id" style="font-size:.75rem">${escHtml(o.id||o._docId)}</div>
+          <div style="font-size:.9rem;font-weight:600;color:var(--t1);margin-top:2px">${escHtml(o.customer||'Customer')}</div>
+          <div style="font-size:.7rem;color:var(--t3);margin-top:2px">📅 Installed: ${installStr}${tot?' · RM '+Number(tot).toFixed(2):''}</div>
+        </div>
+        <a href="track.html?id=${encodeURIComponent(o.id||o._docId)}" target="_blank"
+           style="font-size:.72rem;color:var(--blue);text-decoration:none;background:var(--blue-bg);padding:4px 10px;border-radius:7px;white-space:nowrap">View →</a>
+      </div>
+      ${wRow(12, '🎨 Colour',      installIso)}
+      ${wRow(12, '💡 LED Lighting', installIso)}
+      ${wRow(6,  '⚡ Transformer',  installIso).replace('border-bottom:1px solid var(--border)','border-bottom:none')}
+    </div>`;
+  }).join('');
 }
 
 // ── Toast ────────────────────────────────────────────────
