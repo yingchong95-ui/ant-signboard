@@ -2,7 +2,7 @@
 // Server-side proxy to Google Apps Script — avoids browser CORS restrictions
 
 exports.handler = async (event) => {
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxjwqhvhO4HmdKIz8Dg2xbpnyZXKRnnVyWZ6bQ30-6xoon5sq-0ZGq2RNSRX0uQ4d0/exec';
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzdf3SsRgKQ3ljq-lcg2tG-29XTIfTyiNLVa8FSOv_tthCNAcT1xidSPmgU8HZcgDI/exec';
 
   const headers = {
     'Content-Type': 'application/json',
