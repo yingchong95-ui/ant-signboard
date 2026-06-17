@@ -15,6 +15,11 @@
   to = "/.netlify/functions/design"
   status = 200
 
+[[redirects]]
+  from = "/api/analytics-proxy"
+  to = "/.netlify/functions/analytics-proxy"
+  status = 200
+
 # ── Security headers (all responses) ──
 [[headers]]
   for = "/*"
