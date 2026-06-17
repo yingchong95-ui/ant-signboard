@@ -1474,42 +1474,19 @@ async function generateDesign() {
   document.getElementById('cdApplyBtn').style.display = 'none';
 
   try {
-    const prompt = `You are a professional signboard design consultant in Malaysia. 
-A customer wants a signboard design with these details:
-- Company name: ${companyName || '(not specified yet)'}
-- Industry: ${industry}
-- Design style preference: ${cdStyle}
-
-Please suggest a complete signboard design in JSON format only. No explanation, just JSON.
-Return exactly this structure:
-{
-  "businessType": "short business type label in Bahasa Malaysia (max 3 words, e.g. 'Pejabat Urusan', 'Kedai Runcit', 'Klinik Pergigian')",
-  "slogan": "a short compelling slogan in Bahasa Malaysia (max 8 words)",
-  "bgColour": "#hexcode for background/panel colour that suits the industry and style",
-  "fgColour": "#hexcode for letter/logo colour that contrasts well",
-  "bgColourName": "colour name in English (e.g. Deep Navy, Forest Green)",
-  "fgColourName": "colour name in English (e.g. Pure White, Champagne Gold)",
-  "lighting": "frontlit or backlit or nonlit — whichever suits the style best",
-  "led": "white or warm — whichever suits the colour scheme",
-  "reasoning": "one sentence in English explaining the design choice"
-}`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/design', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
+        industry,
+        companyName: companyName || '',
+        style: cdStyle
       })
     });
 
     const data = await response.json();
-    const text = data.content[0].text.trim();
-
-    // Parse JSON — strip any markdown fences
-    const clean = text.replace(/```json|```/g, '').trim();
-    const design = JSON.parse(clean);
+    if (!response.ok) throw new Error(data.error || 'API error');
+    const design = data.design;
     cdDesignData = design;
 
     // Render result
