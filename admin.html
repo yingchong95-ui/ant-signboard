@@ -449,7 +449,7 @@ async function markStep(docId, stepId, status, toast=true) {
 }
 
 function waNotify(orderId, customer) {
-  const msg = encodeURIComponent(`Hi ${customer || 'there'}, your A&T Signboard order ${orderId} has been updated. Track it here: https://ant-signboard.netlify.app/track.html?id=${orderId}`);
+  const msg = encodeURIComponent(`Hi ${customer || 'there'}, your A&T Signboard order ${orderId} has been updated. Track it here: https://shop.jbsignboard.com/track.html?id=${orderId}`);
   window.open('https://wa.me/60197901150?text=' + msg, '_blank');
 }
 

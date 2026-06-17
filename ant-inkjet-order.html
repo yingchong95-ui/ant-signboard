@@ -6,20 +6,20 @@
 <title>Inkjet Printing — A&T Signboard & Printing | Order Online</title>
 <meta name="description" content="Large-format inkjet printing on canvas, tarpaulin & vinyl — banners, backdrops & more. Get an instant quote & order online — JB, KL & Singapore."/>
 <meta name="theme-color" content="#0d1f3c"/>
-<link rel="canonical" href="https://ant-signboard.netlify.app/ant-inkjet-order.html"/>
+<link rel="canonical" href="https://shop.jbsignboard.com/ant-inkjet-order.html"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="A&T Signboard & Printing"/>
 <meta property="og:title" content="Inkjet Printing — A&T Signboard & Printing"/>
 <meta property="og:description" content="Large-format inkjet on canvas, tarpaulin & vinyl — banners & backdrops. Order online."/>
-<meta property="og:url" content="https://ant-signboard.netlify.app/ant-inkjet-order.html"/>
-<meta property="og:image" content="https://ant-signboard.netlify.app/og-image.png"/>
+<meta property="og:url" content="https://shop.jbsignboard.com/ant-inkjet-order.html"/>
+<meta property="og:image" content="https://shop.jbsignboard.com/og-image.png"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta property="og:locale" content="en_MY"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="https://ant-signboard.netlify.app/og-image.png"/>
+<meta name="twitter:image" content="https://shop.jbsignboard.com/og-image.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <style>:focus-visible{outline:2px solid #4285f4;outline-offset:2px;border-radius:4px}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
@@ -441,6 +441,35 @@ textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
     .cart-fab:hover { transform:scale(1.08); }
     .cart-fab-badge { position:absolute; top:-4px; right:-4px; background:#e63946; color:#fff; font-size:10px; font-weight:700; min-width:18px; height:18px; border-radius:9px; padding:0 3px; display:none; align-items:center; justify-content:center; }
     .cart-toast { position:fixed; bottom:88px; left:50%; transform:translateX(-50%); background:#1f2937; color:#fff; padding:10px 18px; border-radius:8px; font-size:13px; font-weight:600; display:none; align-items:center; gap:8px; z-index:200; white-space:nowrap; box-shadow:0 4px 16px rgba(0,0,0,.35); }
+
+/* ── Print Order Slip ── */
+.slip-wrap { display:none; }
+@media print {
+  body > *:not(.slip-wrap) { display:none !important; }
+  .slip-wrap { display:block !important; }
+  .slip { font-family:'DM Sans',sans-serif; color:#0d1f3c; max-width:720px; margin:0 auto; padding:0; font-size:13px; }
+  .slip-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0d1f3c; padding-bottom:14px; margin-bottom:18px; }
+  .slip-brand { font-size:16px; font-weight:700; color:#0d1f3c; }
+  .slip-brand span { color:#e63946; }
+  .slip-brand small { display:block; font-size:10px; font-weight:400; color:#5a6478; margin-top:2px; }
+  .slip-meta { text-align:right; font-size:11px; color:#5a6478; line-height:1.7; }
+  .slip-meta strong { font-size:13px; color:#0d1f3c; }
+  .slip-title { font-size:18px; font-weight:700; margin-bottom:16px; }
+  .slip-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+  .slip-section { border:1px solid #e3e7ef; border-radius:8px; padding:12px 14px; }
+  .slip-section h4 { font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:#9aa3b2; font-weight:700; margin-bottom:8px; }
+  .slip-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #f0f2f7; font-size:12px; gap:12px; }
+  .slip-row:last-child { border-bottom:none; }
+  .slip-row span:first-child { color:#5a6478; flex-shrink:0; }
+  .slip-row span:last-child { font-weight:600; text-align:right; }
+  .slip-total-box { background:#0d1f3c; color:#fff; border-radius:8px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .slip-total-label { font-size:11px; opacity:.55; margin-bottom:3px; }
+  .slip-total-amount { font-size:26px; font-weight:700; color:#e63946; }
+  .slip-status { font-size:11px; opacity:.45; }
+  .slip-footer { border-top:1px solid #e3e7ef; padding-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#9aa3b2; }
+  .slip-stamp { border:2px solid #e3e7ef; border-radius:8px; padding:8px 16px; font-size:11px; color:#9aa3b2; text-align:center; }
+  .slip-note { background:#fff8e1; border:1px solid #fbbf24; border-radius:6px; padding:8px 12px; font-size:11px; color:#92400e; margin-bottom:14px; }
+}
   </style>
 <script src="analytics.js"></script>
 </head>
@@ -843,11 +872,73 @@ textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
   <div class="success-screen" id="success-screen">
     <div class="success-icon">✓</div>
     <h2>Order Received!</h2>
-    <p style="margin-bottom:8px">Thank you! Our team will review your order and contact you shortly to confirm.</p>
-    <p style="margin-bottom:2rem">Production begins after payment is verified.</p>
-    <p style="font-size:13px;color:var(--t3)">Questions? WhatsApp us at <strong style="color:var(--t1)">+60 19-790 1150</strong></p>
+    <p style="margin-bottom:4px">Thank you! Our team will contact you shortly to confirm.</p>
+    <p style="font-size:13px;color:var(--t3);margin-bottom:4px">Order No: <strong id="ss-orderno" style="color:var(--t1);font-family:'DM Mono',monospace">—</strong></p>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:1.5rem">Production begins after payment is verified.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto 1.5rem">
+      <button class="btn btn-primary" onclick="printSlip()" style="gap:8px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print / Save Order Slip (PDF)
+      </button>
+      <button class="btn" style="background:#25D366;color:#fff;gap:8px" onclick="waCompany()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        Send to Company WhatsApp
+      </button>
+    </div>
+    <p style="font-size:12px;color:var(--t3)">Questions? WhatsApp us at <strong style="color:var(--t1)">+60 19-790 1150</strong></p>
   </div>
 
+</div>
+
+<!-- ══ Print Order Slip (hidden on screen, shown on print) ══ -->
+<div class="slip-wrap" id="slip-wrap">
+  <div class="slip">
+    <div class="slip-header">
+      <div>
+        <div class="slip-brand">A<span>&amp;</span>T SIGNBOARD<small>We Make Signs Speak Your Name · jbsignboard.com</small></div>
+      </div>
+      <div class="slip-meta">
+        <strong id="sl-orderno">—</strong><br>
+        <span id="sl-date">—</span><br>
+        Tel: +60 19-790 1150
+      </div>
+    </div>
+
+    <div class="slip-title">Order Confirmation — Inkjet Printing</div>
+
+    <div class="slip-note">⚠️ This is a provisional order slip. Production begins only after payment is confirmed.</div>
+
+    <div class="slip-grid">
+      <div class="slip-section">
+        <h4>Product Details</h4>
+        <div id="sl-product-rows"></div>
+      </div>
+      <div class="slip-section">
+        <h4>Customer Info</h4>
+        <div class="slip-row"><span>Name</span><span id="sl-name">—</span></div>
+        <div class="slip-row"><span>Phone</span><span id="sl-phone">—</span></div>
+        <div class="slip-row"><span>Email</span><span id="sl-email">—</span></div>
+        <div class="slip-row"><span>Artwork</span><span id="sl-file">—</span></div>
+        <div class="slip-row"><span>Remarks</span><span id="sl-remarks">—</span></div>
+      </div>
+    </div>
+
+    <div class="slip-total-box">
+      <div>
+        <div class="slip-total-label">Total Payable (Excl. SST)</div>
+        <div class="slip-total-amount" id="sl-total">RM —</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px">Payment via iPay88</div>
+        <div class="slip-status" id="sl-status">● Pending Payment</div>
+      </div>
+    </div>
+
+    <div class="slip-footer">
+      <span>A&amp;T Signboard &amp; Printing Sdn Bhd · Johor Bahru · jbsignboard.com</span>
+      <div class="slip-stamp">Received &amp; Pending Confirmation</div>
+    </div>
+  </div>
 </div>
 
 <!-- WhatsApp FAB -->
@@ -987,6 +1078,63 @@ function goStep3() {
   setStep(3);
 }
 
+function generateOrderNo() {
+  var now = new Date();
+  var d = now.getFullYear().toString() +
+          String(now.getMonth()+1).padStart(2,'0') +
+          String(now.getDate()).padStart(2,'0');
+  var rand = String(Math.floor(Math.random()*9000)+1000);
+  return 'ANT-' + d + '-' + rand;
+}
+
+function formatDateTime(d) {
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return String(d.getDate()).padStart(2,'0') + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() +
+         ', ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function populateSlip(orderNo, dateStr) {
+  document.getElementById('sl-orderno').textContent = orderNo;
+  document.getElementById('sl-date').textContent    = dateStr;
+  // Product rows
+  var rows = (order.summaryRows || []).map(function(r) {
+    return '<div class="slip-row"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>';
+  }).join('');
+  document.getElementById('sl-product-rows').innerHTML = rows;
+  // Customer
+  document.getElementById('sl-name').textContent    = order.name || '—';
+  document.getElementById('sl-phone').textContent   = order.phone || '—';
+  document.getElementById('sl-email').textContent   = order.email || '—';
+  document.getElementById('sl-file').textContent    = order.filename || 'Not uploaded';
+  document.getElementById('sl-remarks').textContent = document.getElementById('remarks').value.trim() || '—';
+  document.getElementById('sl-total').textContent   = 'RM ' + (order.total || 0).toFixed(2);
+}
+
+function printSlip() { window.print(); }
+
+function waCompany() {
+  var orderNo = document.getElementById('ss-orderno').textContent;
+  var lines = [
+    '🛒 *NEW ORDER — ' + orderNo + '*',
+    '',
+    '📋 *Inkjet Printing*'
+  ];
+  (order.summaryRows || []).forEach(function(r) { lines.push('• ' + r[0] + ': ' + r[1]); });
+  lines.push('');
+  lines.push('👤 *Customer*');
+  lines.push('Name: ' + (order.name || '—'));
+  lines.push('Phone: ' + (order.phone || '—'));
+  lines.push('Email: ' + (order.email || '—'));
+  lines.push('File: ' + (order.filename || 'Not uploaded'));
+  var remarks = document.getElementById('remarks').value.trim();
+  if (remarks) lines.push('Remarks: ' + remarks);
+  lines.push('');
+  lines.push('💰 *Total: RM ' + (order.total || 0).toFixed(2) + '*');
+  lines.push('Payment: iPay88 (Pending)');
+  var msg = encodeURIComponent(lines.join('\n'));
+  window.open('https://wa.me/60197901150?text=' + msg, '_blank');
+}
+
 function submitOrder() {
   /*
     DEVELOPER TODO:
@@ -995,6 +1143,19 @@ function submitOrder() {
     3. Redirect to iPay88 payment gateway
     4. On payment callback: send confirmation email to customer + alert to admin
   */
+  var orderNo = generateOrderNo();
+  var now     = new Date();
+  var dateStr = formatDateTime(now);
+
+  // Populate order slip (for print)
+  populateSlip(orderNo, dateStr);
+
+  // Show order number on success screen
+  document.getElementById('ss-orderno').textContent = orderNo;
+
+  // Auto-open WhatsApp for company (slight delay so success screen renders first)
+  setTimeout(function() { waCompany(); }, 600);
+
   document.getElementById('step3').style.display = 'none';
   document.getElementById('success-screen').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
