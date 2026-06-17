@@ -41,7 +41,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-
 
 /* ── Header ── */
 header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,.28)}
-.logo-wrap{display:flex;align-items:center;gap:11px}
+.logo-wrap{text-decoration:none;color:inherit;cursor:pointer;display:flex;align-items:center;gap:11px}
 .logo-icon{width:42px;height:42px;flex-shrink:0;border-radius:50%;object-fit:cover}
 .logo-text{display:flex;flex-direction:column}
 .logo-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.04em;line-height:1.1}
@@ -249,7 +249,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 
 <!-- Header -->
 <header>
-  <div class="logo-wrap">
+  <a href="/" class="logo-wrap">
     <img src="logo.png" class="logo-icon" alt="A&amp;T Signboard Logo" />
     <div class="logo-text">
       <span class="logo-name">A&T Signboard</span>

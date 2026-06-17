@@ -56,7 +56,7 @@ header {
   position: sticky; top: 0; z-index: 100;
   box-shadow: 0 2px 16px rgba(0,0,0,.28);
 }
-.logo-wrap { display: flex; align-items: center; gap: 11px; }
+.logo-wrap { text-decoration:none;color:inherit;cursor:pointer;display: flex; align-items: center; gap: 11px; }
 .logo-icon { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; object-fit: cover; }
 .logo-name { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: .04em; line-height: 1.2; }
 .logo-name span { color: var(--red); }
@@ -330,13 +330,13 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
 <body>
 
 <header>
-  <div class="logo-wrap">
+  <a href="/" class="logo-wrap">
     <img src="logo.png" class="logo-icon" alt="A&T Signboard Logo" />
     <div>
       <div class="logo-name">A<span>&amp;</span>T SIGNBOARD</div>
       <div class="logo-tag">We Make Sign Speak Your Name</div>
     </div>
-  </div>
+  </a>
   <div class="header-btns">
     <div class="cat-nav">
       <button class="cat-nav-btn" id="cat-nav-btn" onclick="toggleCatNav()">
