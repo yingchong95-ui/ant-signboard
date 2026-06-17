@@ -75,6 +75,7 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 .chip-new{background:#fef3c7;color:#92400e}
 .chip-payment{background:var(--orange-bg);color:var(--orange)}
 .chip-production{background:var(--blue-bg);color:var(--blue)}
+.chip-delivery{background:#f5f3ff;color:#7c3aed}
 .chip-done{background:var(--green-bg);color:var(--green)}
 
 /* ── Order body ── */
@@ -86,13 +87,18 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 
 /* ── Status pipeline ── */
 .pipeline{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
-.pipe-step{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.4rem .6rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;min-width:70px;text-align:center}
+.pipe-step{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.4rem .6rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;min-width:70px;text-align:center;cursor:pointer;transition:all .15s;user-select:none;position:relative}
+.pipe-step:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
 .pipe-step.done{border-color:var(--green);background:var(--green-bg)}
 .pipe-step.inprogress{border-color:var(--orange);background:var(--orange-bg)}
 .pipe-icon{font-size:1rem}
 .pipe-label{font-size:.6rem;font-weight:600;color:var(--t2);line-height:1.2}
 .pipe-step.done .pipe-label{color:var(--green)}
 .pipe-step.inprogress .pipe-label{color:var(--orange)}
+.pipe-status-tag{font-size:.5rem;font-weight:700;padding:1px 5px;border-radius:6px;margin-top:2px;letter-spacing:.03em}
+.pipe-step.done .pipe-status-tag{background:var(--green);color:#fff}
+.pipe-step.inprogress .pipe-status-tag{background:var(--orange);color:#fff}
+.pipe-step:not(.done):not(.inprogress) .pipe-status-tag{background:var(--border);color:var(--t3)}
 
 /* ── Action buttons ── */
 .actions-title{font-size:.7rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem}
@@ -152,7 +158,10 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
       <span class="header-logo">A&T Admin</span>
       <span class="header-badge">Owner Panel</span>
     </div>
-    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a href="analytics.html" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">📊 Analytics</a>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
   </header>
 
   <div class="main">
@@ -170,6 +179,7 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
       <button class="tab-btn" id="tab-new" onclick="switchTab('new')">New <span class="tab-count" id="cnt-new"></span></button>
       <button class="tab-btn" id="tab-payment" onclick="switchTab('payment')">Payment <span class="tab-count" id="cnt-payment"></span></button>
       <button class="tab-btn" id="tab-production" onclick="switchTab('production')">Production <span class="tab-count" id="cnt-production"></span></button>
+      <button class="tab-btn" id="tab-delivery" onclick="switchTab('delivery')">Delivery 🚚 <span class="tab-count" id="cnt-delivery"></span></button>
       <button class="tab-btn" id="tab-done" onclick="switchTab('done')">Done</button>
     </div>
 
@@ -273,12 +283,14 @@ const STEP_DEFS = [
   { id:'edging',    icon:'⬡', label:'Edging'     },
   { id:'painting',  icon:'🎨', label:'Painting'   },
   { id:'assembly',  icon:'⚙', label:'Assembly'   },
+  { id:'delivery',  icon:'🚚', label:'Delivery/Install' },
+  { id:'jobdone',   icon:'🏁', label:'Job Complete'    },
 ];
 
 function getOrderStatus(o) {
   const s = o.steps || {};
-  const allDone = STEP_DEFS.every(d => s[d.id]?.status === 'done');
-  if (allDone) return 'done';
+  if (s.jobdone?.status === 'done') return 'done';
+  if (s.delivery?.status === 'inprogress' || s.delivery?.status === 'done') return 'delivery';
   const inProd = ['ironframe','sticker','cutting','edging','painting','assembly'].some(
     id => s[id]?.status === 'inprogress' || s[id]?.status === 'done'
   );
@@ -297,7 +309,8 @@ function chipHtml(status) {
     new:        ['chip-new',        '🆕 New Order'],
     payment:    ['chip-payment',    '💳 Awaiting Payment'],
     production: ['chip-production', '⚙ In Production'],
-    done:       ['chip-done',       '✅ Completed'],
+    delivery:   ['chip-delivery',   '🚚 Out for Delivery'],
+    done:       ['chip-done',       '✅ Job Complete'],
   };
   const [cls, label] = map[status] || ['chip-new','New'];
   return `<span class="order-status-chip ${cls}">${label}</span>`;
@@ -311,7 +324,7 @@ window._onOrders = function(orders) {
 };
 
 function updateStats(orders) {
-  const counts = { new:0, payment:0, production:0, done:0 };
+  const counts = { new:0, payment:0, production:0, delivery:0, done:0 };
   orders.forEach(o => counts[getOrderStatus(o)]++);
 
   document.getElementById('stat-total').textContent      = orders.length;
@@ -321,6 +334,7 @@ function updateStats(orders) {
 
   const setCount = (id, n) => {
     const el = document.getElementById(id);
+    if (!el) return;
     el.textContent = n;
     el.classList.toggle('show', n > 0);
   };
@@ -328,6 +342,7 @@ function updateStats(orders) {
   setCount('cnt-new',        counts.new);
   setCount('cnt-payment',    counts.payment);
   setCount('cnt-production', counts.production);
+  setCount('cnt-delivery',   counts.delivery);
 }
 
 function renderOrders() {
@@ -350,7 +365,13 @@ function orderCardHtml(o) {
   const pipeHtml = STEP_DEFS.map(d => {
     const s   = steps[d.id]?.status || 'pending';
     const cls = s === 'done' ? 'done' : s === 'inprogress' ? 'inprogress' : '';
-    return `<div class="pipe-step ${cls}"><span class="pipe-icon">${s==='done'?'✅':d.icon}</span><span class="pipe-label">${d.label}</span></div>`;
+    const icon = s === 'done' ? '✅' : s === 'inprogress' ? '⏳' : d.icon;
+    const tag  = s === 'done' ? 'Done' : s === 'inprogress' ? 'In Progress' : 'Pending';
+    return `<div class="pipe-step ${cls}" onclick="cycleStep('${o._docId}','${d.id}','${s}')" title="Click to change: ${d.label}">
+      <span class="pipe-icon">${icon}</span>
+      <span class="pipe-label">${d.label}</span>
+      <span class="pipe-status-tag">${tag}</span>
+    </div>`;
   }).join('');
 
   const actionsHtml = buildActions(o, steps, status);
@@ -422,6 +443,22 @@ function buildActions(o, steps, status) {
     }
   }
 
+  // Delivery / Install (after all production done)
+  const allProdDone = prodSteps.every(pid => s[pid]?.status === 'done');
+  if (allProdDone) {
+    const dSt = s.delivery?.status || 'pending';
+    if (dSt === 'pending') {
+      btns.push(`<button class="action-btn primary" onclick="markStep('${id}','delivery','inprogress')">🚚 Out for Delivery / Install</button>`);
+    } else if (dSt === 'inprogress') {
+      btns.push(`<button class="action-btn success" onclick="markStep('${id}','delivery','done')">✅ Delivered / Installed</button>`);
+    }
+  }
+
+  // Job Complete (after delivery done)
+  if (s.delivery?.status === 'done' && s.jobdone?.status !== 'done') {
+    btns.push(`<button class="action-btn success" onclick="markStep('${id}','jobdone','done')">🏁 Mark Job Complete</button>`);
+  }
+
   // WA notify button
   btns.push(`<button class="action-btn" onclick="waNotify('${o.id||o._docId}','${o.customer||''}')">📲 WhatsApp Customer</button>`);
 
@@ -448,6 +485,22 @@ async function markStep(docId, stepId, status, toast=true) {
   }
 }
 
+// Cycle: pending → inprogress → done → pending
+async function cycleStep(docId, stepId, currentStatus) {
+  const next = currentStatus === 'pending' ? 'inprogress'
+             : currentStatus === 'inprogress' ? 'done'
+             : 'pending';
+  const def = STEP_DEFS.find(d => d.id === stepId);
+  const label = def ? def.label : stepId;
+  const tag = next === 'done' ? '✅ Done' : next === 'inprogress' ? '⏳ In Progress' : '⬜ Pending';
+  try {
+    await window._updateStep(docId, stepId, next);
+    showToast(`${tag}: ${label}`);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
+}
+
 function waNotify(orderId, customer) {
   const msg = encodeURIComponent(`Hi ${customer || 'there'}, your A&T Signboard order ${orderId} has been updated. Track it here: https://shop.jbsignboard.com/track.html?id=${orderId}`);
   window.open('https://wa.me/60197901150?text=' + msg, '_blank');
@@ -462,7 +515,7 @@ function toggleOrder(docId) {
 // ── Tabs ──────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
-  ['all','new','payment','production','done'].forEach(t => {
+  ['all','new','payment','production','delivery','done'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('active', t === tab);
   });
   renderOrders();

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Analytics — A&T Signboard</title>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0d1f3c"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1f3c;--red:#e63946;--red-bg:#fff0f1;
+  --green:#16a34a;--green-bg:#edfdf4;
+  --orange:#ea580c;--orange-bg:#fff7ed;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;
+  --border:#e3e7ef;--off:#f6f8fc;
+  --t1:#0d1f3c;--t2:#5a6478;--t3:#9aa3b2;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-height:100vh}
+
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(13,31,60,.12)}
+.login-logo{text-align:center;margin-bottom:1.8rem}
+.login-logo-box{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:var(--navy);border-radius:14px;font-size:1.6rem;margin-bottom:.8rem}
+.login-title{font-size:1.15rem;font-weight:700;color:var(--navy)}
+.login-sub{font-size:.8rem;color:var(--t2);margin-top:3px}
+.form-group{margin-bottom:1rem}
+.form-label{font-size:.78rem;font-weight:600;color:var(--t2);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--t1);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--navy)}
+.login-btn{width:100%;padding:.8rem;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.login-btn:hover{background:#1a3560}
+.login-err{display:none;background:var(--red-bg);border:1px solid #fca5a5;color:var(--red);font-size:.8rem;padding:.6rem .9rem;border-radius:8px;margin-top:.8rem;text-align:center}
+
+/* ── Header ── */
+.main-wrap{display:none}
+header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-logo{font-size:.95rem;font-weight:700;color:#fff}
+.header-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:8px}
+.btn-secondary{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:background .2s}
+.btn-secondary:hover{background:rgba(255,255,255,.2)}
+
+.page{max-width:1000px;margin:0 auto;padding:1.5rem}
+
+/* ── Period selector ── */
+.period-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.8rem}
+.period-title{font-size:1.1rem;font-weight:700;color:var(--navy)}
+.period-pills{display:flex;gap:5px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:4px}
+.period-pill{padding:.38rem .85rem;border:none;background:transparent;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s}
+.period-pill.active{background:var(--navy);color:#fff}
+
+/* ── Summary cards ── */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.5rem}
+@media(max-width:680px){.summary{grid-template-columns:repeat(2,1fr)}}
+.s-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
+.s-icon{font-size:1.4rem;margin-bottom:.4rem}
+.s-val{font-size:1.6rem;font-weight:800;color:var(--navy);line-height:1.1}
+.s-label{font-size:.72rem;color:var(--t2);font-weight:500;margin-top:3px}
+.s-delta{font-size:.72rem;font-weight:600;margin-top:4px}
+.s-delta.up{color:var(--green)}
+.s-delta.dn{color:var(--red)}
+
+/* ── Chart grid ── */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:720px){.charts{grid-template-columns:1fr}}
+.chart-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:.85rem;font-weight:700;color:var(--t1);margin-bottom:1rem}
+.chart-wrap{position:relative}
+.chart-wrap canvas{max-height:260px}
+
+/* ── Product table ── */
+.table-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.table-header{padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.table-title{font-size:.85rem;font-weight:700;color:var(--t1)}
+table{width:100%;border-collapse:collapse}
+th{background:var(--off);font-size:.72rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;padding:.65rem 1.2rem;text-align:left}
+td{font-size:.82rem;color:var(--t1);padding:.75rem 1.2rem;border-top:1px solid var(--border)}
+tr:hover td{background:#fafbfd}
+.td-rank{font-weight:700;color:var(--t3);font-size:.72rem;width:36px}
+.td-product{font-weight:600}
+.td-num{font-weight:700;color:var(--navy);text-align:right}
+.td-pct{text-align:right}
+.pct-bar-wrap{display:flex;align-items:center;gap:8px}
+.pct-bar{height:5px;border-radius:3px;min-width:2px;transition:width .4s}
+.pct-num{font-size:.75rem;color:var(--t2);white-space:nowrap;min-width:34px;text-align:right}
+.badge-cat{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:700}
+
+/* ── Loading / Error ── */
+.loading{text-align:center;padding:4rem 2rem;color:var(--t2);font-size:.9rem}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-box{background:var(--red-bg);border:1px solid #fca5a5;color:var(--red);padding:1rem 1.2rem;border-radius:10px;font-size:.84rem;margin:1rem 0}
+
+/* ── Setup box ── */
+.setup-box{background:var(--blue-bg);border:1.5px solid #bfdbfe;border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1.5rem}
+.setup-title{font-size:.9rem;font-weight:700;color:var(--blue);margin-bottom:.5rem}
+.setup-body{font-size:.82rem;color:#1e40af;line-height:1.6}
+.setup-input-row{display:flex;gap:.6rem;margin-top:.8rem}
+.setup-input{flex:1;padding:.6rem .9rem;border:1.5px solid #bfdbfe;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--t1);outline:none}
+.setup-input:focus{border-color:var(--blue)}
+.btn-load{padding:.6rem 1.2rem;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.btn-load:hover{background:#1d4ed8}
+.btn-load:disabled{opacity:.5;cursor:not-allowed}
+</style>
+</head>
+<body>
+
+<!-- ── Login ── -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-box">📊</div>
+      <div class="login-title">A&T Analytics</div>
+      <div class="login-sub">Product & Order Insights</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="pwInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">View Analytics →</button>
+    <div class="login-err" id="loginErr">Incorrect password</div>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main-wrap" id="mainWrap">
+  <header>
+    <div class="header-left">
+      <span class="header-logo">📊 A&T Analytics</span>
+      <span class="header-badge">Orders Dashboard</span>
+    </div>
+    <div class="header-right">
+      <a href="admin.html" class="btn-secondary">← Admin Panel</a>
+      <button class="btn-secondary" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <!-- Setup box (shown if URL not configured) -->
+    <div class="setup-box" id="setupBox" style="display:none">
+      <div class="setup-title">⚙️ First-time Setup — Enter your Google Sheets API URL</div>
+      <div class="setup-body">
+        Paste the Apps Script Web App URL below (the same URL used for order recording, ending in <code>/exec</code>).<br/>
+        <strong>Make sure you've added the <code>doGet()</code> function</strong> — see instructions below.
+      </div>
+      <div class="setup-input-row">
+        <input class="setup-input" type="url" id="urlInput" placeholder="https://script.google.com/macros/s/…/exec"/>
+        <button class="btn-load" id="loadBtn" onclick="saveUrlAndLoad()">Load Data</button>
+      </div>
+    </div>
+
+    <!-- Period selector -->
+    <div class="period-bar">
+      <div class="period-title" id="periodTitle">All Orders</div>
+      <div class="period-pills">
+        <button class="period-pill" onclick="setPeriod(30)">30d</button>
+        <button class="period-pill" onclick="setPeriod(90)">90d</button>
+        <button class="period-pill" onclick="setPeriod(180)">180d</button>
+        <button class="period-pill active" onclick="setPeriod(0)">All</button>
+      </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="summary" id="summaryCards">
+      <div class="loading" style="grid-column:1/-1"><div class="spinner"></div>Loading data…</div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts" id="chartsArea" style="display:none">
+      <div class="chart-card">
+        <div class="chart-title">🥧 Product Mix (by orders)</div>
+        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">💰 Revenue by Product Type</div>
+        <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+      </div>
+      <div class="chart-card full">
+        <div class="chart-title">📈 Monthly Order Trend</div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Product table -->
+    <div class="table-card" id="productTable" style="display:none">
+      <div class="table-header">
+        <span class="table-title">📦 Product Breakdown</span>
+        <span id="totalOrdersLabel" style="font-size:.78rem;color:var(--t2)"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product Type</th>
+            <th style="text-align:right">Orders</th>
+            <th style="text-align:right">Revenue (RM)</th>
+            <th style="text-align:right;min-width:120px">Share</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main-wrap -->
+
+<script>
+// ─── Password ───────────────────────────────────────────────
+const ADMIN_PW = 'antshop2024';   // ← change this if needed
+
+function doLogin(){
+  const v = document.getElementById('pwInput').value;
+  if(v === ADMIN_PW){
+    sessionStorage.setItem('anlg_auth','1');
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('mainWrap').style.display='block';
+    init();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('anlg_auth');
+  location.reload();
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('anlg_auth')==='1'){
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('mainWrap').style.display='block';
+    init();
+  }
+});
+
+// ─── Config ─────────────────────────────────────────────────
+const URL_KEY = 'anlg_sheets_url';
+// Pre-fill if the cart.html webhook URL is already known:
+const PREFILL  = 'https://script.google.com/macros/s/AKfycbxjwqhvhO4HmdKIz8Dg2xbpnyZXKRnnVyWZ6bQ30-6xoon5sq-0ZGq2RNSRX0uQ4d0/exec';
+
+// ─── Product categorisation ─────────────────────────────────
+const CATEGORIES = [
+  { key:'lightbox',  label:'LED Lightbox',      color:'#2563eb', match:/lightbox/i },
+  { key:'wall',      label:'Wall Signboard',     color:'#7c3aed', match:/wall sign/i },
+  { key:'flat',      label:'Flat Signboard',     color:'#0891b2', match:/flat sign/i },
+  { key:'alum',      label:'Aluminium Signboard',color:'#475569', match:/alumin/i },
+  { key:'neon',      label:'Neon Sign',          color:'#e11d48', match:/neon/i },
+  { key:'acrylic',   label:'Acrylic Sign',       color:'#16a34a', match:/acrylic/i },
+  { key:'bomba',     label:'Bomba Signage',      color:'#dc2626', match:/bomba/i },
+  { key:'display',   label:'Display Set',        color:'#d97706', match:/display/i },
+  { key:'inkjet',    label:'Inkjet Print',       color:'#059669', match:/inkjet/i },
+  { key:'foam',      label:'Foam Board',         color:'#9333ea', match:/foam/i },
+  { key:'sign',      label:'Custom Signboard',   color:'#1d4ed8', match:/sign/i },
+  { key:'other',     label:'Other',              color:'#94a3b8', match:/./ },
+];
+
+function categorise(itemName){
+  for(const c of CATEGORIES){
+    if(c.match.test(itemName)) return c;
+  }
+  return CATEGORIES[CATEGORIES.length-1];
+}
+
+// ─── State ──────────────────────────────────────────────────
+let allOrders  = [];
+let filteredOrders = [];
+let periodDays = 0;
+let donutInst, revenueInst, trendInst;
+
+// ─── Init ───────────────────────────────────────────────────
+function init(){
+  let url = localStorage.getItem(URL_KEY) || PREFILL;
+  if(!url){
+    document.getElementById('setupBox').style.display='block';
+    document.getElementById('urlInput').value='';
+    document.getElementById('summaryCards').innerHTML='';
+    return;
+  }
+  if(PREFILL) document.getElementById('urlInput').value = url;
+  loadData(url);
+}
+
+function saveUrlAndLoad(){
+  const url = document.getElementById('urlInput').value.trim();
+  if(!url.includes('script.google.com')){
+    alert('Please enter a valid Apps Script URL ending in /exec'); return;
+  }
+  localStorage.setItem(URL_KEY, url);
+  document.getElementById('setupBox').style.display='none';
+  loadData(url);
+}
+
+// ─── Load data from Apps Script doGet ───────────────────────
+async function loadData(url){
+  document.getElementById('summaryCards').innerHTML=
+    '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div>Loading order data from Google Sheets…</div>';
+  document.getElementById('chartsArea').style.display='none';
+  document.getElementById('productTable').style.display='none';
+
+  try {
+    const res = await fetch(url + '?action=getOrders', { cache:'no-store' });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.error || 'API error');
+    allOrders = json.orders || [];
+    applyPeriod(periodDays);
+    // Show setup box below with URL for editing
+    document.getElementById('setupBox').style.display='block';
+    document.getElementById('urlInput').value = url;
+  } catch(err){
+    document.getElementById('summaryCards').innerHTML=`
+      <div style="grid-column:1/-1">
+        <div class="error-box">
+          <strong>⚠️ Could not load data.</strong><br/><br/>
+          <strong>Most likely reason:</strong> The <code>doGet()</code> function hasn't been added to your Apps Script yet.<br/><br/>
+          <strong>Steps to fix:</strong><br/>
+          1. Open your Google Sheet → Extensions → Apps Script<br/>
+          2. Add the <code>doGet()</code> function (see code below)<br/>
+          3. Deploy → Manage Deployments → Edit → New version → Deploy<br/>
+          4. Click "Load Data" below<br/><br/>
+          <details><summary><strong>Copy this code and add it to your Apps Script</strong></summary>
+          <pre style="background:#fff;border:1px solid #fca5a5;padding:.8rem;border-radius:6px;margin-top:.6rem;font-size:.75rem;overflow:auto;white-space:pre-wrap">function doGet(e) {
+  try {
+    var params = e ? (e.parameter || {}) : {};
+    if (params.action !== 'getOrders') {
+      return ContentService.createTextOutput(JSON.stringify({ok:false,error:'unknown action'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Orders');
+    if (!sheet) return ContentService.createTextOutput(JSON.stringify({ok:true,orders:[]}))
+      .setMimeType(ContentService.MimeType.JSON);
+    var rows = sheet.getDataRange().getValues();
+    if (rows.length <= 1) return ContentService.createTextOutput(JSON.stringify({ok:true,orders:[]}))
+      .setMimeType(ContentService.MimeType.JSON);
+    var headers = rows[0]; // Time,Order ID,Customer,Phone,Email,Items,Total (RM),Status,Source,Track URL
+    var orders = [];
+    for (var i = 1; i &lt; rows.length; i++) {
+      var r = rows[i];
+      orders.push({
+        time:     r[0] ? new Date(r[0]).toISOString() : '',
+        order_id: r[1] || '',
+        customer: r[2] || '',
+        phone:    r[3] || '',
+        items:    r[5] || '',
+        total:    parseFloat(r[6]) || 0,
+        status:   r[7] || '',
+        source:   r[8] || ''
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ok:true,orders:orders}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ok:false,error:String(err)}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre></details>
+          <br/>
+          Error detail: ${err.message}
+        </div>
+        <div class="setup-box" style="margin-top:1rem">
+          <div class="setup-title">🔗 Enter / Update Apps Script URL</div>
+          <div class="setup-input-row">
+            <input class="setup-input" type="url" id="urlInput" value="${localStorage.getItem(URL_KEY)||PREFILL||''}" placeholder="https://script.google.com/macros/s/…/exec"/>
+            <button class="btn-load" onclick="saveUrlAndLoad()">Load Data</button>
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
+// ─── Period filter ───────────────────────────────────────────
+function setPeriod(days){
+  periodDays = days;
+  document.querySelectorAll('.period-pill').forEach(b=>{
+    const d = parseInt(b.getAttribute('onclick').match(/\d+/)?.[0]||0);
+    b.classList.toggle('active', d===days);
+  });
+  applyPeriod(days);
+}
+function applyPeriod(days){
+  const now = Date.now();
+  filteredOrders = days===0 ? allOrders : allOrders.filter(o=>{
+    if(!o.time) return true;
+    return (now - new Date(o.time).getTime()) <= days*86400000;
+  });
+  const label = days===0 ? 'All Orders' : `Last ${days} Days`;
+  document.getElementById('periodTitle').textContent = label;
+  render();
+}
+
+// ─── Parse items string ──────────────────────────────────────
+// Format: "LED Lightbox Signboard (Estimate) ×1, Neon Sign ×2"
+function parseItems(itemsStr){
+  if(!itemsStr) return [];
+  // Split by comma+space or newline; stop at 📎
+  const cleaned = itemsStr.split('📎')[0].trim();
+  const parts = cleaned.split(/,\s*/);
+  return parts.map(p=>{
+    // Match "Name ×qty" pattern
+    const m = p.match(/^(.+?)(?:\s*[×x×]\s*(\d+))?$/i);
+    if(!m) return {name:p.trim(),qty:1};
+    return {name:(m[1]||p).trim(), qty:parseInt(m[2]||'1')};
+  }).filter(i=>i.name);
+}
+
+// ─── Aggregate data ──────────────────────────────────────────
+function aggregate(){
+  const catMap = {}; // key → {label, color, orders, qty, revenue}
+  let totalOrders=0, totalRevenue=0;
+
+  filteredOrders.forEach(order=>{
+    totalOrders++;
+    const total = parseFloat(order.total)||0;
+    totalRevenue += total;
+    const items = parseItems(order.items);
+
+    if(!items.length){
+      const c = CATEGORIES[CATEGORIES.length-1];
+      if(!catMap[c.key]) catMap[c.key]={label:c.label,color:c.color,orders:0,revenue:0};
+      catMap[c.key].orders++;
+      catMap[c.key].revenue+=total;
+      return;
+    }
+
+    // attribute order revenue proportionally across items
+    const totalQty = items.reduce((s,i)=>s+i.qty,0);
+    const seen = new Set();
+    items.forEach(item=>{
+      const cat = categorise(item.name);
+      if(!catMap[cat.key]) catMap[cat.key]={label:cat.label,color:cat.color,orders:0,revenue:0};
+      // Count order once per category per order
+      if(!seen.has(cat.key)){
+        catMap[cat.key].orders++;
+        seen.add(cat.key);
+      }
+      catMap[cat.key].revenue += totalQty>0 ? total*(item.qty/totalQty) : 0;
+    });
+  });
+
+  // Sort by orders desc
+  const rows = Object.values(catMap).sort((a,b)=>b.orders-a.orders);
+  return { rows, totalOrders, totalRevenue };
+}
+
+// ─── Monthly trend ───────────────────────────────────────────
+function monthlyTrend(){
+  const map = {};
+  filteredOrders.forEach(o=>{
+    if(!o.time) return;
+    const d = new Date(o.time);
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    if(!map[key]) map[key]={label:key,count:0,revenue:0};
+    map[key].count++;
+    map[key].revenue += parseFloat(o.total)||0;
+  });
+  return Object.values(map).sort((a,b)=>a.label.localeCompare(b.label));
+}
+
+// ─── Render ──────────────────────────────────────────────────
+function render(){
+  if(!filteredOrders.length && !allOrders.length){
+    document.getElementById('summaryCards').innerHTML='<div class="loading" style="grid-column:1/-1;color:var(--t2)">No order data yet. Orders from your form will appear here automatically.</div>';
+    return;
+  }
+
+  const {rows, totalOrders, totalRevenue} = aggregate();
+  const trend = monthlyTrend();
+  const avgVal = totalOrders>0 ? totalRevenue/totalOrders : 0;
+  const topCat = rows[0];
+
+  // ── Summary cards ──
+  document.getElementById('summaryCards').innerHTML=`
+    <div class="s-card">
+      <div class="s-icon">📋</div>
+      <div class="s-val">${totalOrders}</div>
+      <div class="s-label">Total Orders</div>
+    </div>
+    <div class="s-card">
+      <div class="s-icon">💰</div>
+      <div class="s-val">RM ${totalRevenue.toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+      <div class="s-label">Total Revenue</div>
+    </div>
+    <div class="s-card">
+      <div class="s-icon">📊</div>
+      <div class="s-val">RM ${avgVal.toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0})}</div>
+      <div class="s-label">Avg Order Value</div>
+    </div>
+    <div class="s-card">
+      <div class="s-icon">🏆</div>
+      <div class="s-val">${topCat ? topCat.label : '—'}</div>
+      <div class="s-label">Top Product Type</div>
+    </div>`;
+
+  // ── Charts ──
+  document.getElementById('chartsArea').style.display='grid';
+  renderDonut(rows, totalOrders);
+  renderRevenue(rows);
+  renderTrend(trend);
+
+  // ── Table ──
+  document.getElementById('productTable').style.display='block';
+  document.getElementById('totalOrdersLabel').textContent=`${totalOrders} orders total`;
+  const tbody = document.getElementById('productTableBody');
+  tbody.innerHTML = rows.map((r,i)=>{
+    const pct = totalOrders>0 ? (r.orders/totalOrders*100) : 0;
+    return `<tr>
+      <td class="td-rank">${i+1}</td>
+      <td class="td-product">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${r.color};margin-right:6px;vertical-align:middle"></span>
+        ${r.label}
+      </td>
+      <td class="td-num">${r.orders}</td>
+      <td class="td-num">RM ${r.revenue.toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0})}</td>
+      <td class="td-pct">
+        <div class="pct-bar-wrap">
+          <div class="pct-bar" style="width:${Math.max(pct,1)}%;background:${r.color};max-width:80px"></div>
+          <span class="pct-num">${pct.toFixed(1)}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDonut(rows, total){
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  if(donutInst) donutInst.destroy();
+  donutInst = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels: rows.map(r=>r.label),
+      datasets:[{
+        data: rows.map(r=>r.orders),
+        backgroundColor: rows.map(r=>r.color),
+        borderWidth:2, borderColor:'#fff',
+        hoverOffset:4
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      cutout:'60%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:12,usePointStyle:true}},
+        tooltip:{callbacks:{label:ctx=>{
+          const pct=(ctx.parsed/total*100).toFixed(1);
+          return ` ${ctx.label}: ${ctx.parsed} orders (${pct}%)`;
+        }}}
+      }
+    }
+  });
+}
+
+function renderRevenue(rows){
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  if(revenueInst) revenueInst.destroy();
+  const top = rows.slice(0,8);
+  revenueInst = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels: top.map(r=>r.label),
+      datasets:[{
+        label:'Revenue (RM)',
+        data: top.map(r=>Math.round(r.revenue)),
+        backgroundColor: top.map(r=>r.color+'cc'),
+        borderColor: top.map(r=>r.color),
+        borderWidth:1.5, borderRadius:5
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      indexAxis:'y',
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>' RM '+c.raw.toLocaleString()}}},
+      scales:{
+        x:{grid:{color:'#f0f0f0'},ticks:{font:{family:'DM Sans',size:10},callback:v=>'RM'+v.toLocaleString()}},
+        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10}}}
+      }
+    }
+  });
+}
+
+function renderTrend(trend){
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if(trendInst) trendInst.destroy();
+  trendInst = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels: trend.map(t=>t.label),
+      datasets:[
+        {
+          type:'bar', label:'Orders',
+          data: trend.map(t=>t.count),
+          backgroundColor:'#2563eb33', borderColor:'#2563eb',
+          borderWidth:1.5, borderRadius:4, yAxisID:'y'
+        },
+        {
+          type:'line', label:'Revenue (RM)',
+          data: trend.map(t=>Math.round(t.revenue)),
+          borderColor:'#ea580c', backgroundColor:'#ea580c22',
+          borderWidth:2.5, pointRadius:4, tension:.3, yAxisID:'y1', fill:true
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{font:{family:'DM Sans',size:11},usePointStyle:true}},
+        tooltip:{mode:'index',intersect:false}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10}}},
+        y:{position:'left',grid:{color:'#f0f0f0'},title:{display:true,text:'Orders',font:{size:10}},ticks:{font:{family:'DM Sans',size:10}}},
+        y1:{position:'right',grid:{display:false},title:{display:true,text:'RM',font:{size:10}},ticks:{font:{family:'DM Sans',size:10},callback:v=>'RM'+v.toLocaleString()}}
+      }
+    }
+  });
+  // Force height on trend chart
+  document.getElementById('trendChart').style.height='260px';
+}
+</script>
+</body>
+</html>
