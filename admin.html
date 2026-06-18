@@ -288,10 +288,78 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
   </div>
 </div>
 
+<!-- ── Edit Order Modal ── -->
+<div class="modal-overlay" id="edit-order-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">✏️ 编辑工单 Edit Order</div>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eo-docid"/>
+      <div class="modal-row">
+        <div class="form-group">
+          <label class="form-label">客户姓名 Customer Name *</label>
+          <input class="form-input" id="eo-customer" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">电话 Phone</label>
+          <input class="form-input" id="eo-phone" type="tel"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">产品类型 Product Type</label>
+        <select class="form-input" id="eo-product">
+          <option value="">— 请选择 / Online Order —</option>
+          <option>招牌 Signboard</option>
+          <option>霓虹灯 Neon Sign</option>
+          <option>LED 灯箱 LED Lightbox</option>
+          <option>车身贴 Vehicle Wrap</option>
+          <option>横幅 Banner</option>
+          <option>名片 Name Card</option>
+          <option>亚加力牌 Acrylic Sign</option>
+          <option>Bomba Signage</option>
+          <option>其他 Others</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">规格 / 描述 Specs / Description</label>
+        <textarea class="form-input" id="eo-desc" rows="3" style="resize:vertical"></textarea>
+      </div>
+      <div class="modal-row">
+        <div class="form-group">
+          <label class="form-label">报价 Quote (RM)</label>
+          <input class="form-input" id="eo-total" type="number" min="0" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">来源 Source</label>
+          <select class="form-input" id="eo-source">
+            <option value="">— 线上订单 Online —</option>
+            <option value="walkin">Walk-in 上门</option>
+            <option value="phone">Phone Call 电话</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="referral">Referral 介绍</option>
+            <option value="other">Other 其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注 Notes (Internal)</label>
+        <input class="form-input" id="eo-notes"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn danger" id="eo-delete-btn" onclick="deleteOrderConfirm()">🗑 删除工单</button>
+      <button class="action-btn" onclick="closeEditModal()">Cancel</button>
+      <button class="action-btn primary" id="eo-save-btn" onclick="submitEditOrder()">💾 保存 Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Firebase -->
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
@@ -323,6 +391,25 @@ window._updateStep = async function(docId, stepId, status) {
   const upd = {};
   upd['steps.' + stepId + '.status'] = status;
   if (status === 'done') upd['steps.' + stepId + '.completedAt'] = new Date().toISOString();
+  await updateDoc(ref, upd);
+};
+
+// Delete an order
+window._deleteOrder = async function(docId) {
+  await deleteDoc(doc(db, 'orders', docId));
+};
+
+// Update order fields
+window._updateOrder = async function(docId, data) {
+  const ref = doc(db, 'orders', docId);
+  const upd = {};
+  if (data.customer  !== undefined) upd.customer   = data.customer;
+  if (data.phone     !== undefined) upd.phone       = data.phone;
+  if (data.desc      !== undefined) upd.desc        = data.desc;
+  if (data.notes     !== undefined) upd.notes       = data.notes;
+  if (data.product   !== undefined) upd.product     = data.product;
+  if (data.source    !== undefined) upd.source      = data.source;
+  if (data.total     !== undefined) upd.grandTotal  = data.total ? parseFloat(data.total) : null;
   await updateDoc(ref, upd);
 };
 
@@ -391,6 +478,74 @@ function showAdmin() {
 
 // Auto-login if session active
 if (sessionStorage.getItem('ant_admin') === '1') showAdmin();
+
+// ── Edit Order Modal ──────────────────────────────────
+function openEditModal(docId) {
+  const o = (allOrders || []).find(x => x._docId === docId);
+  if (!o) return;
+
+  document.getElementById('eo-docid').value    = docId;
+  document.getElementById('eo-customer').value = o.customer  || '';
+  document.getElementById('eo-phone').value    = o.phone     || '';
+  document.getElementById('eo-product').value  = o.product   || '';
+  document.getElementById('eo-desc').value     = o.desc      || '';
+  document.getElementById('eo-total').value    = (o.total || o.grandTotal) ? Number(o.total || o.grandTotal).toFixed(2) : '';
+  document.getElementById('eo-notes').value    = o.notes     || '';
+  document.getElementById('eo-source').value   = o.source    || '';
+
+  document.getElementById('edit-order-modal').classList.add('open');
+  document.getElementById('eo-customer').focus();
+}
+
+function closeEditModal() {
+  document.getElementById('edit-order-modal').classList.remove('open');
+}
+
+async function submitEditOrder() {
+  const docId    = document.getElementById('eo-docid').value;
+  const customer = document.getElementById('eo-customer').value.trim();
+  if (!customer) {
+    alert('请填写客户姓名 Customer name required');
+    document.getElementById('eo-customer').focus();
+    return;
+  }
+  const btn = document.getElementById('eo-save-btn');
+  btn.disabled = true; btn.textContent = '保存中…';
+  try {
+    await window._updateOrder(docId, {
+      customer,
+      phone:   document.getElementById('eo-phone').value.trim(),
+      product: document.getElementById('eo-product').value,
+      desc:    document.getElementById('eo-desc').value.trim(),
+      total:   document.getElementById('eo-total').value.trim(),
+      notes:   document.getElementById('eo-notes').value.trim(),
+      source:  document.getElementById('eo-source').value,
+    });
+    closeEditModal();
+    showToast('✅ 工单已更新 Order updated');
+  } catch(e) {
+    alert('保存失败 Save failed: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '💾 保存 Save';
+  }
+}
+
+async function deleteOrderConfirm() {
+  const docId    = document.getElementById('eo-docid').value;
+  const customer = document.getElementById('eo-customer').value || docId;
+  const ok = confirm(`⚠️ 确定要删除这个工单吗？\nDelete order for "${customer}"?\n\n此操作无法撤销 / Cannot be undone.`);
+  if (!ok) return;
+  const btn = document.getElementById('eo-delete-btn');
+  btn.disabled = true; btn.textContent = '删除中…';
+  try {
+    await window._deleteOrder(docId);
+    closeEditModal();
+    showToast('🗑 工单已删除 Order deleted');
+  } catch(e) {
+    alert('删除失败 Delete failed: ' + e.message);
+    btn.disabled = false; btn.innerHTML = '🗑 删除工单';
+  }
+}
 
 // ── New Order Modal ───────────────────────────────────
 function openNewOrderModal() {
@@ -569,7 +724,8 @@ function orderCardHtml(o) {
         <div class="order-desc">${escHtml(o.product ? '['+o.product+'] ' : '') + escHtml(o.desc||'')}</div>
         <div style="margin-top:4px">${chipHtml(status)}</div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
+      <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <button onclick="event.stopPropagation();openEditModal('${o._docId}')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:.7rem;cursor:pointer;color:var(--t2)">✏️ Edit</button>
         <div class="order-total">${total}</div>
         <div class="order-date">${fmtDate(o.createdAt)}</div>
       </div>
@@ -582,7 +738,8 @@ function orderCardHtml(o) {
       <div class="actions-grid">${actionsHtml}</div>
       <div class="actions-title" style="margin-top:.8rem">🤖 AI Tools</div>
       <div class="actions-grid">
-        <button class="action-btn" onclick="aiProduce('${o._docId}')">🛠 生产单 Production Sheet</button>
+        <button class="action-btn primary" onclick="printSheet('${o._docId}')">🖨 打印生产单 Print Sheet</button>
+        <button class="action-btn" onclick="aiProduce('${o._docId}')">🤖 AI 生产单</button>
         <button class="action-btn" onclick="aiFollowUp('${o._docId}')">💬 跟进话术 Follow-up</button>
       </div>
       <div class="ai-out" id="ai-out-${o._docId}" style="display:none"></div>
@@ -797,6 +954,98 @@ function showToast(msg) {
 // ── Utils ──────────────────────────────────────────────
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══ Production Sheet (direct print, no AI) ══ */
+function printSheet(docId) {
+  const o = _findOrder(docId);
+  if (!o) return;
+
+  const STEP_LABELS = {
+    proceed:'确认订单 Confirm Order', payment:'收款 Payment',
+    ironframe:'铁架 Iron Frame', sticker:'贴膜 Sticker',
+    cutting:'剪裁 Cutting', edging:'封边 Edging',
+    painting:'油漆 Painting', assembly:'组装 Assembly',
+    delivery:'交货安装 Delivery', jobdone:'完工 Job Done'
+  };
+
+  const steps = o.steps || {};
+  const stepsHtml = Object.entries(STEP_LABELS).map(([id, label]) => {
+    const st = steps[id]?.status || 'pending';
+    const icon = st === 'done' ? '✅' : st === 'inprogress' ? '⏳' : '⬜';
+    const done = st === 'done' && steps[id]?.completedAt
+      ? ' <span style="font-size:11px;color:#666">(' + new Date(steps[id].completedAt).toLocaleDateString('en-MY') + ')</span>' : '';
+    return `<tr><td style="padding:6px 10px;border:1px solid #ddd;font-size:14px">${icon} ${label}${done}</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px;color:#555">${st.toUpperCase()}</td></tr>`;
+  }).join('');
+
+  const items = (o.items || []).map(i =>
+    `<tr><td style="padding:6px 10px;border:1px solid #ddd">${escHtml(i.name||'')} ×${i.qty||1}</td><td style="padding:6px 10px;border:1px solid #ddd">${i.desc||''}</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:right">RM ${((i.price||0)*(i.qty||1)).toFixed(2)}</td></tr>`
+  ).join('');
+
+  const total = o.total || o.grandTotal;
+  const isManualBadge = o.isManual ? '<span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px">MANUAL</span>' : '';
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<title>生产单 ${o.id||docId}</title>
+<style>
+  body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#111}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0d1f3c;padding-bottom:12px;margin-bottom:16px}
+  .logo{font-size:20px;font-weight:900;color:#0d1f3c}
+  .logo span{color:#e63946}
+  .order-id{font-size:13px;color:#555;margin-top:4px}
+  h2{margin:0 0 4px;font-size:16px}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px}
+  th{background:#0d1f3c;color:#fff;padding:7px 10px;text-align:left;font-size:13px}
+  .notes-box{border:1px dashed #aaa;border-radius:6px;padding:10px;font-size:13px;min-height:60px;color:#555}
+  .footer{margin-top:24px;border-top:1px solid #ddd;padding-top:10px;font-size:11px;color:#999;display:flex;justify-content:space-between}
+  @media print{button{display:none}}
+</style></head><body>
+<div class="header">
+  <div>
+    <div class="logo">A<span>&</span>T Signboard &amp; Printing</div>
+    <div class="order-id">📋 生产单 Production Sheet</div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:22px;font-weight:900;color:#0d1f3c">${escHtml(o.id||docId)}${isManualBadge}</div>
+    <div style="font-size:12px;color:#666">Printed: ${new Date().toLocaleDateString('en-MY', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+  </div>
+</div>
+
+<table>
+  <tr><th colspan="2">客户资料 Customer Info</th></tr>
+  <tr><td style="padding:7px 10px;border:1px solid #ddd;width:35%;font-weight:600">姓名 Name</td><td style="padding:7px 10px;border:1px solid #ddd">${escHtml(o.customer||'—')}</td></tr>
+  <tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">电话 Phone</td><td style="padding:7px 10px;border:1px solid #ddd">${escHtml(o.phone||'—')}</td></tr>
+  ${o.product ? `<tr><td style="padding:7px 10px;border:1px solid #ddd;font-weight:600">产品类型</td><td style="padding:7px 10px;border:1px solid #ddd">${escHtml(o.product)}</td></tr>` : ''}
+</table>
+
+${items ? `<table><tr><th>品项 Item</th><th>规格 Specs</th><th style="text-align:right">金额 Amount</th></tr>${items}
+<tr><td colspan="2" style="padding:7px 10px;border:1px solid #ddd;font-weight:700;text-align:right">Grand Total</td><td style="padding:7px 10px;border:1px solid #ddd;font-weight:700;text-align:right">RM ${total ? Number(total).toFixed(2) : '—'}</td></tr></table>` : `
+<table><tr><th>规格 / 描述 Specs / Description</th></tr>
+<tr><td style="padding:10px;border:1px solid #ddd;white-space:pre-wrap;font-size:13px">${escHtml(o.desc||'—')}</td></tr></table>
+<p style="margin:4px 0 16px;font-size:14px;font-weight:700">Grand Total: RM ${total ? Number(total).toFixed(2) : 'TBD'}</p>`}
+
+<table>
+  <tr><th colspan="2">生产进度 Production Steps</th></tr>
+  ${stepsHtml}
+</table>
+
+<p style="font-size:13px;font-weight:700;margin-bottom:6px">📝 备注 Notes / Special Instructions</p>
+<div class="notes-box">${escHtml(o.notes||o.desc||'')}</div>
+
+<div class="footer">
+  <span>A&amp;T Signboard &amp; Printing — 工单 / Job Sheet</span>
+  <span>Created: ${new Date(o.createdAt||Date.now()).toLocaleDateString('en-MY')}</span>
+</div>
+
+<div style="margin-top:16px;display:flex;gap:10px">
+  <button onclick="window.print()" style="padding:8px 20px;background:#0d1f3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨 打印 Print</button>
+  <button onclick="window.close()" style="padding:8px 20px;background:#eee;border:none;border-radius:6px;cursor:pointer;font-size:14px">关闭</button>
+</div>
+</body></html>`;
+
+  const w = window.open('', '_blank', 'width=700,height=900');
+  w.document.write(html);
+  w.document.close();
 }
 
 /* ══ AI Tools: production sheet + follow-up draft (calls /api/gemini) ══ */
