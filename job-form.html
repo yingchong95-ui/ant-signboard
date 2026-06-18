@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Job Order Form — A&T Signboard</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Job Form"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --navy:#0d1f3c;--blue:#2563eb;--green:#16a34a;--red:#e63946;
+    --t1:#1a2236;--t2:#4a5568;--t3:#8a94a6;
+    --bg:#f3f5fa;--card:#fff;--border:#e3e7ef;
+  }
+  body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--t1);min-height:100vh;padding-bottom:80px}
+
+  /* ── Header ── */
+  .top-bar{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+  .top-bar h1{font-size:.95rem;font-weight:700;letter-spacing:.3px}
+  .top-bar .back-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 11px;border-radius:6px;font-size:.75rem;cursor:pointer;text-decoration:none}
+
+  /* ── Layout ── */
+  .container{max-width:640px;margin:0 auto;padding:16px}
+  .section-card{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:14px}
+  .section-head{padding:10px 16px;background:#f8f9fc;border-bottom:1px solid var(--border);font-size:.78rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px}
+  .section-body{padding:14px 16px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  @media(max-width:420px){.row2,.row3{grid-template-columns:1fr}}
+
+  /* ── Form controls ── */
+  label{display:block;font-size:.72rem;font-weight:600;color:var(--t2);margin-bottom:3px}
+  input,select,textarea{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:.84rem;color:var(--t1);background:#fff;transition:border .15s;font-family:inherit}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue)}
+  textarea{resize:vertical;min-height:68px}
+  .form-group{margin-bottom:10px}
+  .form-group:last-child{margin-bottom:0}
+  .req{color:var(--red);margin-left:2px}
+
+  /* ── Item cards ── */
+  .items-list{display:flex;flex-direction:column;gap:10px}
+  .item-card{border:1.5px solid var(--border);border-radius:10px;padding:12px;position:relative;background:#fafbfd}
+  .item-card.highlight{border-color:#93c5fd;background:#eff6ff}
+  .item-num{font-size:.7rem;font-weight:700;color:var(--blue);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+  .del-item-btn{background:none;border:none;color:var(--t3);font-size:1.1rem;cursor:pointer;padding:0 2px;line-height:1}
+  .del-item-btn:hover{color:var(--red)}
+  .add-item-btn{width:100%;padding:9px;border:1.5px dashed var(--border);border-radius:8px;background:transparent;color:var(--blue);font-weight:600;font-size:.82rem;cursor:pointer;transition:background .15s}
+  .add-item-btn:hover{background:#eff6ff}
+  .size-row{display:grid;grid-template-columns:3fr 1fr 3fr 1fr;gap:6px;align-items:end}
+  .size-x{text-align:center;font-size:.8rem;color:var(--t3);padding-bottom:8px}
+  .price-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end}
+
+  /* ── Summary ── */
+  .summary-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.82rem}
+  .summary-row.total{font-weight:700;font-size:.95rem;color:var(--navy);border-top:1.5px solid var(--border);padding-top:10px;margin-top:4px}
+  .summary-label{color:var(--t2)}
+
+  /* ── Pill selectors ── */
+  .pill-group{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border:1.5px solid var(--border);border-radius:20px;font-size:.76rem;cursor:pointer;transition:all .15s;background:#fff;color:var(--t2);font-weight:500}
+  .pill input[type=radio],.pill input[type=checkbox]{display:none}
+  .pill:has(input:checked),.pill.active{border-color:var(--blue);background:#eff6ff;color:var(--blue);font-weight:600}
+  .pill-green:has(input:checked){border-color:var(--green);background:#f0fdf4;color:var(--green)}
+
+  /* ── Bottom CTA ── */
+  .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1.5px solid var(--border);padding:10px 16px;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.08)}
+  .submit-btn{width:100%;max-width:640px;display:block;margin:0 auto;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .15s}
+  .submit-btn:hover{background:#1d4ed8}
+  .submit-btn:disabled{background:#93c5fd;cursor:not-allowed}
+
+  /* ── Toast ── */
+  #toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:#1a2236;color:#fff;padding:10px 20px;border-radius:30px;font-size:.8rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.success{background:#16a34a}
+  #toast.error{background:#e63946}
+
+  /* ── Success screen ── */
+  #success-screen{display:none;position:fixed;inset:0;background:var(--navy);z-index:500;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:16px;text-align:center;padding:32px}
+  #success-screen.show{display:flex}
+  .success-icon{font-size:4rem}
+  .success-title{font-size:1.4rem;font-weight:700}
+  .success-sub{color:#94a3b8;font-size:.85rem;max-width:280px}
+  .success-id{background:rgba(255,255,255,.1);padding:8px 18px;border-radius:8px;font-family:monospace;font-size:1rem;letter-spacing:1px}
+  .success-btn{background:var(--blue);border:none;color:#fff;padding:12px 28px;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:8px}
+  .success-btn.outline{background:transparent;border:1.5px solid rgba(255,255,255,.3)}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <a href="admin.html" class="back-btn">← Admin</a>
+  <h1>📋 Job Order Form</h1>
+  <div style="width:60px"></div>
+</div>
+
+<div class="container" id="form-wrapper">
+
+  <!-- ① Customer Info -->
+  <div class="section-card">
+    <div class="section-head">👤 Customer Information</div>
+    <div class="section-body">
+      <div class="row2">
+        <div class="form-group">
+          <label>Customer Name <span class="req">*</span></label>
+          <input type="text" id="f-customer" placeholder="e.g. Tan Ah Kow" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label>Phone / WhatsApp <span class="req">*</span></label>
+          <input type="tel" id="f-phone" placeholder="011-1234 5678"/>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Company Name (optional)</label>
+          <input type="text" id="f-company" placeholder="ABC Sdn Bhd"/>
+        </div>
+        <div class="form-group">
+          <label>Email (optional)</label>
+          <input type="email" id="f-email" placeholder="customer@email.com"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② Sign Items -->
+  <div class="section-card">
+    <div class="section-head">🪟 Sign Items</div>
+    <div class="section-body">
+      <div class="items-list" id="items-list"></div>
+      <button class="add-item-btn" onclick="addItem()" style="margin-top:10px">＋ Add Sign Item</button>
+    </div>
+  </div>
+
+  <!-- ③ Artwork & Production -->
+  <div class="section-card">
+    <div class="section-head">🎨 Artwork Status</div>
+    <div class="section-body">
+      <div class="pill-group" id="artwork-pills">
+        <label class="pill"><input type="radio" name="artwork" value="customer" checked/> ✅ Customer Provides Artwork</label>
+        <label class="pill"><input type="radio" name="artwork" value="design"/> 🎨 Need Design (+ RM)</label>
+        <label class="pill"><input type="radio" name="artwork" value="template"/> 📄 Use Template</label>
+        <label class="pill"><input type="radio" name="artwork" value="revise"/> ✏️ Revise Existing</label>
+      </div>
+      <div id="design-fee-row" style="display:none;margin-top:10px">
+        <div class="form-group">
+          <label>Design Fee (RM)</label>
+          <input type="number" id="f-design-fee" placeholder="0.00" min="0" step="0.01" oninput="recalcTotal()"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ Installation -->
+  <div class="section-card">
+    <div class="section-head">🔧 Installation</div>
+    <div class="section-body">
+      <div class="pill-group" style="margin-bottom:10px" id="install-pills">
+        <label class="pill"><input type="radio" name="install" value="supply" checked/> 📦 Supply Only (No Install)</label>
+        <label class="pill"><input type="radio" name="install" value="standard"/> 🔩 Standard Install</label>
+        <label class="pill"><input type="radio" name="install" value="premium"/> 🏗 Premium Install (High / Difficult)</label>
+        <label class="pill"><input type="radio" name="install" value="removal"/> 🔄 Remove Old + New Install</label>
+      </div>
+      <div id="install-details" style="display:none">
+        <div class="form-group">
+          <label>Installation Address / Location</label>
+          <input type="text" id="f-install-addr" placeholder="No. 12, Jalan Example, Johor Bahru"/>
+        </div>
+        <div class="row2">
+          <div class="form-group">
+            <label>Installation Fee (RM)</label>
+            <input type="number" id="f-install-fee" placeholder="0.00" min="0" step="0.01" oninput="recalcTotal()"/>
+          </div>
+          <div class="form-group">
+            <label>Floor / Level</label>
+            <input type="text" id="f-floor" placeholder="Ground / 2F / Rooftop"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ Schedule & Priority -->
+  <div class="section-card">
+    <div class="section-head">📅 Schedule & Priority</div>
+    <div class="section-body">
+      <div class="pill-group" style="margin-bottom:10px" id="urgency-pills">
+        <label class="pill pill-green"><input type="radio" name="urgency" value="normal" checked/> ✅ Normal (7–14 days)</label>
+        <label class="pill"><input type="radio" name="urgency" value="rush"/> ⚡ Rush (3–5 days, +30%)</label>
+        <label class="pill"><input type="radio" name="urgency" value="urgent"/> 🚨 Urgent (1–2 days, +50%)</label>
+      </div>
+      <div class="row2">
+        <div class="form-group">
+          <label>Required By Date</label>
+          <input type="date" id="f-due-date"/>
+        </div>
+        <div class="form-group">
+          <label>Preferred Collection</label>
+          <select id="f-collection">
+            <option value="walkin">Walk-in Pickup</option>
+            <option value="delivery">Delivery</option>
+            <option value="install">On-site Installation</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ Pricing Summary -->
+  <div class="section-card">
+    <div class="section-head">💰 Pricing Summary</div>
+    <div class="section-body">
+      <div id="price-summary">
+        <div class="summary-row"><span class="summary-label">Items Subtotal</span><span id="sum-items">RM 0.00</span></div>
+        <div class="summary-row" id="sum-design-row" style="display:none"><span class="summary-label">Design Fee</span><span id="sum-design">RM 0.00</span></div>
+        <div class="summary-row" id="sum-install-row" style="display:none"><span class="summary-label">Installation Fee</span><span id="sum-install">RM 0.00</span></div>
+        <div class="summary-row" id="sum-rush-row" style="display:none"><span class="summary-label">Rush Surcharge</span><span id="sum-rush">RM 0.00</span></div>
+        <div class="summary-row total"><span>Grand Total</span><span id="sum-total" style="color:var(--blue)">RM 0.00</span></div>
+      </div>
+      <div class="row2" style="margin-top:12px">
+        <div class="form-group">
+          <label>Deposit Collected (RM)</label>
+          <input type="number" id="f-deposit" placeholder="0.00" min="0" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label>Payment Method</label>
+          <select id="f-payment">
+            <option value="">— Select —</option>
+            <option value="cash">Cash</option>
+            <option value="tng">TNG / e-Wallet</option>
+            <option value="transfer">Bank Transfer</option>
+            <option value="card">Card</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ Notes -->
+  <div class="section-card">
+    <div class="section-head">📝 Special Notes / Instructions</div>
+    <div class="section-body">
+      <textarea id="f-notes" rows="3" placeholder="E.g. double-sided, specific font, special coating, fragile packaging, etc."></textarea>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Bottom Submit -->
+<div class="bottom-bar">
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">✅ Submit Job Order</button>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Success Screen -->
+<div id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">Job Order Submitted!</div>
+  <div class="success-sub">Order has been saved to SignTrack</div>
+  <div class="success-id" id="success-id">JF-XXXXXXX</div>
+  <button class="success-btn" onclick="newOrder()">➕ New Job Order</button>
+  <a href="admin.html" style="text-decoration:none"><button class="success-btn outline">← Back to Admin</button></a>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+window._saveOrder = async function(data) {
+  const ref = await addDoc(collection(db, 'orders'), data);
+  return ref.id;
+};
+</script>
+
+<script>
+// ── Item Template ──────────────────────────────────────────
+const SIGN_TYPES = [
+  'Main Signboard (招牌)','LED Lightbox (灯箱)','Channel Letter (立体字)',
+  'Neon Sign (霓虹灯)','LED Strip Neon','Acrylic Board (亚加力板)',
+  'Foam Board','Aluminium Composite Panel','Banner/Backdrop',
+  'Sticker (贴纸)','Vehicle Wrap','Name Card / Flyer',
+  'One-Way Vision','Window Frosting','Others'
+];
+const MATERIALS = [
+  '','Aluminium (铝板)','Stainless Steel (不锈钢)','Mild Steel (黑钢)',
+  'Acrylic 3mm','Acrylic 5mm','Acrylic 8mm+','Aluminium Composite (ACP)',
+  'LED Module','LED Strip','Flex Banner','Vinyl Sticker','Foam Board','Others'
+];
+const COLORS = [
+  '','White','Black','Silver (Brushed)','Silver (Mirror)','Gold (Mirror)',
+  'Gold (Brushed)','Red','Blue','Green','Yellow','Custom (specify in notes)'
+];
+const FINISHES = ['','Gloss','Matte','Brushed','Mirror','Powder Coat','Anodized','Backlit','Frontlit'];
+
+let itemCount = 0;
+
+function addItem(){
+  itemCount++;
+  const idx = itemCount;
+  const div = document.createElement('div');
+  div.className = 'item-card' + (idx===1?' highlight':'');
+  div.id = 'item-'+idx;
+  div.innerHTML = `
+    <div class="item-num">
+      <span>Item #${idx}</span>
+      ${idx>1?`<button class="del-item-btn" onclick="delItem(${idx})" title="Remove">✕</button>`:''}
+    </div>
+
+    <div class="form-group">
+      <label>Sign Type <span class="req">*</span></label>
+      <select id="it-type-${idx}" onchange="recalcTotal()">
+        ${SIGN_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Description / Custom Name</label>
+      <input type="text" id="it-name-${idx}" placeholder="e.g. Shop fascia signboard, front side"/>
+    </div>
+
+    <div class="form-group">
+      <label>Size</label>
+      <div class="size-row">
+        <div>
+          <label style="font-size:.68rem;color:var(--t3)">Width</label>
+          <input type="number" id="it-w-${idx}" placeholder="0" min="0" step="0.1" oninput="recalcTotal()"/>
+        </div>
+        <div class="size-x">×</div>
+        <div>
+          <label style="font-size:.68rem;color:var(--t3)">Height</label>
+          <input type="number" id="it-h-${idx}" placeholder="0" min="0" step="0.1" oninput="recalcTotal()"/>
+        </div>
+        <div>
+          <label style="font-size:.68rem;color:var(--t3)">Unit</label>
+          <select id="it-unit-${idx}">
+            <option value="ft">ft</option>
+            <option value="m">m</option>
+            <option value="cm">cm</option>
+            <option value="inch">in</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="form-group">
+        <label>Main Material</label>
+        <select id="it-mat-${idx}">
+          ${MATERIALS.map(m=>`<option value="${m}">${m||'— Select —'}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Qty</label>
+        <input type="number" id="it-qty-${idx}" value="1" min="1" step="1" oninput="recalcTotal()"/>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="form-group">
+        <label>Color / Finish</label>
+        <select id="it-color-${idx}">
+          ${COLORS.map(c=>`<option value="${c}">${c||'— Select —'}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Surface Finish</label>
+        <select id="it-finish-${idx}">
+          ${FINISHES.map(f=>`<option value="${f}">${f||'— Select —'}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div class="price-row">
+      <div class="form-group">
+        <label>Unit Price (RM)</label>
+        <input type="number" id="it-price-${idx}" placeholder="0.00" min="0" step="0.01" oninput="recalcTotal()"/>
+      </div>
+      <div class="form-group">
+        <label>Subtotal (RM)</label>
+        <input type="number" id="it-sub-${idx}" placeholder="0.00" readonly style="background:#f3f5fa;color:var(--t2)"/>
+      </div>
+      <div class="form-group">
+        <label>LED / Extra (RM)</label>
+        <input type="number" id="it-extra-${idx}" placeholder="0.00" min="0" step="0.01" oninput="recalcTotal()"/>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:4px">
+      <label>Item Notes</label>
+      <input type="text" id="it-note-${idx}" placeholder="e.g. double-sided, specific Pantone color, watertight housing…"/>
+    </div>
+  `;
+  document.getElementById('items-list').appendChild(div);
+}
+
+function delItem(idx){
+  const el = document.getElementById('item-'+idx);
+  if(el) el.remove();
+  recalcTotal();
+}
+
+function getItemIds(){
+  return [...document.querySelectorAll('.item-card')].map(el=>el.id.replace('item-',''));
+}
+
+// ── Recalc ──────────────────────────────────────────
+function recalcTotal(){
+  let subtotal=0;
+  getItemIds().forEach(function(idx){
+    const qty   = parseFloat(document.getElementById('it-qty-'+idx)?.value)||1;
+    const price = parseFloat(document.getElementById('it-price-'+idx)?.value)||0;
+    const extra = parseFloat(document.getElementById('it-extra-'+idx)?.value)||0;
+    const sub   = (price * qty) + extra;
+    const subEl = document.getElementById('it-sub-'+idx);
+    if(subEl) subEl.value = sub.toFixed(2);
+    subtotal += sub;
+  });
+
+  const artwork = document.querySelector('input[name=artwork]:checked')?.value;
+  const designFee = artwork==='design' ? (parseFloat(document.getElementById('f-design-fee')?.value)||0) : 0;
+
+  const install = document.querySelector('input[name=install]:checked')?.value;
+  const installFee = (install&&install!=='supply') ? (parseFloat(document.getElementById('f-install-fee')?.value)||0) : 0;
+
+  const urgency = document.querySelector('input[name=urgency]:checked')?.value;
+  let rushSurcharge = 0;
+  if(urgency==='rush')   rushSurcharge = +(subtotal * 0.30).toFixed(2);
+  if(urgency==='urgent') rushSurcharge = +(subtotal * 0.50).toFixed(2);
+
+  const grand = subtotal + designFee + installFee + rushSurcharge;
+
+  document.getElementById('sum-items').textContent = 'RM ' + subtotal.toFixed(2);
+  document.getElementById('sum-design').textContent = 'RM ' + designFee.toFixed(2);
+  document.getElementById('sum-design-row').style.display = designFee>0?'flex':'none';
+  document.getElementById('sum-install').textContent = 'RM ' + installFee.toFixed(2);
+  document.getElementById('sum-install-row').style.display = installFee>0?'flex':'none';
+  document.getElementById('sum-rush').textContent = 'RM ' + rushSurcharge.toFixed(2);
+  document.getElementById('sum-rush-row').style.display = rushSurcharge>0?'flex':'none';
+  document.getElementById('sum-total').textContent = 'RM ' + grand.toFixed(2);
+}
+
+// ── Reactive toggles ────────────────────────────────
+document.querySelectorAll('input[name=artwork]').forEach(function(r){
+  r.addEventListener('change',function(){
+    document.getElementById('design-fee-row').style.display = r.value==='design'?'block':'none';
+    recalcTotal();
+  });
+});
+document.querySelectorAll('input[name=install]').forEach(function(r){
+  r.addEventListener('change',function(){
+    document.getElementById('install-details').style.display = r.value!=='supply'?'block':'none';
+    recalcTotal();
+  });
+});
+document.querySelectorAll('input[name=urgency]').forEach(function(r){
+  r.addEventListener('change',function(){ recalcTotal(); });
+});
+
+// ── Collect data ────────────────────────────────────
+function collectItems(){
+  return getItemIds().map(function(idx){
+    const qty   = parseFloat(document.getElementById('it-qty-'+idx)?.value)||1;
+    const price = parseFloat(document.getElementById('it-price-'+idx)?.value)||0;
+    const extra = parseFloat(document.getElementById('it-extra-'+idx)?.value)||0;
+    return {
+      name:   document.getElementById('it-type-'+idx)?.value || '',
+      desc:   document.getElementById('it-name-'+idx)?.value || '',
+      width:  document.getElementById('it-w-'+idx)?.value    || '',
+      height: document.getElementById('it-h-'+idx)?.value    || '',
+      unit:   document.getElementById('it-unit-'+idx)?.value || 'ft',
+      material: document.getElementById('it-mat-'+idx)?.value  || '',
+      color:    document.getElementById('it-color-'+idx)?.value || '',
+      finish:   document.getElementById('it-finish-'+idx)?.value|| '',
+      qty:    qty,
+      price:  price,
+      extra:  extra,
+      subtotal: +((price*qty)+extra).toFixed(2),
+      notes:  document.getElementById('it-note-'+idx)?.value || ''
+    };
+  });
+}
+
+// ── Submit ──────────────────────────────────────────
+async function submitForm(){
+  const customer = document.getElementById('f-customer').value.trim();
+  const phone    = document.getElementById('f-phone').value.trim();
+  if(!customer){ showToast('Please enter customer name','error'); return; }
+  if(!phone){ showToast('Please enter phone number','error'); return; }
+  const items = collectItems();
+  if(!items.length){ showToast('Please add at least one sign item','error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='⏳ Saving…';
+
+  const artwork  = document.querySelector('input[name=artwork]:checked')?.value || 'customer';
+  const install  = document.querySelector('input[name=install]:checked')?.value || 'supply';
+  const urgency  = document.querySelector('input[name=urgency]:checked')?.value || 'normal';
+  const designFee   = parseFloat(document.getElementById('f-design-fee')?.value)||0;
+  const installFee  = parseFloat(document.getElementById('f-install-fee')?.value)||0;
+  const deposit     = parseFloat(document.getElementById('f-deposit')?.value)||0;
+  const grandTotal  = parseFloat(document.getElementById('sum-total').textContent.replace('RM ',''))||0;
+
+  // Derive product field for warranty/filter logic
+  const signTypes = items.map(function(i){ return i.name; }).filter(Boolean);
+  const productSummary = signTypes.length ? signTypes.join(', ') : 'Signboard';
+
+  const STEP_IDS = ['proceed','payment','ironframe','sticker','cutting','edging','painting','assembly','delivery','jobdone'];
+  const steps = {};
+  STEP_IDS.forEach(function(id){ steps[id] = { status: 'pending' }; });
+
+  const orderNum = 'JF-' + Date.now().toString(36).toUpperCase();
+  const orderData = {
+    id: orderNum,
+    customer:    customer,
+    phone:       phone,
+    company:     document.getElementById('f-company').value.trim(),
+    email:       document.getElementById('f-email').value.trim(),
+    product:     productSummary,
+    desc:        items.map(function(i){ return (i.desc||i.name) + (i.width?(' '+i.width+'×'+i.height+i.unit):''); }).join('; '),
+    notes:       document.getElementById('f-notes').value.trim(),
+    source:      install!=='supply' ? 'install' : 'walkin',
+    artwork:     artwork,
+    installation: install,
+    installAddress: document.getElementById('f-install-addr')?.value.trim()||'',
+    urgency:     urgency,
+    dueDate:     document.getElementById('f-due-date').value||'',
+    collection:  document.getElementById('f-collection').value,
+    items:       items,
+    designFee:   designFee,
+    installFee:  installFee,
+    grandTotal:  grandTotal,
+    deposit:     deposit,
+    payment:     document.getElementById('f-payment').value,
+    steps:       steps,
+    isManual:    false,
+    createdAt:   new Date().toISOString()
+  };
+
+  try{
+    await window._saveOrder(orderData);
+    document.getElementById('success-id').textContent = orderNum;
+    document.getElementById('success-screen').classList.add('show');
+  }catch(err){
+    showToast('Save failed: '+err.message,'error');
+    btn.disabled=false; btn.textContent='✅ Submit Job Order';
+  }
+}
+window.submitForm = submitForm;
+
+function newOrder(){
+  document.getElementById('success-screen').classList.remove('show');
+  document.getElementById('items-list').innerHTML='';
+  itemCount=0;
+  document.getElementById('form-wrapper').querySelectorAll('input[type=text],input[type=tel],input[type=email],input[type=number],textarea').forEach(function(el){ el.value=''; });
+  document.querySelectorAll('input[type=radio][value=customer],input[type=radio][value=supply],input[type=radio][value=normal]').forEach(function(r){ r.checked=true; });
+  document.getElementById('install-details').style.display='none';
+  document.getElementById('design-fee-row').style.display='none';
+  addItem();
+  recalcTotal();
+}
+window.newOrder = newOrder;
+window.addItem  = addItem;
+window.delItem  = delItem;
+
+// ── Toast ───────────────────────────────────────────
+function showToast(msg, type){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='show '+(type||'');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){ t.className=''; },2800);
+}
+
+// ── Init ────────────────────────────────────────────
+addItem();
+recalcTotal();
+</script>
+</body>
+</html>

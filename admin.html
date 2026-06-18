@@ -178,8 +178,9 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
       <span class="header-logo">A&T Admin</span>
       <span class="header-badge">Owner Panel</span>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button onclick="openNewOrderModal()" style="background:#16a34a;border:none;color:#fff;font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer">➕ 新增工单</button>
+      <a href="job-form.html" style="background:#2563eb;border:none;color:#fff;font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">📋 Job Form</a>
       <a href="analytics.html" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">📊 Analytics</a>
       <button class="logout-btn" onclick="doLogout()">Sign Out</button>
     </div>
@@ -1060,8 +1061,11 @@ async function _aiCall(system, userMsg){
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ system:system, messages:[{role:'user',content:userMsg}], max_tokens:700 })
   });
-  if(!res.ok) throw new Error('api');
-  var data = await res.json();
+  var data = await res.json().catch(function(){ return {}; });
+  if(!res.ok){
+    var errMsg = (data && (data.error || data.message)) ? (data.error || data.message) : ('HTTP ' + res.status);
+    throw new Error(errMsg);
+  }
   return (data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('\n') || '(empty)';
 }
 async function aiProduce(docId){
@@ -1071,7 +1075,7 @@ async function aiProduce(docId){
   var sys='你是 A&T 招牌印刷厂的生产助理。根据订单生成一张给工坊师傅看的【生产单】：逐件列出材料、尺寸、工艺步骤、注意事项，简洁分点，用中文，方便打印。只依据订单已有信息，不要编造缺失的数据。';
   var msg='订单号：'+(o.id||docId)+'\n客户：'+(o.customer||'')+'\n产品明细：\n'+_orderItemsText(o);
   try{ _renderAiOut(outId, '🛠 生产单 Production Sheet', await _aiCall(sys,msg), null); }
-  catch(e){ out.innerHTML='<div style="color:#e63946;font-size:.8rem;padding:.6rem">生成失败，请重试。</div>'; }
+  catch(e){ out.innerHTML='<div style="color:#e63946;font-size:.8rem;padding:.6rem">⚠️ 生成失败：'+escHtml(e.message||'请重试')+'</div>'; }
 }
 async function aiFollowUp(docId){
   var o=_findOrder(docId); if(!o) return;
@@ -1084,7 +1088,7 @@ async function aiFollowUp(docId){
     var phone=(o.phone||'').replace(/[^0-9]/g,'');
     var waBtn = phone ? '<a class="action-btn success" href="https://wa.me/'+phone+'?text='+encodeURIComponent(text)+'" target="_blank" rel="noopener" style="text-decoration:none">📲 发送给客户</a>' : '';
     _renderAiOut(outId, '💬 跟进话术 Follow-up', text, waBtn);
-  }catch(e){ out.innerHTML='<div style="color:#e63946;font-size:.8rem;padding:.6rem">生成失败，请重试。</div>'; }
+  }catch(e){ out.innerHTML='<div style="color:#e63946;font-size:.8rem;padding:.6rem">⚠️ 生成失败：'+escHtml(e.message||'请重试')+'</div>'; }
 }
 function _renderAiOut(outId, title, text, extraBtn){
   var out=document.getElementById(outId);
