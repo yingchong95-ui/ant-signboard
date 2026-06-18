@@ -706,12 +706,35 @@ function switchTab(tab) {
   else renderOrders();
 }
 
+// ── Warranty eligibility — signboard/installed-sign types only ──
+function isWarrantyEligible(o) {
+  // Keywords that qualify for warranty (physically installed signs)
+  const SIGN_KW    = ['signboard','招牌','neon','霓虹','灯箱','led lightbox','led 灯箱'];
+  // Keywords that exclude warranty
+  const PRINT_KW   = ['acrylic','亚加力','壓克力','bomba','banner','横幅','name card','名片','foam','泡沫','inkjet','喷绘','vehicle','车身','flyer','sticker print'];
+
+  const haystack = [
+    o.product || '',
+    o.desc    || '',
+    ...(o.items || []).map(i => i.name || '')
+  ].join(' ').toLowerCase();
+
+  // Explicitly non-warranty if print keywords found
+  if (PRINT_KW.some(k => haystack.includes(k))) return false;
+  // Warranty-eligible if sign keywords found
+  if (SIGN_KW.some(k  => haystack.includes(k))) return true;
+  // Online orders without clear product type: default eligible (existing data backward-compat)
+  return !o.isManual;
+}
+
 // ── Warranty Panel ─────────────────────────────────────────
 function renderWarrantyPanel() {
   const wrap = document.getElementById('warranty-orders-list');
   if (!wrap) return;
 
-  const done = allOrders.filter(o => o.steps?.jobdone?.status === 'done');
+  const done = allOrders.filter(o =>
+    o.steps?.jobdone?.status === 'done' && isWarrantyEligible(o)
+  );
   if (!done.length) {
     wrap.innerHTML = '<div class="empty-wrap"><div class="empty-icon">🛡️</div><div class="empty-text">No completed installations yet.</div></div>';
     return;
