@@ -130,6 +130,20 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
   .tabs{gap:3px}
   .tab-btn{font-size:.72rem}
 }
+
+/* ── New Order Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal-card{background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:1rem;font-weight:700;color:var(--navy)}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--t2);line-height:1;padding:0 4px}
+.modal-body{padding:1.2rem 1.5rem}
+.modal-footer{padding:.8rem 1.5rem 1.2rem;display:flex;gap:.6rem;justify-content:flex-end;border-top:1px solid var(--border)}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.form-hint{font-size:.72rem;color:var(--t3);margin-top:3px}
+.badge-manual{display:inline-block;background:#f0fdf4;color:#16a34a;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:8px;border:1px solid #bbf7d0;vertical-align:middle;margin-left:6px}
+@media(max-width:480px){.modal-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -159,6 +173,7 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
       <span class="header-badge">Owner Panel</span>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="openNewOrderModal()" style="background:#16a34a;border:none;color:#fff;font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer">➕ 新增工单</button>
       <a href="analytics.html" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">📊 Analytics</a>
       <button class="logout-btn" onclick="doLogout()">Sign Out</button>
     </div>
@@ -202,10 +217,75 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 
 <div class="toast" id="toast"></div>
 
+<!-- ── New Order Modal ── -->
+<div class="modal-overlay" id="new-order-modal" onclick="if(event.target===this)closeNewOrderModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">📋 新增工单 <span class="badge-manual">MANUAL</span></div>
+      <button class="modal-close" onclick="closeNewOrderModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <div class="form-group">
+          <label class="form-label">客户姓名 Customer Name *</label>
+          <input class="form-input" id="no-customer" placeholder="e.g. Ahmad / 李先生" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">电话 Phone</label>
+          <input class="form-input" id="no-phone" placeholder="e.g. 0123456789" type="tel"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">产品类型 Product Type *</label>
+        <select class="form-input" id="no-product">
+          <option value="">— 请选择 Select —</option>
+          <option>招牌 Signboard</option>
+          <option>霓虹灯 Neon Sign</option>
+          <option>LED 灯箱 LED Lightbox</option>
+          <option>车身贴 Vehicle Wrap</option>
+          <option>横幅 Banner</option>
+          <option>名片 Name Card</option>
+          <option>亚加力牌 Acrylic Sign</option>
+          <option>其他 Others</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">规格 / 描述 Specs / Description</label>
+        <textarea class="form-input" id="no-desc" rows="3" placeholder="尺寸、颜色、数量、特别要求…&#10;Size, colour, qty, special requirements…" style="resize:vertical"></textarea>
+      </div>
+      <div class="modal-row">
+        <div class="form-group">
+          <label class="form-label">报价 Quote (RM)</label>
+          <input class="form-input" id="no-total" placeholder="0.00" type="number" min="0" step="0.01"/>
+          <div class="form-hint">留空则显示为 TBD</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">来源 Source</label>
+          <select class="form-input" id="no-source">
+            <option value="walkin">Walk-in 上门</option>
+            <option value="phone">Phone Call 电话</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="referral">Referral 介绍</option>
+            <option value="other">Other 其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注 Notes (Internal)</label>
+        <input class="form-input" id="no-notes" placeholder="内部备注，客户看不到 Internal only"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" onclick="closeNewOrderModal()">Cancel</button>
+      <button class="action-btn primary" id="no-submit-btn" onclick="submitNewOrder()">➕ 创建工单 Create Order</button>
+    </div>
+  </div>
+</div>
+
 <!-- Firebase -->
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
@@ -238,6 +318,33 @@ window._updateStep = async function(docId, stepId, status) {
   upd['steps.' + stepId + '.status'] = status;
   if (status === 'done') upd['steps.' + stepId + '.completedAt'] = new Date().toISOString();
   await updateDoc(ref, upd);
+};
+
+// Create a manual order
+window._createOrder = async function(data) {
+  const STEP_IDS = ['proceed','payment','ironframe','sticker','cutting','edging','painting','assembly','delivery','jobdone'];
+  const steps = {};
+  STEP_IDS.forEach(id => { steps[id] = { status: 'pending' }; });
+
+  const orderNum = 'MAN-' + Date.now().toString(36).toUpperCase();
+
+  const doc_data = {
+    id:          orderNum,
+    customer:    data.customer,
+    phone:       data.phone   || '',
+    desc:        data.desc    || '',
+    notes:       data.notes   || '',
+    source:      data.source  || 'walkin',
+    product:     data.product || '',
+    grandTotal:  data.total   ? parseFloat(data.total) : null,
+    isManual:    true,
+    items:       [],
+    steps:       steps,
+    createdAt:   new Date().toISOString()
+  };
+
+  await addDoc(collection(db, 'orders'), doc_data);
+  return orderNum;
 };
 </script>
 
@@ -278,6 +385,63 @@ function showAdmin() {
 
 // Auto-login if session active
 if (sessionStorage.getItem('ant_admin') === '1') showAdmin();
+
+// ── New Order Modal ───────────────────────────────────
+function openNewOrderModal() {
+  // clear form
+  ['no-customer','no-phone','no-total','no-desc','no-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('no-product').value = '';
+  document.getElementById('no-source').value  = 'walkin';
+  document.getElementById('new-order-modal').classList.add('open');
+  document.getElementById('no-customer').focus();
+}
+
+function closeNewOrderModal() {
+  document.getElementById('new-order-modal').classList.remove('open');
+}
+
+async function submitNewOrder() {
+  const customer = document.getElementById('no-customer').value.trim();
+  const product  = document.getElementById('no-product').value;
+
+  if (!customer) {
+    alert('请填写客户姓名 Please enter customer name');
+    document.getElementById('no-customer').focus();
+    return;
+  }
+  if (!product) {
+    alert('请选择产品类型 Please select product type');
+    document.getElementById('no-product').focus();
+    return;
+  }
+
+  const btn = document.getElementById('no-submit-btn');
+  btn.disabled = true;
+  btn.textContent = '创建中…';
+
+  try {
+    const orderNum = await window._createOrder({
+      customer,
+      phone:   document.getElementById('no-phone').value.trim(),
+      total:   document.getElementById('no-total').value.trim(),
+      product,
+      desc:    document.getElementById('no-desc').value.trim(),
+      notes:   document.getElementById('no-notes').value.trim(),
+      source:  document.getElementById('no-source').value,
+    });
+
+    closeNewOrderModal();
+    showToast('✅ 工单已创建 ' + orderNum);
+  } catch(e) {
+    console.error(e);
+    alert('创建失败 Failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '➕ 创建工单 Create Order';
+  }
+}
 
 // ── State ──────────────────────────────────────────────
 let allOrders = [];
@@ -394,9 +558,9 @@ function orderCardHtml(o) {
   <div class="order-card">
     <div class="order-header" onclick="toggleOrder('${o._docId}')">
       <div style="flex:1;min-width:0">
-        <div class="order-id">${escHtml(o.id||o._docId)}</div>
-        <div class="order-name">${escHtml(o.customer||'Customer')}</div>
-        <div class="order-desc">${escHtml(o.desc||'')}</div>
+        <div class="order-id">${escHtml(o.id||o._docId)}${o.isManual ? ' <span class="badge-manual">MANUAL</span>' : ''}</div>
+        <div class="order-name">${escHtml(o.customer||'Customer')}${o.phone ? ' · ' + escHtml(o.phone) : ''}</div>
+        <div class="order-desc">${escHtml(o.product ? '['+o.product+'] ' : '') + escHtml(o.desc||'')}</div>
         <div style="margin-top:4px">${chipHtml(status)}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
