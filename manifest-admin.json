@@ -1,6 +1,6 @@
 {
-  "name": "SignTrack Admin",
-  "short_name": "SignTrack",
+  "name": "AT Admin",
+  "short_name": "AT Admin",
   "description": "A&T Signboard — Order Management",
   "start_url": "/admin.html",
   "display": "standalone",
