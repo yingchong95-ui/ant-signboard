@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>AT Admin — 招牌生产工作流</title>
+
+<!-- PWA Support -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SignTrack">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     FIREBASE SECURITY RULES RECOMMENDATIONS
+
+     For production deployment, ensure your Firestore security rules are:
+
+     1. AUTHENTICATION:
+        - Require user sign-in before any read/write
+        - Use custom claims for role-based access (admin/operator/viewer)
+
+     2. ORDERS COLLECTION:
+        - Read: authenticated users only
+        - Write: admin role only
+        - Update: admin or order owner only
+
+     3. PHOTOS STORAGE:
+        - Read: authenticated + order access
+        - Write: authenticated users, path must match orderId
+        - Delete: admin only
+        - Implement storage quotas per user
+
+     4. RATE LIMITING:
+        - Limit writes per user per minute to prevent abuse
+        - Use transaction-based updates to prevent race conditions
+
+     5. DATA VALIDATION:
+        - Validate all incoming data on server-side
+        - Use Firestore validation rules, not just client-side
+
+     6. ENCRYPTION:
+        - Enable Firestore encryption at rest
+        - Use HTTPS for all connections
+
+     NOTE: Password validation is now done client-side with SHA-256 hashing.
+     In production, implement proper authentication (Firebase Auth, OAuth, etc.)
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, onSnapshot, setDoc, updateDoc, getDoc, addDoc,
+  deleteDoc, serverTimestamp, runTransaction
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+
+const app     = initializeApp(firebaseConfig);
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+// ── Helper: SHA-256 hash for password validation ──
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ── Firebase API exposed to React ──
+window._firebase = {
+  // Listen to all orders realtime
+  listenOrders: (cb) => {
+    return onSnapshot(collection(db, "orders"), snap => {
+      const orders = [];
+      snap.forEach(d => orders.push({ id: d.id, ...d.data() }));
+      orders.sort((a,b) => (b.createdAt||"").localeCompare(a.createdAt||""));
+      cb(orders);
+    });
+  },
+
+  // Save new order
+  saveOrder: async (order) => {
+    await setDoc(doc(db, "orders", order.id), {
+      ...order,
+      createdAt: new Date().toISOString(),
+    });
+  },
+
+  // Update step with transaction to prevent race conditions
+  updateStep: async (orderId, stepId, patch) => {
+    await runTransaction(db, async (transaction) => {
+      const ref2 = doc(db, "orders", orderId);
+      const snap = await transaction.get(ref2);
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      const steps = { ...data.steps, [stepId]: { ...data.steps[stepId], ...patch } };
+      transaction.update(ref2, { steps });
+    });
+  },
+
+  // Update order fields
+  updateOrder: async (orderId, patch) => {
+    await updateDoc(doc(db, "orders", orderId), patch);
+  },
+
+  // Upload photo → Storage, return download URL
+  uploadPhoto: async (orderId, stepId, file) => {
+    const path = `orders/${orderId}/${stepId}/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+    return { url, name: file.name, time: new Date().toISOString(), path };
+  },
+
+  // Add photo with transaction to prevent race conditions
+  addPhoto: async (orderId, stepId, photoObj) => {
+    await runTransaction(db, async (transaction) => {
+      const ref2 = doc(db, "orders", orderId);
+      const snap = await transaction.get(ref2);
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      const existing = data.steps[stepId]?.photos || [];
+      const steps = { ...data.steps, [stepId]: { ...data.steps[stepId], photos: [...existing, photoObj] }};
+      transaction.update(ref2, { steps });
+    });
+  },
+
+  // Delete entire order
+  deleteOrder: async (orderId) => {
+    await deleteDoc(doc(db, "orders", orderId));
+    // TODO: Implement Storage cleanup for all photos in orders/${orderId}/* path
+  },
+
+  // Delete one photo with transaction to prevent race conditions
+  deletePhoto: async (orderId, stepId, photoIndex) => {
+    await runTransaction(db, async (transaction) => {
+      const ref2 = doc(db, "orders", orderId);
+      const snap = await transaction.get(ref2);
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      const photos = [...(data.steps[stepId]?.photos || [])];
+      photos.splice(photoIndex, 1);
+      const steps = { ...data.steps, [stepId]: { ...data.steps[stepId], photos }};
+      transaction.update(ref2, { steps });
+    });
+  },
+
+  // Hash password for verification
+  hashPassword,
+};
+
+// Signal React app that Firebase is ready
+window.dispatchEvent(new Event("firebase-ready"));
+</script>
+
+<!-- React & Babel Standalone -->
+<!-- NOTE: For production, pre-compile JSX with Babel CLI instead of using standalone -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<!-- jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- jsPDF AutoTable plugin (required for table rendering) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     CSS CUSTOM PROPERTIES (Color Palette)
+     ───────────────────────────────────────────────────────────── */
+  :root {
+    --color-primary: #2563eb;
+    --color-primary-light: #7c3aed;
+    --color-success: #16a34a;
+    --color-warning: #b45309;
+    --color-danger: #dc2626;
+    --color-info: #1d72e8;
+    --color-bg-light: #f0f4fa;
+    --color-bg-white: #fff;
+    --color-border: #e2e8f4;
+    --color-text-primary: #1e2a3a;
+    --color-text-secondary: #64748b;
+    --color-text-muted: #94a3b8;
+    --color-shadow: rgba(30, 80, 180, 0.06);
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font-size-xs: 11px;
+    --font-size-sm: 12px;
+    --font-size-base: 13px;
+    --font-size-lg: 15px;
+    --font-size-xl: 18px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 600;
+    --font-weight-bold: 700;
+    --font-weight-black: 800;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     GLOBAL STYLES
+     ───────────────────────────────────────────────────────────── */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: var(--color-bg-light);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+  }
+
+  input, textarea, button {
+    font-family: inherit;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #e8eef8;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c5d0e0;
+    border-radius: 3px;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     COMPONENT: Input Fields
+     ───────────────────────────────────────────────────────────── */
+  .input-base {
+    width: 100%;
+    background: var(--color-bg-white);
+    border: 1px solid #d1daea;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    outline: none;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+  }
+
+  .input-base:focus {
+    border-color: var(--color-primary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     COMPONENT: Buttons
+     ───────────────────────────────────────────────────────────── */
+  .btn-base {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 7px 14px;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    color: var(--color-bg-white);
+    border: none;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: #f1f5ff;
+    border: 1px solid #c7d7f5;
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+  }
+
+  .btn-secondary:hover {
+    background: #e8f0ff;
+  }
+
+  .btn-danger {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+  }
+
+  .btn-danger:hover {
+    background: #fecaca;
+  }
+
+  .btn-small {
+    padding: 5px 12px;
+    font-size: var(--font-size-sm);
+    min-height: auto;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     COMPONENT: Badge
+     ───────────────────────────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .badge-warning {
+    background: #fef3c7;
+    color: var(--color-warning);
+    border: 1px solid #fcd34d;
+  }
+
+  .badge-success {
+    background: #dcfce7;
+    color: var(--color-success);
+    border: 1px solid #86efac;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     COMPONENT: Modal
+     ───────────────────────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .modal-content {
+    background: var(--color-bg-white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     COMPONENT: Loading Spinner
+     ───────────────────────────────────────────────────────────── */
+  .spinner {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     COMPONENT: Step Status Transitions
+     ───────────────────────────────────────────────────────────── */
+  .step-card {
+    transition: all 0.3s ease;
+  }
+
+  .step-card.status-change {
+    animation: statusPulse 0.6s ease;
+  }
+
+  @keyframes statusPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     COMPONENT: Empty State
+     ───────────────────────────────────────────────────────────── */
+  .empty-state {
+    text-align: center;
+    padding: 40px var(--spacing-lg);
+    color: var(--color-text-muted);
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.6;
+  }
+
+  .empty-state-text {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-md);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     PRINT STYLESHEET
+     ───────────────────────────────────────────────────────────── */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    #print-area, #print-area * {
+      visibility: visible;
+    }
+
+    #print-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      padding: 30px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     RESPONSIVE DESIGN: Mobile (< 768px)
+     ───────────────────────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────────────
+     MOBILE: Tablet & Phone (≤768px)
+     ───────────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    :root {
+      --spacing-xl: 14px;
+    }
+
+    /* ── Header: two rows ── */
+    .header-inner {
+      flex-wrap: wrap !important;
+      height: auto !important;
+      padding: 10px 0 !important;
+      gap: 8px !important;
+    }
+    .header-actions {
+      width: 100% !important;
+      justify-content: flex-start !important;
+      gap: 6px !important;
+    }
+
+    /* ── ETA Banner: vertical stack ── */
+    .eta-banner-inner {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 8px !important;
+    }
+    .eta-badge-list {
+      flex-direction: column !important;
+      gap: 6px !important;
+      width: 100% !important;
+    }
+    .eta-badge-list > span {
+      display: block !important;
+      width: 100% !important;
+      text-align: left !important;
+    }
+    .eta-close-btn {
+      position: absolute !important;
+      right: 12px !important;
+      top: 10px !important;
+    }
+    .eta-banner-wrap {
+      position: relative !important;
+    }
+
+    /* ── Layout: stack vertically ── */
+    .container-main {
+      flex-direction: column !important;
+      gap: 12px !important;
+      padding: 14px !important;
+    }
+
+    .sidebar {
+      width: 100% !important;
+      flex-shrink: 1 !important;
+      min-width: auto !important;
+    }
+
+    /* Hide sidebar when an order is selected on mobile */
+    .sidebar.mobile-hidden {
+      display: none !important;
+    }
+
+    .order-list {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+    }
+
+    .order-list-item {
+      min-width: auto !important;
+      width: 100% !important;
+    }
+
+    .detail-panel {
+      width: 100% !important;
+    }
+
+    /* Hide detail panel when no order selected */
+    .detail-panel.mobile-hidden {
+      display: none !important;
+    }
+
+    .modal-content {
+      width: 95vw !important;
+      max-width: 95vw !important;
+      max-height: 95vh !important;
+      border-radius: var(--radius-lg) !important;
+    }
+
+    /* Touch targets: only for main action buttons */
+    .btn-base {
+      min-height: 44px !important;
+    }
+    /* Small utility buttons should NOT be forced to 44px */
+    .btn-icon, .btn-close, .btn-small-touch {
+      min-height: 32px !important;
+      min-width: 32px !important;
+    }
+
+    .steps-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Detail header stacks on mobile */
+    .detail-header-row {
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+    .detail-header-right {
+      text-align: left !important;
+      align-items: flex-start !important;
+    }
+
+    /* Step action buttons wrap nicely */
+    .step-actions {
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     MOBILE: Small Phone (≤480px)
+     ───────────────────────────────────────────────────────────── */
+  @media (max-width: 480px) {
+    :root {
+      --spacing-xl: 10px;
+      --spacing-lg: 10px;
+      --font-size-lg: 14px;
+    }
+
+    .container-main {
+      padding: 10px !important;
+    }
+
+    .modal-content {
+      padding: var(--spacing-md) !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="print-area" style="display:none"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── Constants ──
+const PROD_PASSWORD_HASH = "58e84b33d6714011787d934f859b0d12a74cc4f6f7c8939b8499d0481ff86b37"; // SHA-256 of "production123"
+
+const STEPS = [
+  { id:"proceed",   en:"Order Confirmed",          zh:"订单确认",        icon:"✓",  waMsg:(o)=>`您好 ${o.customer}！我们已收到您的订单 *${o.id}*，生产即将开始。感谢您的信任！🙏` },
+  { id:"payment",   en:"Payment",                  zh:"付款",            icon:"💳", waMsg:(o)=>`您好 ${o.customer}！订单 *${o.id}* 付款已收到，谢谢！我们将马上安排生产。✅` },
+  { id:"ironframe", en:"Iron Frame Welding",        zh:"烧铁框",          icon:"🔥", waMsg:(o)=>`您好 ${o.customer}！订单 *${o.id}* 更新：*烧铁框* 工序已完成 ✅` },
+  { id:"sticker",   en:"Sticker Printing",          zh:"Sticker 打印",   icon:"🖨", waMsg:(o)=>`您好 ${o.customer}！订单 *${o.id}* 更新：*Sticker 打印* 工序已完成 ✅` },
+  { id:"cutting",   en:"Board Cutting",             zh:"板材切割",        icon:"✂", waMsg:(o)=>`您好 ${o.customer}！订单 *${o.id}* 更新：*板材切割* 工序已完成 ✅` },
+  { id:"edging",    en:"3D Letter Edging",          zh:"立体字包边",      icon:"⬡", waMsg:(o)=>`您好 ${o.customer}！订单 *${o.id}* 更新：*立体字包边* 工序已完成 ✅` },
+  { id:"painting",  en:"Spray Painting",            zh:"喷漆",            icon:"🎨", waMsg:(o)=>`您好 ${o.customer}！订单 *${o.id}* 更新：*喷漆* 工序已完成 ✅` },
+  { id:"assembly",  en:"Assembly",                  zh:"组装",            icon:"⚙", waMsg:(o)=>`您好 ${o.customer}！订单 *${o.id}* 更新：*组装* 已完成，正在安排交货/安装。✅` },
+  { id:"delivery",  en:"Out for Delivery / Install",zh:"送货 / 安装中",   icon:"🚚", waMsg:(o)=>`您好 ${o.customer}！🚚 您的招牌订单 *${o.id}* 正在送货/安装途中，请保持电话畅通！` },
+  { id:"jobdone",   en:"Job Complete",              zh:"工程完成",        icon:"🏁", waMsg:(o)=>`您好 ${o.customer}！🎉 您的招牌订单 *${o.id}* 已圆满完成！感谢您的支持，期待下次合作！🙏` },
+];
+
+const STATUS_STYLES = {
+  pending:    { bg:"#f8faff", border:"#dde5f5", text:"#aab4c8", badgeBg:"#eef2fc" },
+  inprogress: { bg:"#f0fdf5", border:"#86efac", text:"#16a34a", badgeBg:"#dcfce7" },
+  done:       { bg:"#eff6ff", border:"#93c5fd", text:"#1d72e8", badgeBg:"#dbeafe" },
+};
+
+const SORT_OPTIONS = {
+  newest: "newest",
+  etaUrgency: "etaUrgency",
+  progress: "progress",
+};
+
+// ── Utility Functions ──
+function mkSteps() {
+  return STEPS.reduce((acc, s) => ({
+    ...acc,
+    [s.id]: { status: "pending", note: "", photos: [], completedAt: null, notified: false }
+  }), {});
+}
+
+const calcProgress = (o) =>
+  Math.round(Object.values(o.steps || {}).filter(s => s.status === "done").length / STEPS.length * 100);
+
+const getStatusLabel = (o) => {
+  const steps = o.steps || {};
+  const jobDone = steps["jobdone"]?.status === "done";
+  if (jobDone) return { label: { zh: "工程完成", en: "Job Complete" }, color: "#1d72e8", bg: "#dbeafe" };
+  const delivery = steps["delivery"]?.status === "done" || steps["delivery"]?.status === "inprogress";
+  if (delivery) return { label: { zh: "送货/安装中", en: "Delivering" }, color: "#7c3aed", bg: "#ede9fe" };
+  const p = calcProgress(o);
+  if (p === 0) return { label: { zh: "等待中", en: "Queued" }, color: "#b45309", bg: "#fef3c7" };
+  return { label: { zh: "生产中", en: "In Progress" }, color: "#16a34a", bg: "#dcfce7" };
+};
+
+const etaStatus = (eta) => {
+  if (!eta) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(eta);
+  d.setHours(0, 0, 0, 0);
+  const diff = Math.round((d - today) / 86400000);
+  if (diff < 0) return { type: "overdue", days: Math.abs(diff) };
+  if (diff <= 3) return { type: "soon", days: diff };
+  return null;
+};
+
+const openWA = (phone, msg) =>
+  window.open(`https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
+
+// ── Sort orders based on selected sort type ──
+function sortOrders(orders, sortType) {
+  const sorted = [...orders];
+  switch (sortType) {
+    case SORT_OPTIONS.newest:
+      return sorted.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+    case SORT_OPTIONS.etaUrgency:
+      return sorted.sort((a, b) => {
+        const esA = etaStatus(a.eta);
+        const esB = etaStatus(b.eta);
+        if (!esA && !esB) return 0;
+        if (!esA) return 1;
+        if (!esB) return -1;
+        if (esA.type !== esB.type) return esA.type === "overdue" ? -1 : 1;
+        return esA.days - esB.days;
+      });
+    case SORT_OPTIONS.progress:
+      return sorted.sort((a, b) => calcProgress(a) - calcProgress(b));
+    default:
+      return sorted;
+  }
+}
+
+// ── Generate PDF with jsPDF ──
+function exportPDF(order, lang) {
+  // jsPDF 2.x UMD builds expose via window.jspdf namespace
+  const { jsPDF } = window.jspdf || window;
+  const t = (zh, en) => lang === "zh" ? zh : en;
+  const doc = new jsPDF("p", "mm", "a4");
+
+  const progress = calcProgress(order);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  let yPosition = margin;
+
+  // Header
+  doc.setFillColor(37, 99, 235);
+  doc.rect(margin, yPosition, pageWidth - 2 * margin, 25, "F");
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text("SIGNTRACK PRODUCTION REPORT", margin + 5, yPosition + 10);
+
+  doc.setTextColor(37, 99, 235);
+  doc.setFontSize(22);
+  doc.setFont(undefined, "bold");
+  yPosition += 30;
+  doc.text(`${order.id}`, margin, yPosition);
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(12);
+  doc.setFont(undefined, "normal");
+  yPosition += 8;
+  doc.text(`${t("客户", "Customer")}: ${order.customer}`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`${t("描述", "Description")}: ${order.desc}`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`${t("预计交货", "ETA")}: ${order.eta || "—"}`, margin, yPosition);
+  yPosition += 6;
+  doc.text(`${t("打印时间", "Printed")}: ${new Date().toLocaleString()}`, margin, yPosition);
+
+  // Progress bar
+  yPosition += 10;
+  doc.setFontSize(10);
+  doc.text(`${t("整体进度", "Progress")}: ${progress}%`, margin, yPosition);
+  yPosition += 4;
+  doc.setDrawColor(200, 200, 200);
+  doc.rect(margin, yPosition, pageWidth - 2 * margin, 4);
+  doc.setFillColor(37, 99, 235);
+  doc.rect(margin, yPosition, (pageWidth - 2 * margin) * (progress / 100), 4, "F");
+
+  // Steps table
+  yPosition += 12;
+  const tableData = STEPS.map(step => {
+    const s = order.steps?.[step.id] || {};
+    const statusText = s.status === "done" ? t("✓ 完成", "✓ Done") :
+                      s.status === "inprogress" ? t("进行中", "In Progress") :
+                      t("等待", "Pending");
+    return [
+      `${step.icon} ${lang === "zh" ? step.zh : step.en}`,
+      statusText,
+      s.completedAt || "—",
+      s.note || "—"
+    ];
+  });
+
+  doc.autoTable({
+    head: [[t("工序", "Step"), t("状态", "Status"), t("完成日期", "Completed"), t("备注", "Notes")]],
+    body: tableData,
+    startY: yPosition,
+    margin: margin,
+    theme: "grid",
+    headStyles: { fillColor: [241, 245, 255], textColor: [0, 0, 0], fontSize: 9, font: "helvetica", fontStyle: "bold" },
+    bodyStyles: { fontSize: 8, cellPadding: 3 },
+    alternateRowStyles: { fillColor: [248, 250, 255] },
+  });
+
+  // Footer
+  doc.setTextColor(150, 150, 150);
+  doc.setFontSize(8);
+  doc.text(t("SignTrack — 招牌生产工作流系统", "SignTrack — Signage Production Workflow"), pageWidth / 2, pageHeight - 5, { align: "center" });
+
+  doc.save(`SignTrack_${order.id}.pdf`);
+}
+
+// ── Batch WhatsApp for all completed steps not yet notified ──
+async function batchWhatsApp(order, lang) {
+  if (!order.phone) return false;
+  let notifiedCount = 0;
+
+  for (const step of STEPS) {
+    const s = order.steps?.[step.id];
+    if (s && s.status === "done" && !s.notified) {
+      await window._firebase.updateStep(order.id, step.id, { notified: true });
+      notifiedCount++;
+    }
+  }
+
+  if (notifiedCount > 0) {
+    const msg = lang === "zh"
+      ? `您好 ${order.customer}！我们有 ${notifiedCount} 个工序已完成，请及时查收。谢谢！`
+      : `Hello ${order.customer}! ${notifiedCount} production steps have been completed. Thank you!`;
+    openWA(order.phone, msg);
+  }
+
+  return notifiedCount > 0;
+}
+
+// ── NoteInput Component ──
+function NoteInput({ initialValue, onSave, placeholder, style }) {
+  const [val, setVal] = useState(initialValue);
+
+  useEffect(() => {
+    setVal(initialValue);
+  }, [initialValue]);
+
+  return (
+    <input
+      className="input-base"
+      value={val}
+      onChange={e => setVal(e.target.value)}
+      onBlur={() => onSave(val)}
+      placeholder={placeholder}
+      style={style}
+    />
+  );
+}
+
+// ── Header Component ──
+function Header({ isProd, setIsProd, lang, setLang, t, showToast, showLogin, setShowLogin }) {
+  return (
+    <div style={{ background: "var(--color-bg-white)", borderBottom: "1px solid var(--color-border)", boxShadow: "0 1px 4px var(--color-shadow)", padding: "0 16px" }}>
+      <div className="header-inner" style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56, gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <div style={{ width: 32, height: 32, background: "linear-gradient(135deg, #2563eb, #7c3aed)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 2px 8px rgba(37,99,235,0.3)" }}>⬡</div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: "var(--color-text-primary)", letterSpacing: "0.04em" }}>SIGNTRACK</div>
+            <div style={{ fontSize: 8, color: "var(--color-text-muted)", letterSpacing: "0.1em" }}>PRODUCTION WORKFLOW</div>
+          </div>
+        </div>
+        <div className="header-actions" style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+          <span className="badge" style={{ fontSize: 10, padding: "3px 10px", background: isProd ? "#fef3c7" : "#f0fdf5", color: isProd ? "#b45309" : "#16a34a", border: `1px solid ${isProd ? "#fcd34d" : "#86efac"}` }}>
+            {isProd ? `🔧 ${t("生产", "Prod")}` : `👁 ${t("查看", "View")}`}
+          </span>
+          {!isProd ? (
+            <button onClick={() => setShowLogin(true)}
+              className="btn-base btn-small-touch" style={{ background: "#f1f5ff", border: "1px solid #c7d7f5", color: "#2563eb", fontSize: 11, padding: "5px 10px" }}>
+              🔐 {t("登入", "Login")}
+            </button>
+          ) : (
+            <button onClick={() => { setIsProd(false); showToast(t("已退出生产模式", "Exited production mode")); }}
+              className="btn-base btn-small-touch" style={{ background: "#fee2e2", border: "1px solid #fca5a5", color: "#dc2626", fontSize: 11, padding: "5px 10px" }}>
+              {t("退出", "Exit")}
+            </button>
+          )}
+          <button onClick={() => setLang(l => l === "zh" ? "en" : "zh")}
+            className="btn-base btn-small-touch" style={{ background: "#f1f5ff", border: "1px solid #c7d7f5", color: "#3b5fcc", fontSize: 11, padding: "5px 10px" }}>
+            {lang === "zh" ? "EN" : "中文"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ETA Banner Component ──
+function ETABanner({ urgentOrders, etaBanner, setEtaBanner, setSelId, t }) {
+  if (!etaBanner || urgentOrders.length === 0) return null;
+
+  return (
+    <div className="eta-banner-wrap" style={{ background: "linear-gradient(90deg,#fef3c7,#fff7ed)", borderBottom: "1px solid #fcd34d", padding: "10px 16px", position: "relative" }}>
+      <div className="eta-banner-inner" style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <div className="eta-badge-list" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap" }}>⚠️ {t("交货提醒:", "Delivery:")}</span>
+          {urgentOrders.map(o => {
+            const es = etaStatus(o.eta);
+            return (
+              <span key={o.id} onClick={() => setSelId(o.id)}
+                style={{ fontSize: 11, background: es.type === "overdue" ? "#fee2e2" : "#fef3c7", color: es.type === "overdue" ? "#dc2626" : "#b45309", borderRadius: 20, padding: "3px 8px", fontWeight: 700, cursor: "pointer", border: `1px solid ${es.type === "overdue" ? "#fca5a5" : "#fcd34d"}`, whiteSpace: "nowrap" }}>
+                {o.id} · {o.customer} — {es.type === "overdue" ? t(`逾期${es.days}天`, `${es.days}d late`) : es.days === 0 ? t("今天", "Today") : t(`${es.days}天`, `${es.days}d`)}
+              </span>
+            );
+          })}
+        </div>
+        <button className="eta-close-btn btn-small-touch" onClick={() => { setEtaBanner(false); sessionStorage.setItem("eta-banner-dismissed", "true"); }} style={{ background: "none", border: "none", color: "#b45309", fontSize: 16, cursor: "pointer", padding: 4, flexShrink: 0 }}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Sidebar Component ──
+function Sidebar({ orders, filtered, selId, setSelId, search, setSearch, isProd, setShowNew, t, sortType, setSortType, isMobile }) {
+  const activeCount = orders.filter(o => calcProgress(o) < 100).length;
+
+  return (
+    <div style={{ width: isMobile ? "100%" : 300, flexShrink: isMobile ? 1 : 0, minWidth: isMobile ? "auto" : 250 }} className={`sidebar${isMobile && selId ? " mobile-hidden" : ""}`}>
+      <div style={{ display: "flex", gap: 7, marginBottom: 13, flexWrap: isMobile ? "wrap" : "nowrap" }}>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder={t("搜索订单号 / 客户...", "Search order / customer...")}
+          className="input-base"
+          style={{ flex: 1, fontSize: 12, padding: "8px 11px" }}
+        />
+        {isProd && (
+          <button
+            onClick={() => setShowNew(v => !v)}
+            className="btn-primary"
+            style={{ width: 38, fontSize: 22, padding: 0, minHeight: "auto", lineHeight: 1, flexShrink: 0 }}>
+            +
+          </button>
+        )}
+      </div>
+
+      {/* Sidebar Header with Stats */}
+      <div style={{ fontSize: 11, color: "var(--color-text-muted)", marginBottom: 8, display: "flex", justifyContent: "space-between" }}>
+        <span>{t("订单总数", "Total")}: {orders.length}</span>
+        <span>{t("进行中", "Active")}: {activeCount}</span>
+      </div>
+
+      {/* Sort Selector */}
+      <div style={{ marginBottom: 12 }}>
+        <select
+          value={sortType}
+          onChange={e => setSortType(e.target.value)}
+          className="input-base"
+          style={{ fontSize: 12 }}>
+          <option value={SORT_OPTIONS.newest}>{t("最新", "Newest")}</option>
+          <option value={SORT_OPTIONS.etaUrgency}>{t("交货紧急", "ETA Urgency")}</option>
+          <option value={SORT_OPTIONS.progress}>{t("进度", "Progress")}</option>
+        </select>
+      </div>
+
+      {/* Order List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }} className="order-list">
+        {orders.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-state-icon">📦</div>
+            <div className="empty-state-text">{t("暂无订单", "No orders yet")}</div>
+          </div>
+        )}
+        {filtered.length === 0 && orders.length > 0 && (
+          <div className="empty-state">
+            <div className="empty-state-icon">🔍</div>
+            <div className="empty-state-text">{t("找不到订单", "No orders found")}</div>
+          </div>
+        )}
+        {filtered.map(order => {
+          const p = calcProgress(order);
+          const sl = getStatusLabel(order);
+          const sel = order.id === selId;
+          const es = etaStatus(order.eta);
+          const isUrgent = p < 100 && es;
+
+          return (
+            <div
+              key={order.id}
+              onClick={() => setSelId(order.id)}
+              className="order-list-item"
+              style={{
+                background: "var(--color-bg-white)",
+                border: `2px solid ${sel ? "#2563eb" : isUrgent ? (es.type === "overdue" ? "#fca5a5" : "#fcd34d") : "var(--color-border)"}`,
+                borderRadius: 12,
+                padding: "13px 15px",
+                cursor: "pointer",
+                boxShadow: sel ? "0 2px 12px rgba(37,99,235,0.12)" : "0 1px 4px rgba(0,0,0,0.04)",
+                transition: "all 0.2s ease"
+              }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 9 }}>
+                <div>
+                  <div style={{ fontSize: 10, color: "#2563eb", fontWeight: 700, letterSpacing: "0.08em" }}>{order.id}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--color-text-primary)", marginTop: 2 }}>{order.customer}</div>
+                  <div style={{ fontSize: 11, color: "var(--color-text-muted)", marginTop: 1 }}>{order.desc}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 9, color: "#94a3b8", marginBottom: 2 }}>{p}%</div>
+                  <div style={{ background: "#e8eef8", borderRadius: 3, height: 5, overflow: "hidden" }}>
+                    <div style={{ width: `${p}%`, height: "100%", background: p === 100 ? "#1d72e8" : p > 0 ? "#16a34a" : "#aab4c8" }}></div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: sl.color, background: sl.bg, padding: "3px 8px", borderRadius: 4, whiteSpace: "nowrap" }}>
+                  {typeof sl.label === "object" ? sl.label.zh : sl.label}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ──
+function App() {
+  const [fbReady, setFbReady] = useState(!!window._firebase);
+  const [orders, setOrders] = useState([]);
+  const [selId, setSelId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [lang, setLang] = useState("zh");
+  const [isProd, setIsProd] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [pwInput, setPwInput] = useState("");
+  const [pwError, setPwError] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [nf, setNf] = useState({ id: "", customer: "", phone: "", desc: "", eta: "" });
+  const [uploading, setUploading] = useState({});
+  const [photoModal, setPhotoModal] = useState(null);
+  const [waModal, setWaModal] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [etaBanner, setEtaBanner] = useState(!sessionStorage.getItem("eta-banner-dismissed"));
+  const [saving, setSaving] = useState(false);
+  const [editModal, setEditModal] = useState(null);
+  const [confirmDel, setConfirmDel] = useState(null);
+  const [sortType, setSortType] = useState(SORT_OPTIONS.newest);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    if (window._firebase) {
+      setFbReady(true);
+    } else {
+      const handler = () => setFbReady(true);
+      window.addEventListener("firebase-ready", handler);
+      return () => window.removeEventListener("firebase-ready", handler);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!fbReady) return;
+    const unsub = window._firebase.listenOrders(setOrders);
+    return () => unsub();
+  }, [fbReady]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setPhotoModal(null);
+        setWaModal(null);
+        setShowLogin(false);
+        setEditModal(null);
+        setConfirmDel(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const t = (zh, en) => lang === "zh" ? zh : en;
+  const showToast = msg => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2800);
+  };
+
+  const filtered = orders.filter(o =>
+    [o.id, o.customer, o.desc].some(f => (f || "").toLowerCase().includes(search.toLowerCase()))
+  );
+  const sortedFiltered = sortOrders(filtered, sortType);
+  const selOrder = orders.find(o => o.id === selId) || null;
+  const urgentOrders = orders.filter(o => calcProgress(o) < 100 && etaStatus(o.eta));
+
+  // Auth with SHA-256
+  const tryLogin = async () => {
+    const hash = await window._firebase.hashPassword(pwInput);
+    if (hash === PROD_PASSWORD_HASH) {
+      setIsProd(true);
+      setShowLogin(false);
+      setPwInput("");
+      setPwError(false);
+      showToast(t("已进入生产模式 🔧", "Production mode activated 🔧"));
+    } else {
+      setPwError(true);
+    }
+  };
+
+  // Create order
+  const addOrder = async () => {
+    if (!nf.id || !nf.customer || !nf.desc) {
+      showToast(t("请填写必填项", "Please fill required fields"));
+      return;
+    }
+    if (orders.find(o => o.id === nf.id)) {
+      showToast(t("订单号已存在！", "Order ID already exists!"));
+      return;
+    }
+    setSaving(true);
+    const order = { ...nf, steps: mkSteps() };
+    await window._firebase.saveOrder(order);
+    setSaving(false);
+    setNf({ id: "", customer: "", phone: "", desc: "", eta: "" });
+    setShowNew(false);
+    setSelId(nf.id);
+    showToast(t("订单已创建 ✓", "Order created ✓"));
+  };
+
+  // Update step
+  const markStep = async (orderId, stepId, status) => {
+    await window._firebase.updateStep(orderId, stepId, {
+      status,
+      completedAt: status === "done" ? new Date().toISOString().split("T")[0] : null
+    });
+  };
+
+  const updateNote = async (orderId, stepId, note) => {
+    await window._firebase.updateStep(orderId, stepId, { note });
+  };
+
+  const updateOrderField = async (orderId, patch) => {
+    await window._firebase.updateOrder(orderId, patch);
+  };
+
+  const deleteOrder = async (orderId) => {
+    await window._firebase.deleteOrder(orderId);
+    setSelId(null);
+    setConfirmDel(null);
+    showToast(t("订单已删除", "Order deleted"));
+  };
+
+  const deletePhoto = async (orderId, stepId, photoIndex) => {
+    await window._firebase.deletePhoto(orderId, stepId, photoIndex);
+    setPhotoModal(null);
+    showToast(t("照片已删除", "Photo deleted"));
+  };
+
+  const saveEdit = async (edited) => {
+    await window._firebase.updateOrder(edited.id, {
+      customer: edited.customer,
+      phone: edited.phone,
+      desc: edited.desc,
+      eta: edited.eta,
+    });
+    setEditModal(null);
+    showToast(t("订单已更新 ✓", "Order updated ✓"));
+  };
+
+  // Photo upload
+  const handlePhoto = async (orderId, stepId, file) => {
+    setUploading(p => ({ ...p, [stepId]: true }));
+    try {
+      const photoObj = await window._firebase.uploadPhoto(orderId, stepId, file);
+      await window._firebase.addPhoto(orderId, stepId, photoObj);
+      showToast(t("照片已上传 ✓", "Photo uploaded ✓"));
+    } catch (e) {
+      showToast(t("上传失败，请重试", "Upload failed, please retry"));
+    }
+    setUploading(p => ({ ...p, [stepId]: false }));
+  };
+
+  // WhatsApp
+  const triggerWA = (order, step) => {
+    if (!order.phone) {
+      showToast(t("请先填写顾客电话", "Please add phone first"));
+      return;
+    }
+    setWaModal({ order, step, msg: step.waMsg(order) });
+  };
+
+  const confirmWA = async () => {
+    openWA(waModal.order.phone, waModal.msg);
+    await window._firebase.updateStep(waModal.order.id, waModal.step.id, { notified: true });
+    setWaModal(null);
+    showToast(t("已开启 WhatsApp ✓", "WhatsApp opened ✓"));
+  };
+
+  if (!fbReady) {
+    return (
+      <div style={{ minHeight: "100vh", background: "var(--color-bg-light)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+        <div className="spinner">⬡</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--color-primary)" }}>SignTrack</div>
+        <div style={{ fontSize: 13, color: "var(--color-text-muted)" }}>{t("正在连接数据库...", "Connecting to database...")}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--color-bg-light)" }}>
+      {/* Header */}
+      <Header isProd={isProd} setIsProd={setIsProd} lang={lang} setLang={setLang} t={t} showToast={showToast} showLogin={showLogin} setShowLogin={setShowLogin} />
+
+      {/* ETA Banner */}
+      <ETABanner urgentOrders={urgentOrders} etaBanner={etaBanner} setEtaBanner={setEtaBanner} setSelId={setSelId} t={t} />
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "22px 24px", display: "flex", gap: 18, flexWrap: isMobile ? "wrap" : "nowrap" }} className="container-main">
+
+        {/* Sidebar */}
+        <Sidebar
+          orders={orders}
+          filtered={sortedFiltered}
+          selId={selId}
+          setSelId={setSelId}
+          search={search}
+          setSearch={setSearch}
+          isProd={isProd}
+          setShowNew={setShowNew}
+          t={t}
+          sortType={sortType}
+          setSortType={setSortType}
+          isMobile={isMobile}
+        />
+
+        {/* New Order Form — inline on desktop, modal on mobile */}
+        {showNew && isProd && (
+          isMobile ? (
+            <div className="modal-overlay" onClick={() => setShowNew(false)} style={{ zIndex: 999 }}>
+              <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+                <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 700, letterSpacing: "0.1em", marginBottom: 12 }}>{t("新建订单", "NEW ORDER")}</div>
+                {[
+                  [t("订单号 * (e.g. SGN-003)", "Order ID * (e.g. SGN-003)"), "id", "text"],
+                  [t("客户名称 *", "Customer *"), "customer", "text"],
+                  [t("WhatsApp 电话", "WhatsApp Phone"), "phone", "tel"],
+                  [t("产品描述 *", "Description *"), "desc", "text"],
+                  [t("预计交货日 *", "ETA *"), "eta", "date"],
+                ].map(([label, key, type]) => (
+                  <div key={key} style={{ marginBottom: 9 }}>
+                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: 600 }}>{label}</div>
+                    <input type={type} value={nf[key]} onChange={e => setNf(p => ({ ...p, [key]: e.target.value }))} className="input-base" />
+                  </div>
+                ))}
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <button onClick={addOrder} disabled={saving} className="btn-primary" style={{ flex: 1 }}>
+                    {saving ? t("保存中...", "Saving...") : t("创建", "Create")}
+                  </button>
+                  <button onClick={() => setShowNew(false)} className="btn-secondary" style={{ flex: 1 }}>
+                    {t("取消", "Cancel")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: "var(--color-bg-white)", border: "1px solid #bfcfef", borderRadius: 12, padding: 16, marginBottom: 13, boxShadow: "0 2px 12px rgba(37,99,235,0.08)" }}>
+              <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 700, letterSpacing: "0.1em", marginBottom: 12 }}>{t("新建订单", "NEW ORDER")}</div>
+              {[
+                [t("订单号 * (e.g. SGN-003)", "Order ID * (e.g. SGN-003)"), "id", "text"],
+                [t("客户名称 *", "Customer *"), "customer", "text"],
+                [t("WhatsApp 电话", "WhatsApp Phone"), "phone", "tel"],
+                [t("产品描述 *", "Description *"), "desc", "text"],
+                [t("预计交货日 *", "ETA *"), "eta", "date"],
+              ].map(([label, key, type]) => (
+                <div key={key} style={{ marginBottom: 9 }}>
+                  <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: 600 }}>{label}</div>
+                  <input type={type} value={nf[key]} onChange={e => setNf(p => ({ ...p, [key]: e.target.value }))} className="input-base" />
+                </div>
+              ))}
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button onClick={addOrder} disabled={saving} className="btn-primary" style={{ flex: 1 }}>
+                  {saving ? t("保存中...", "Saving...") : t("创建", "Create")}
+                </button>
+                <button onClick={() => setShowNew(false)} className="btn-secondary" style={{ flex: 1 }}>
+                  {t("取消", "Cancel")}
+                </button>
+              </div>
+            </div>
+          )
+        )}
+
+        {/* Detail Panel */}
+        {selOrder && (
+          <div style={{ flex: 1, minWidth: isMobile ? "100%" : 0 }} className="detail-panel">
+            {/* Mobile Back Button */}
+            {isMobile && (
+              <button onClick={() => setSelId(null)}
+                className="btn-base btn-small-touch"
+                style={{ background: "var(--color-bg-white)", border: "1px solid var(--color-border)", color: "var(--color-text-secondary)", fontSize: 13, padding: "8px 14px", marginBottom: 10, borderRadius: 10, width: "100%" }}>
+                ← {t("返回订单列表", "Back to orders")}
+              </button>
+            )}
+            <div style={{ background: "var(--color-bg-white)", borderRadius: 12, padding: isMobile ? 14 : 20, boxShadow: "0 1px 4px var(--color-shadow)" }}>
+              {/* Order Header */}
+              <div className="detail-header-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, paddingBottom: 12, borderBottom: "1px solid var(--color-border)" }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 700, letterSpacing: "0.1em", marginBottom: 4 }}>{selOrder.id}</div>
+                  <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800, color: "var(--color-text-primary)" }}>{selOrder.customer}</div>
+                  <div style={{ fontSize: 13, color: "var(--color-text-muted)", marginTop: 4 }}>{selOrder.desc}</div>
+                </div>
+              </div>
+
+              {isProd && (
+                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                  <button onClick={() => setEditModal(selOrder)} className="btn-primary btn-small">
+                    ✎ {t("编辑", "Edit")}
+                  </button>
+                  <button onClick={() => setConfirmDel(selOrder.id)} className="btn-danger btn-small">
+                    🗑 {t("删除", "Delete")}
+                  </button>
+                  <button onClick={() => exportPDF(selOrder, lang)} className="btn-secondary btn-small">
+                    📥 {t("PDF", "PDF")}
+                  </button>
+                  <button onClick={() => window.print()} className="btn-secondary btn-small">
+                    🖨 {t("打印", "Print")}
+                  </button>
+                  <button onClick={() => batchWhatsApp(selOrder, lang)} className="btn-secondary btn-small">
+                    📱 {t("群发", "Batch WA")}
+                  </button>
+                </div>
+              )}
+
+              {/* Progress Bar */}
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>
+                  {t("整体进度", "Progress")} — {calcProgress(selOrder)}%
+                </div>
+                <div style={{ background: "#e8eef8", borderRadius: 6, height: 10, overflow: "hidden" }}>
+                  <div style={{ width: `${calcProgress(selOrder)}%`, height: "100%", background: "linear-gradient(90deg,#2563eb,#7c3aed)", borderRadius: 6 }}></div>
+                </div>
+              </div>
+
+              {/* Steps */}
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }} className="steps-grid">
+                {STEPS.map(step => {
+                  const s = { status: "pending", note: "", photos: [], completedAt: null, notified: false, ...(selOrder.steps?.[step.id] || {}) };
+                  return (
+                    <div key={step.id} className="step-card" style={{
+                      background: STATUS_STYLES[s.status].bg,
+                      border: `1px solid ${STATUS_STYLES[s.status].border}`,
+                      borderRadius: 10,
+                      padding: 12,
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                        <div>
+                          <div style={{ fontSize: 18, marginBottom: 4 }}>{step.icon}</div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: STATUS_STYLES[s.status].text }}>
+                            {lang === "zh" ? step.zh : step.en}
+                          </div>
+                        </div>
+                        {isProd && (
+                          <select
+                            value={s.status}
+                            onChange={e => markStep(selOrder.id, step.id, e.target.value)}
+                            style={{ fontSize: 11, padding: "3px 6px", borderRadius: 4, border: "1px solid var(--color-border)" }}>
+                            <option value="pending">{t("等待", "Pending")}</option>
+                            <option value="inprogress">{t("进行", "In Progress")}</option>
+                            <option value="done">{t("完成", "Done")}</option>
+                          </select>
+                        )}
+                      </div>
+
+                      {s.status === "done" && s.completedAt && (
+                        <div style={{ fontSize: 10, color: STATUS_STYLES[s.status].text, marginBottom: 8 }}>
+                          ✓ {s.completedAt}
+                        </div>
+                      )}
+
+                      {isProd && (
+                        <>
+                          <NoteInput
+                            initialValue={s.note}
+                            onSave={note => updateNote(selOrder.id, step.id, note)}
+                            placeholder={t("添加备注...", "Add note...")}
+                          />
+
+                          <div style={{ marginTop: 8 }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 11, fontWeight: 600, color: "var(--color-primary)" }}>
+                              <span>📸 {t("上传", "Photo")}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={e => e.target.files?.length && handlePhoto(selOrder.id, step.id, e.target.files[0])}
+                                style={{ display: "none" }}
+                              />
+                            </label>
+                          </div>
+                        </>
+                      )}
+
+                      {(s.photos || []).length > 0 && (
+                        <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                          {s.photos.map((photo, idx) => (
+                            <div key={idx} onClick={() => setPhotoModal({ photo, orderId: selOrder.id, stepId: step.id, photoIndex: idx })}
+                              style={{ position: "relative", cursor: "pointer", borderRadius: 6, overflow: "hidden", aspectRatio: "1" }}>
+                              <img src={photo.url} alt={`Photo ${idx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {s.status === "done" && !s.notified && selOrder.phone && isProd && (
+                        <button onClick={() => triggerWA(selOrder, step)} className="btn-secondary" style={{ width: "100%", marginTop: 8, fontSize: 10 }}>
+                          📱 {t("通知", "Notify")}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* No order selected — hide on mobile */}
+        {!selOrder && !isMobile && (
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }} className="detail-panel">
+            <div className="empty-state">
+              <div className="empty-state-icon">👈</div>
+              <div className="empty-state-text">{t("选择一个订单开始", "Select an order to start")}</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+
+      {/* Login Modal */}
+      {showLogin && (
+        <div className="modal-overlay" onClick={() => setShowLogin(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{t("生产模式登入", "Production Mode Login")}</div>
+            <input
+              type="password"
+              value={pwInput}
+              onChange={e => { setPwInput(e.target.value); setPwError(false); }}
+              onKeyDown={e => e.key === "Enter" && tryLogin()}
+              placeholder={t("密码", "Password")}
+              className="input-base"
+              style={{ marginBottom: 8 }}
+              autoFocus
+            />
+            {pwError && <div style={{ fontSize: 12, color: "var(--color-danger)", marginBottom: 12 }}>❌ {t("密码错误", "Incorrect password")}</div>}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={tryLogin} className="btn-primary" style={{ flex: 1 }}>{t("登入", "Login")}</button>
+              <button onClick={() => setShowLogin(false)} className="btn-secondary" style={{ flex: 1 }}>{t("取消", "Cancel")}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button id="login-modal" onClick={() => setShowLogin(true)} style={{ display: "none" }} />
+
+      {/* Photo Modal */}
+      {photoModal && (
+        <div className="modal-overlay" onClick={() => setPhotoModal(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
+            <img src={photoModal.photo.url} alt="Full size" style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} />
+            <div style={{ fontSize: 11, color: "var(--color-text-muted)", marginBottom: 12 }}>
+              {t("文件名", "Name")}: {photoModal.photo.name} | {t("时间", "Time")}: {photoModal.photo.time}
+            </div>
+            {isProd && (
+              <button onClick={() => deletePhoto(photoModal.orderId, photoModal.stepId, photoModal.photoIndex)} className="btn-danger" style={{ width: "100%" }}>
+                🗑 {t("删除", "Delete")}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* WhatsApp Modal */}
+      {waModal && (
+        <div className="modal-overlay" onClick={() => setWaModal(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>{t("确认 WhatsApp 消息", "Confirm WhatsApp Message")}</div>
+            <div style={{ background: "#f0fdf5", border: "1px solid #86efac", borderRadius: 8, padding: 12, marginBottom: 12, whiteSpace: "pre-wrap", fontSize: 12 }}>
+              {waModal.msg}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={confirmWA} className="btn-primary" style={{ flex: 1 }}>{t("发送", "Send")}</button>
+              <button onClick={() => setWaModal(null)} className="btn-secondary" style={{ flex: 1 }}>{t("取消", "Cancel")}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editModal && (
+        <div className="modal-overlay" onClick={() => setEditModal(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>{t("编辑订单", "Edit Order")}</div>
+            {[
+              [t("客户名称 *", "Customer *"), "customer"],
+              [t("WhatsApp 电话", "WhatsApp Phone"), "phone"],
+              [t("产品描述 *", "Description *"), "desc"],
+              [t("预计交货日 *", "ETA *"), "eta"],
+            ].map(([label, key]) => (
+              <div key={key} style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: 600 }}>{label}</div>
+                <input
+                  type={key === "eta" ? "date" : "text"}
+                  value={editModal[key]}
+                  onChange={e => setEditModal(p => ({ ...p, [key]: e.target.value }))}
+                  className="input-base"
+                />
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => saveEdit(editModal)} className="btn-primary" style={{ flex: 1 }}>{t("保存", "Save")}</button>
+              <button onClick={() => setEditModal(null)} className="btn-secondary" style={{ flex: 1 }}>{t("取消", "Cancel")}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDel && (
+        <div className="modal-overlay" onClick={() => setConfirmDel(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, color: "var(--color-danger)" }}>
+              ⚠️ {t("确认删除订单？", "Delete this order?")}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--color-text-muted)", marginBottom: 16 }}>
+              {t("此操作不可撤销。", "This action cannot be undone.")}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => deleteOrder(confirmDel)} className="btn-danger" style={{ flex: 1 }}>
+                {t("删除", "Delete")}
+              </button>
+              <button onClick={() => setConfirmDel(null)} className="btn-secondary" style={{ flex: 1 }}>
+                {t("取消", "Cancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed",
+          bottom: 20,
+          left: 20,
+          right: 20,
+          background: "#1e2a3a",
+          color: "#fff",
+          borderRadius: 8,
+          padding: "12px 16px",
+          fontSize: 13,
+          zIndex: 2000,
+          animation: "slideUp 0.3s ease",
+          maxWidth: 400,
+          margin: "0 auto",
+          textAlign: "center"
+        }}>
+          {toast}
+        </div>
+      )}
+
+      {/* Print Area */}
+      <div id="print-area" style={{ display: "none" }}></div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+</body>
+</html>
