@@ -574,13 +574,27 @@ onAuthStateChanged(auth, user => {
 });
 
 // If there's an orderId, track it live (regardless of auth)
+// Strategy: try direct doc ID first (SHOP orders), then fallback query by 'id' field (MANUAL orders)
 if (orderId) {
   onSnapshot(doc(db, 'orders', orderId), snap => {
-    if (!snap.exists()) {
-      showState('error');
-      $id('err-id-display').textContent = orderId;
-    } else {
+    if (snap.exists()) {
       renderOrder(snap.data());
+    } else {
+      // Fallback: search by the 'id' field (handles MANUAL orders with auto-generated doc IDs)
+      getDocs(query(collection(db, 'orders'), where('id', '==', orderId)))
+        .then(qs => {
+          if (!qs.empty) {
+            // Live-track the found document
+            onSnapshot(doc(db, 'orders', qs.docs[0].id), s2 => {
+              if (s2.exists()) renderOrder(s2.data());
+              else { showState('error'); $id('err-id-display').textContent = orderId; }
+            });
+          } else {
+            showState('error');
+            $id('err-id-display').textContent = orderId;
+          }
+        })
+        .catch(() => { showState('error'); $id('err-id-display').textContent = orderId; });
     }
   }, err => {
     console.error('Firestore error:', err);
