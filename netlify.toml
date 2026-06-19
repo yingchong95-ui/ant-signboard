@@ -20,6 +20,11 @@
   to = "/.netlify/functions/analytics-proxy"
   status = 200
 
+[[redirects]]
+  from = "/api/warranty-sync"
+  to = "/.netlify/functions/warranty-sync"
+  status = 200
+
 # ── Security headers (all responses) ──
 [[headers]]
   for = "/*"
