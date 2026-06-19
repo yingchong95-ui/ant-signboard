@@ -358,6 +358,8 @@ const STEPS = [
   { id:"edging",    label:"3D Letter Edging",     sub:"Letter edges are being finished and shaped.",             icon:"⬡" },
   { id:"painting",  label:"Spray Painting",       sub:"Colour coating is being applied.",                       icon:"🎨" },
   { id:"assembly",  label:"Assembly & Ready",     sub:"Final assembly, quality check and ready for delivery.",   icon:"⚙" },
+  { id:"delivery",  label:"Out for Delivery",     sub:"Your signboard is on the way to the installation site.",  icon:"🚚" },
+  { id:"jobdone",   label:"Installed & Complete", sub:"Installation completed. Your signboard is ready!",        icon:"🏆" },
 ];
 
 // Pages that carry warranty
@@ -572,13 +574,27 @@ onAuthStateChanged(auth, user => {
 });
 
 // If there's an orderId, track it live (regardless of auth)
+// Strategy: try direct doc ID first (SHOP orders), then fallback query by 'id' field (MANUAL orders)
 if (orderId) {
   onSnapshot(doc(db, 'orders', orderId), snap => {
-    if (!snap.exists()) {
-      showState('error');
-      $id('err-id-display').textContent = orderId;
-    } else {
+    if (snap.exists()) {
       renderOrder(snap.data());
+    } else {
+      // Fallback: search by the 'id' field (handles MANUAL orders with auto-generated doc IDs)
+      getDocs(query(collection(db, 'orders'), where('id', '==', orderId)))
+        .then(qs => {
+          if (!qs.empty) {
+            // Live-track the found document
+            onSnapshot(doc(db, 'orders', qs.docs[0].id), s2 => {
+              if (s2.exists()) renderOrder(s2.data());
+              else { showState('error'); $id('err-id-display').textContent = orderId; }
+            });
+          } else {
+            showState('error');
+            $id('err-id-display').textContent = orderId;
+          }
+        })
+        .catch(() => { showState('error'); $id('err-id-display').textContent = orderId; });
     }
   }, err => {
     console.error('Firestore error:', err);

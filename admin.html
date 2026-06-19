@@ -11,7 +11,7 @@
 <!-- PWA / Add to Home Screen -->
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="SignTrack"/>
+<meta name="apple-mobile-web-app-title" content="AT Admin"/>
 <link rel="manifest" href="manifest-admin.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -799,7 +799,7 @@ function buildActions(o, steps, status) {
   }
 
   // WA notify button
-  btns.push(`<button class="action-btn" onclick="waNotify('${o.id||o._docId}','${o.customer||''}')">📲 WhatsApp Customer</button>`);
+  btns.push(`<button class="action-btn" onclick="waNotify('${o.id||o._docId}','${o.customer||''}','${o.phone||''}')">📲 WhatsApp Customer</button>`);
 
   return btns.join('');
 }
@@ -860,9 +860,16 @@ async function cycleStep(docId, stepId, currentStatus) {
   }
 }
 
-function waNotify(orderId, customer) {
+function waNotify(orderId, customer, phone) {
+  if (!phone) {
+    alert('❌ No phone number found for this customer.\nPlease edit the order and add a phone number first.');
+    return;
+  }
+  // Normalise: remove spaces/dashes, ensure starts with country code
+  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  const waPhone = cleaned.startsWith('0') ? '60' + cleaned.slice(1) : cleaned;
   const msg = encodeURIComponent(`Hi ${customer || 'there'}, your A&T Signboard order ${orderId} has been updated. Track it here: https://shop.jbsignboard.com/track.html?id=${orderId}`);
-  window.open('https://wa.me/60197901150?text=' + msg, '_blank');
+  window.open('https://wa.me/' + waPhone + '?text=' + msg, '_blank');
 }
 
 // ── Toggle card ──────────────────────────────────────────
