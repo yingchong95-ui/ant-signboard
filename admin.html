@@ -819,6 +819,26 @@ async function markStep(docId, stepId, status, toast=true) {
   try {
     await window._updateStep(docId, stepId, status);
     if (toast) showToast('✅ Updated: ' + stepId);
+
+    // When job is marked complete → sync warranty to Google Sheets
+    if (stepId === 'jobdone' && status === 'done') {
+      const order = allOrders.find(o => (o.id || o._docId) === docId);
+      if (order) {
+        const installDate = order.steps?.jobdone?.completedAt || new Date().toISOString();
+        fetch('/api/warranty-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId:     order.id || order._docId,
+            customer:    order.customer || '',
+            signName:    order.meta?.signName || order.desc || '',
+            phone:       order.phone || '',
+            desc:        order.desc || '',
+            installDate,
+          }),
+        }).catch(err => console.warn('Warranty sync failed (non-critical):', err));
+      }
+    }
   } catch(e) {
     showToast('❌ Error: ' + e.message);
   }
