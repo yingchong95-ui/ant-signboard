@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Warranty Dashboard — A&T Signboard</title>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0d1f3c"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1f3c;--red:#e63946;--red-bg:#fff0f1;
+  --green:#16a34a;--green-bg:#edfdf4;
+  --orange:#ea580c;--orange-bg:#fff7ed;
+  --yellow:#ca8a04;--yellow-bg:#fefce8;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;
+  --border:#e3e7ef;--off:#f6f8fc;
+  --t1:#0d1f3c;--t2:#5a6478;--t3:#9aa3b2;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--t1);min-height:100vh}
+
+/* ── Login ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(13,31,60,.12)}
+.login-logo{text-align:center;margin-bottom:1.8rem}
+.login-logo-box{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:var(--navy);border-radius:14px;font-size:1.6rem;margin-bottom:.8rem}
+.login-title{font-size:1.15rem;font-weight:700;color:var(--navy)}
+.login-sub{font-size:.8rem;color:var(--t2);margin-top:3px}
+.form-group{margin-bottom:1rem}
+.form-label{font-size:.78rem;font-weight:600;color:var(--t2);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--t1);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--navy)}
+.login-btn{width:100%;padding:.8rem;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.login-btn:hover{background:#1a3560}
+.login-err{display:none;background:var(--red-bg);border:1px solid #fca5a5;color:var(--red);font-size:.8rem;padding:.6rem .9rem;border-radius:8px;margin-top:.8rem;text-align:center}
+
+/* ── Header ── */
+.main-wrap{display:none}
+header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-logo{font-size:.95rem;font-weight:700;color:#fff}
+.header-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:8px}
+.btn-ghost{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:background .2s}
+.btn-ghost:hover{background:rgba(255,255,255,.2)}
+
+.page{max-width:1080px;margin:0 auto;padding:1.5rem}
+
+/* ── Section title ── */
+.section-title{font-size:1.05rem;font-weight:700;color:var(--navy);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.section-title .badge-count{font-size:.72rem;font-weight:700;background:var(--navy);color:#fff;padding:2px 8px;border-radius:10px}
+
+/* ── Summary cards ── */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.5rem}
+@media(max-width:680px){.summary{grid-template-columns:repeat(2,1fr)}}
+.s-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;cursor:pointer;transition:border-color .2s}
+.s-card:hover,.s-card.active-filter{border-color:var(--navy);box-shadow:0 0 0 2px rgba(13,31,60,.08)}
+.s-card.green{border-top:3px solid var(--green)}
+.s-card.orange{border-top:3px solid var(--orange)}
+.s-card.red{border-top:3px solid var(--red)}
+.s-card.blue{border-top:3px solid var(--blue)}
+.s-icon{font-size:1.4rem;margin-bottom:.4rem}
+.s-val{font-size:1.5rem;font-weight:800;color:var(--navy);line-height:1.1}
+.s-label{font-size:.72rem;color:var(--t2);font-weight:500;margin-top:3px}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.6rem}
+.filter-pills{display:flex;gap:5px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:4px}
+.filter-pill{padding:.35rem .8rem;border:none;background:transparent;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s}
+.filter-pill.active{background:var(--navy);color:#fff}
+.search-input{padding:.42rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--t1);outline:none;width:200px;transition:border-color .2s}
+.search-input:focus{border-color:var(--navy)}
+
+/* ── Warranty table ── */
+.table-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.table-header{padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:#fff}
+.table-title{font-size:.85rem;font-weight:700;color:var(--t1)}
+table{width:100%;border-collapse:collapse}
+th{background:var(--off);font-size:.7rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;padding:.65rem 1rem;text-align:left;white-space:nowrap}
+td{font-size:.82rem;color:var(--t1);padding:.7rem 1rem;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#fafbfd}
+.td-order{font-weight:700;color:var(--navy);font-size:.8rem}
+.td-customer{font-weight:600}
+.td-date{color:var(--t2);font-size:.78rem}
+
+/* ── Warranty badges ── */
+.w-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.w-active{background:var(--green-bg);color:var(--green)}
+.w-expiring{background:var(--yellow-bg);color:var(--yellow)}
+.w-expired{background:var(--red-bg);color:var(--red)}
+.w-pending{background:var(--off);color:var(--t3);border:1px solid var(--border)}
+
+/* ── Overall status badge ── */
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.78rem;font-weight:700}
+.status-active{background:var(--green-bg);color:var(--green)}
+.status-expiring{background:var(--yellow-bg);color:var(--yellow)}
+.status-expired{background:var(--red-bg);color:var(--red)}
+.status-pending{background:var(--off);color:var(--t3)}
+
+/* ── Empty state ── */
+.empty-state{padding:3rem 1rem;text-align:center;color:var(--t3)}
+.empty-icon{font-size:2.5rem;margin-bottom:.8rem}
+.empty-text{font-size:.9rem;font-weight:600;color:var(--t2)}
+.empty-sub{font-size:.8rem;color:var(--t3);margin-top:4px}
+
+/* ── Spinner ── */
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;margin:2rem auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-area{text-align:center;padding:2rem;color:var(--t2);font-size:.85rem}
+
+/* ── Charts ── */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+@media(max-width:720px){.charts{grid-template-columns:1fr}}
+.chart-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.2rem}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:.85rem;font-weight:700;color:var(--t1);margin-bottom:1rem}
+.chart-wrap canvas{max-height:240px}
+
+/* ── Upcoming expiry list ── */
+.expiry-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem}
+.expiry-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;border-radius:8px;background:var(--off)}
+.expiry-order{font-weight:700;font-size:.8rem;color:var(--navy)}
+.expiry-customer{font-size:.78rem;color:var(--t2)}
+.expiry-days{font-size:.78rem;font-weight:700}
+.expiry-days.soon{color:var(--orange)}
+.expiry-days.very-soon{color:var(--red)}
+.expiry-days.ok{color:var(--green)}
+</style>
+</head>
+<body>
+
+<!-- ── Login ── -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-box">🛡</div>
+      <div class="login-title">Warranty Dashboard</div>
+      <div class="login-sub">A&T Signboard — Admin Access</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-input" id="pwInput" placeholder="Enter admin password"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main-wrap" id="mainWrap">
+  <header>
+    <div class="header-left">
+      <span class="header-logo">🛡 Warranty</span>
+      <span class="header-badge">Post-Sale Dashboard</span>
+    </div>
+    <div class="header-right">
+      <a href="analytics.html" class="btn-ghost">📊 Analytics</a>
+      <a href="admin.html" class="btn-ghost">← Admin Panel</a>
+      <button class="btn-ghost" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="page">
+
+    <!-- Summary Cards -->
+    <div class="summary" id="summaryCards">
+      <div class="s-card blue" onclick="setFilter('all')" id="card-all">
+        <div class="s-icon">📦</div>
+        <div class="s-val" id="val-total">—</div>
+        <div class="s-label">Total Installed</div>
+      </div>
+      <div class="s-card green" onclick="setFilter('active')" id="card-active">
+        <div class="s-icon">✅</div>
+        <div class="s-val" id="val-active">—</div>
+        <div class="s-label">Active Warranties</div>
+      </div>
+      <div class="s-card orange" onclick="setFilter('expiring')" id="card-expiring">
+        <div class="s-icon">⚠️</div>
+        <div class="s-val" id="val-expiring">—</div>
+        <div class="s-label">Expiring in 30 Days</div>
+      </div>
+      <div class="s-card red" onclick="setFilter('expired')" id="card-expired">
+        <div class="s-icon">❌</div>
+        <div class="s-val" id="val-expired">—</div>
+        <div class="s-label">Expired</div>
+      </div>
+    </div>
+
+    <!-- Warranty Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">🛡 Warranty Records</div>
+        <div class="filter-pills">
+          <button class="filter-pill active" id="pill-all"      onclick="setFilter('all')">All</button>
+          <button class="filter-pill"        id="pill-active"   onclick="setFilter('active')">Active</button>
+          <button class="filter-pill"        id="pill-expiring" onclick="setFilter('expiring')">Expiring Soon</button>
+          <button class="filter-pill"        id="pill-expired"  onclick="setFilter('expired')">Expired</button>
+        </div>
+      </div>
+      <div id="tableBody">
+        <div class="loading-area"><div class="spinner"></div>Loading warranty data…</div>
+      </div>
+    </div>
+
+    <!-- Analytics Charts -->
+    <div class="section-title">📊 Warranty Analytics</div>
+    <div class="charts">
+      <div class="chart-card">
+        <div class="chart-title">Warranty Status Distribution</div>
+        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">⏰ Expiring in Next 60 Days</div>
+        <div id="upcomingList">
+          <div class="loading-area"><div class="spinner"></div></div>
+        </div>
+      </div>
+      <div class="chart-card full">
+        <div class="chart-title">Monthly Expiry Timeline (next 6 months)</div>
+        <div class="chart-wrap"><canvas id="timelineChart"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main-wrap -->
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+// ── Config ────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain:        "sign-track-ff7f3.firebaseapp.com",
+  projectId:         "sign-track-ff7f3",
+  storageBucket:     "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId:             "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── Auth ──────────────────────────────────────────────────────
+const ADMIN_PW = 'antshop2024';
+window.doLogin = () => {
+  if(document.getElementById('pwInput').value === ADMIN_PW){
+    sessionStorage.setItem('wty_auth','1');
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('mainWrap').style.display  = 'block';
+    init();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+};
+window.doLogout = () => { sessionStorage.removeItem('wty_auth'); location.reload(); };
+
+window.addEventListener('DOMContentLoaded', () => {
+  if(sessionStorage.getItem('wty_auth') === '1'){
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('mainWrap').style.display  = 'block';
+    init();
+  }
+});
+
+// ── Warranty config ───────────────────────────────────────────
+const WARRANTY_TYPES = [
+  { key:'colour',      label:'Colour',      months:12, icon:'🎨' },
+  { key:'led',         label:'LED Lighting', months:12, icon:'💡' },
+  { key:'transformer', label:'Transformer', months:6,  icon:'⚡' },
+];
+
+// ── Helpers ───────────────────────────────────────────────────
+function toDate(val){
+  if(!val) return null;
+  if(val && typeof val.toDate === 'function') return val.toDate();
+  if(val && val.seconds) return new Date(val.seconds * 1000);
+  const d = new Date(val);
+  return isNaN(d) ? null : d;
+}
+function addMonths(date, m){
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + m);
+  return d;
+}
+function daysLeft(expiry){
+  const now = new Date();
+  return Math.ceil((expiry - now) / (1000*60*60*24));
+}
+function fmtDate(d){
+  if(!d) return '—';
+  return d.toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'});
+}
+function warrantyBadge(days){
+  if(days === null) return '<span class="w-badge w-pending">⏳ Pending</span>';
+  if(days < 0)      return `<span class="w-badge w-expired">❌ Expired</span>`;
+  if(days <= 30)    return `<span class="w-badge w-expiring">⚠ ${days}d left</span>`;
+  return               `<span class="w-badge w-active">✅ ${days}d left</span>`;
+}
+
+// ── Status logic ──────────────────────────────────────────────
+function calcOrderWarranty(order){
+  const jobdone   = order.steps?.jobdone;
+  const installed = jobdone?.status === 'done';
+  const instDate  = installed ? toDate(jobdone.completedAt) : null;
+
+  const types = WARRANTY_TYPES.map(wt => {
+    if(!instDate) return { ...wt, expiry:null, days:null };
+    const expiry = addMonths(instDate, wt.months);
+    return { ...wt, expiry, days: daysLeft(expiry) };
+  });
+
+  // Overall status
+  let overall = 'pending';
+  if(instDate){
+    const allDays = types.map(t => t.days).filter(d => d !== null);
+    if(allDays.every(d => d < 0))       overall = 'expired';
+    else if(allDays.some(d => d <= 30)) overall = 'expiring';
+    else                                overall = 'active';
+  }
+
+  return { installed, instDate, types, overall };
+}
+
+// ── State ─────────────────────────────────────────────────────
+let installedOrders = [];
+let currentFilter   = 'all';
+let donutInst, timelineInst;
+
+// ── Init ──────────────────────────────────────────────────────
+async function init(){
+  try {
+    const snap = await getDocs(collection(db, 'orders'));
+    const raw  = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Only show installed orders (jobdone done)
+    installedOrders = raw
+      .filter(o => o.steps?.jobdone?.status === 'done')
+      .map(o => ({ ...o, _w: calcOrderWarranty(o) }))
+      .sort((a,b) => {
+        const da = a._w.instDate, db2 = b._w.instDate;
+        if(!da && !db2) return 0;
+        if(!da) return 1;
+        if(!db2) return -1;
+        return db2 - da; // newest first
+      });
+    renderSummary();
+    renderTable();
+    renderCharts();
+  } catch(err){
+    document.getElementById('tableBody').innerHTML =
+      `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Error loading data</div><div class="empty-sub">${err.message}</div></div>`;
+  }
+}
+
+// ── Summary ───────────────────────────────────────────────────
+function renderSummary(){
+  const total    = installedOrders.length;
+  const active   = installedOrders.filter(o => o._w.overall === 'active').length;
+  const expiring = installedOrders.filter(o => o._w.overall === 'expiring').length;
+  const expired  = installedOrders.filter(o => o._w.overall === 'expired').length;
+  document.getElementById('val-total').textContent    = total;
+  document.getElementById('val-active').textContent   = active;
+  document.getElementById('val-expiring').textContent = expiring;
+  document.getElementById('val-expired').textContent  = expired;
+}
+
+// ── Filter ────────────────────────────────────────────────────
+window.setFilter = (f) => {
+  currentFilter = f;
+  ['all','active','expiring','expired'].forEach(k => {
+    document.getElementById('pill-'+k)?.classList.toggle('active', k===f);
+    document.getElementById('card-'+k)?.classList.toggle('active-filter', k===f);
+  });
+  renderTable();
+};
+
+// ── Table ─────────────────────────────────────────────────────
+function renderTable(){
+  const filtered = currentFilter === 'all'
+    ? installedOrders
+    : installedOrders.filter(o => o._w.overall === currentFilter);
+
+  if(filtered.length === 0){
+    document.getElementById('tableBody').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🛡</div>
+        <div class="empty-text">No warranties in this category</div>
+        <div class="empty-sub">Orders will appear here once installation is marked complete.</div>
+      </div>`;
+    return;
+  }
+
+  const overallBadge = (o) => {
+    const m = {
+      active:   '<span class="status-badge status-active">✅ Active</span>',
+      expiring: '<span class="status-badge status-expiring">⚠ Expiring Soon</span>',
+      expired:  '<span class="status-badge status-expired">❌ Expired</span>',
+      pending:  '<span class="status-badge status-pending">⏳ Pending</span>',
+    };
+    return m[o._w.overall] || m.pending;
+  };
+
+  let html = `<table>
+    <thead><tr>
+      <th>Order</th>
+      <th>Customer</th>
+      <th>Installed</th>
+      <th>${WARRANTY_TYPES[0].icon} ${WARRANTY_TYPES[0].label} (${WARRANTY_TYPES[0].months}m)</th>
+      <th>${WARRANTY_TYPES[1].icon} ${WARRANTY_TYPES[1].label} (${WARRANTY_TYPES[1].months}m)</th>
+      <th>${WARRANTY_TYPES[2].icon} ${WARRANTY_TYPES[2].label} (${WARRANTY_TYPES[2].months}m)</th>
+      <th>Status</th>
+    </tr></thead><tbody>`;
+
+  for(const o of filtered){
+    const w = o._w;
+    html += `<tr>
+      <td><div class="td-order">${o.id}</div></td>
+      <td><div class="td-customer">${o.customer || o.meta?.signName || '—'}</div><div class="td-date">${o.desc ? o.desc.substring(0,35)+'…' : ''}</div></td>
+      <td class="td-date">${fmtDate(w.instDate)}</td>
+      ${w.types.map(t => `<td>${warrantyBadge(t.days)}<br/><span style="font-size:.7rem;color:var(--t3);margin-top:2px;display:block">Exp: ${t.expiry ? fmtDate(t.expiry) : '—'}</span></td>`).join('')}
+      <td>${overallBadge(o)}</td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  document.getElementById('tableBody').innerHTML = html;
+}
+
+// ── Charts ────────────────────────────────────────────────────
+function renderCharts(){
+  renderDonut();
+  renderUpcoming();
+  renderTimeline();
+}
+
+function renderDonut(){
+  const active   = installedOrders.filter(o => o._w.overall === 'active').length;
+  const expiring = installedOrders.filter(o => o._w.overall === 'expiring').length;
+  const expired  = installedOrders.filter(o => o._w.overall === 'expired').length;
+  const total    = active + expiring + expired;
+
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  if(donutInst) donutInst.destroy();
+
+  if(total === 0){
+    ctx.canvas.parentElement.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text" style="font-size:.8rem">No data yet</div></div>';
+    return;
+  }
+
+  donutInst = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Active','Expiring Soon','Expired'],
+      datasets: [{
+        data: [active, expiring, expired],
+        backgroundColor: ['#16a34a','#ca8a04','#e63946'],
+        borderWidth: 0,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{family:'DM Sans',size:12}, padding:16 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.raw} orders (${Math.round(ctx.raw/total*100)}%)`
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderUpcoming(){
+  const now = new Date();
+  const in60 = new Date(now); in60.setDate(in60.getDate()+60);
+
+  // Find soonest expiry per order within 60 days
+  const upcoming = [];
+  for(const o of installedOrders){
+    let soonestDays = null;
+    let soonestType = '';
+    for(const t of o._w.types){
+      if(t.days !== null && t.days >= 0 && t.expiry <= in60){
+        if(soonestDays === null || t.days < soonestDays){
+          soonestDays = t.days;
+          soonestType = t.label;
+        }
+      }
+    }
+    if(soonestDays !== null){
+      upcoming.push({ order:o, days:soonestDays, type:soonestType });
+    }
+  }
+  upcoming.sort((a,b) => a.days - b.days);
+
+  const el = document.getElementById('upcomingList');
+  if(upcoming.length === 0){
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text" style="font-size:.8rem">No warranties expiring in 60 days</div></div>';
+    return;
+  }
+
+  let html = '<div class="expiry-list">';
+  for(const u of upcoming.slice(0,8)){
+    const cls = u.days <= 14 ? 'very-soon' : u.days <= 30 ? 'soon' : 'ok';
+    html += `<div class="expiry-row">
+      <div>
+        <div class="expiry-order">${u.order.id}</div>
+        <div class="expiry-customer">${u.order.customer||'—'} · ${u.type}</div>
+      </div>
+      <div class="expiry-days ${cls}">${u.days}d left</div>
+    </div>`;
+  }
+  if(upcoming.length > 8) html += `<div style="text-align:center;font-size:.75rem;color:var(--t3);padding:.4rem">+${upcoming.length-8} more…</div>`;
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function renderTimeline(){
+  const ctx = document.getElementById('timelineChart').getContext('2d');
+  if(timelineInst) timelineInst.destroy();
+
+  // Build next 6 months buckets
+  const now = new Date();
+  const months = [];
+  for(let i=0; i<6; i++){
+    const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+    months.push({
+      label: d.toLocaleDateString('en-MY',{month:'short',year:'2-digit'}),
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      colour: 0, led: 0, transformer: 0
+    });
+  }
+
+  for(const o of installedOrders){
+    for(const t of o._w.types){
+      if(!t.expiry || t.days < 0) continue;
+      const ey = t.expiry.getFullYear(), em = t.expiry.getMonth();
+      const bucket = months.find(b => b.year===ey && b.month===em);
+      if(!bucket) continue;
+      if(t.key==='colour')      bucket.colour++;
+      else if(t.key==='led')    bucket.led++;
+      else if(t.key==='transformer') bucket.transformer++;
+    }
+  }
+
+  timelineInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months.map(m => m.label),
+      datasets: [
+        { label:'Colour',      data: months.map(m=>m.colour),      backgroundColor:'#2563eb', borderRadius:4 },
+        { label:'LED Lighting',data: months.map(m=>m.led),         backgroundColor:'#7c3aed', borderRadius:4 },
+        { label:'Transformer', data: months.map(m=>m.transformer),  backgroundColor:'#ea580c', borderRadius:4 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{family:'DM Sans',size:12}, padding:16 } },
+      },
+      scales: {
+        x: { stacked:true, grid:{display:false}, ticks:{font:{family:'DM Sans',size:11}} },
+        y: { stacked:true, beginAtZero:true, ticks:{stepSize:1, font:{family:'DM Sans',size:11}},
+             grid:{color:'#e3e7ef'} }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
