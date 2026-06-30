@@ -250,9 +250,14 @@ const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
 // ── Auth ──────────────────────────────────────────────────────
-const ADMIN_PW = 'antshop2024';
-window.doLogin = () => {
-  if(document.getElementById('pwInput').value === ADMIN_PW){
+const ADMIN_HASH = '95264e37499b7594c11e1e6f494df95a64eb6a3ca22f8e26084fa772bdf28d52';
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+window.doLogin = async () => {
+  const hash = await sha256(document.getElementById('pwInput').value);
+  if(hash === ADMIN_HASH){
     sessionStorage.setItem('wty_auth','1');
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('mainWrap').style.display  = 'block';
