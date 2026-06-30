@@ -5,7 +5,7 @@ const CACHE_NAME = 'sign-job-v3';
 
 // Files to cache for offline use
 const PRECACHE_URLS = [
-  '/form.html',
+  '/signage-tracker-v2-fixed.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
@@ -59,7 +59,7 @@ self.addEventListener('fetch', event => {
       });
     }).catch(() => {
       // Offline fallback
-      return caches.match('/form.html');
+      return caches.match('/signage-tracker-v2-fixed.html');
     })
   );
 });
