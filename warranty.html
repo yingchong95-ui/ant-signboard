@@ -276,6 +276,20 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// ── Signboard eligibility (mirror of admin.html logic) ────────
+function isWarrantyEligible(o) {
+  const SIGN_KW  = ['signboard','招牌','neon','霓虹','灯箱','led lightbox','led 灯箱'];
+  const PRINT_KW = ['acrylic','亚加力','壓克力','bomba','banner','横幅','name card','名片','foam','泡沫','inkjet','喷绘','vehicle','车身','flyer','sticker print'];
+  const haystack = [
+    o.product || '',
+    o.desc    || '',
+    ...(o.items || []).map(i => i.name || '')
+  ].join(' ').toLowerCase();
+  if (PRINT_KW.some(k => haystack.includes(k))) return false;
+  if (SIGN_KW.some(k  => haystack.includes(k))) return true;
+  return !o.isManual; // online orders without clear type → eligible
+}
+
 // ── Warranty config ───────────────────────────────────────────
 const WARRANTY_TYPES = [
   { key:'colour',      label:'Colour',      months:12, icon:'🎨' },
@@ -347,7 +361,7 @@ async function init(){
     const raw  = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     // Only show installed orders (jobdone done)
     installedOrders = raw
-      .filter(o => o.steps?.jobdone?.status === 'done')
+      .filter(o => o.steps?.jobdone?.status === 'done' && isWarrantyEligible(o))
       .map(o => ({ ...o, _w: calcOrderWarranty(o) }))
       .sort((a,b) => {
         const da = a._w.instDate, db2 = b._w.instDate;
