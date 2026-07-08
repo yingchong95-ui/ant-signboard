@@ -250,9 +250,14 @@ const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
 // ── Auth ──────────────────────────────────────────────────────
-const ADMIN_PW = 'antshop2024';
-window.doLogin = () => {
-  if(document.getElementById('pwInput').value === ADMIN_PW){
+const ADMIN_HASH = '95264e37499b7594c11e1e6f494df95a64eb6a3ca22f8e26084fa772bdf28d52';
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+window.doLogin = async () => {
+  const hash = await sha256(document.getElementById('pwInput').value);
+  if(hash === ADMIN_HASH){
     sessionStorage.setItem('wty_auth','1');
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('mainWrap').style.display  = 'block';
@@ -270,6 +275,20 @@ window.addEventListener('DOMContentLoaded', () => {
     init();
   }
 });
+
+// ── Signboard eligibility (mirror of admin.html logic) ────────
+function isWarrantyEligible(o) {
+  const SIGN_KW  = ['signboard','招牌','neon','霓虹','灯箱','led lightbox','led 灯箱'];
+  const PRINT_KW = ['acrylic','亚加力','壓克力','bomba','banner','横幅','name card','名片','foam','泡沫','inkjet','喷绘','vehicle','车身','flyer','sticker print'];
+  const haystack = [
+    o.product || '',
+    o.desc    || '',
+    ...(o.items || []).map(i => i.name || '')
+  ].join(' ').toLowerCase();
+  if (PRINT_KW.some(k => haystack.includes(k))) return false;
+  if (SIGN_KW.some(k  => haystack.includes(k))) return true;
+  return !o.isManual; // online orders without clear type → eligible
+}
 
 // ── Warranty config ───────────────────────────────────────────
 const WARRANTY_TYPES = [
@@ -342,7 +361,7 @@ async function init(){
     const raw  = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     // Only show installed orders (jobdone done)
     installedOrders = raw
-      .filter(o => o.steps?.jobdone?.status === 'done')
+      .filter(o => o.steps?.jobdone?.status === 'done' && isWarrantyEligible(o))
       .map(o => ({ ...o, _w: calcOrderWarranty(o) }))
       .sort((a,b) => {
         const da = a._w.instDate, db2 = b._w.instDate;
