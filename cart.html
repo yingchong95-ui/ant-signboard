@@ -729,15 +729,21 @@ window._fbSaveEshopOrder = async (orderDoc) => {
   await setDoc(doc(db, 'orders', orderDoc.id), orderDoc);
 };
 
-// Firestore — fetch orders for logged-in user
+// Firestore — fetch orders for logged-in user (sort client-side to avoid composite index)
 window._fbGetMyOrders = async (uid) => {
   const q = query(
     collection(db, 'orders'),
-    where('userId', '==', uid),
-    orderBy('createdAt', 'desc')
+    where('userId', '==', uid)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Sort newest first on client side
+  docs.sort((a, b) => {
+    const da = a.createdAt ? new Date(a.createdAt) : new Date(0);
+    const db2 = b.createdAt ? new Date(b.createdAt) : new Date(0);
+    return db2 - da;
+  });
+  return docs;
 };
 
 // Upload an artwork file to Storage, return its download URL
