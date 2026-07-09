@@ -2258,19 +2258,32 @@ const app     = initializeApp(firebaseConfig, 'sb-enquiry');
 const db      = getFirestore(app);
 const storage = getStorage(app);
 
+/* ── Helper: data URL → Blob (more reliable than fetch for data URLs) ── */
+function dataURLtoBlob(dataURL) {
+  const parts = dataURL.split(',');
+  const mime  = (parts[0].match(/:(.*?);/) || [])[1] || 'image/png';
+  const bstr  = atob(parts[1]);
+  const u8arr = new Uint8Array(bstr.length);
+  for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+  return new Blob([u8arr], { type: mime });
+}
+
 /* ── Capture canvas design image ── */
 async function captureDesignImage(enqId) {
   try {
     // 1. Export the Fabric.js live designer canvas (text/logo layout)
     const fc = window.fc;
-    if (!fc) return { canvasUrl: '', previewUrl: '' };
+    if (!fc) {
+      console.warn('[Enquiry] window.fc not found — canvas not captured');
+      return { canvasUrl: '', previewUrl: '' };
+    }
 
     const dataURL = fc.toDataURL({ format: 'png', quality: 0.92, multiplier: 2 });
-    const res  = await fetch(dataURL);
-    const blob = await res.blob();
+    const blob    = dataURLtoBlob(dataURL);   // more reliable than fetch()
     const canvasRef = sRef(storage, `enquiries/${enqId}/canvas-design.png`);
     await uploadBytes(canvasRef, blob, { contentType: 'image/png' });
     const canvasUrl = await getDownloadURL(canvasRef);
+    console.log('[Enquiry] Canvas uploaded:', canvasUrl);
 
     // 2. Also capture the CSS signboard preview using html2canvas (if available)
     let previewUrl = '';
@@ -2289,7 +2302,8 @@ async function captureDesignImage(enqId) {
 
     return { canvasUrl, previewUrl };
   } catch(e) {
-    console.warn('[Enquiry] Canvas capture failed:', e);
+    console.error('[Enquiry] Canvas capture failed:', e.code || e.message || e);
+    // If permission denied → Firebase Storage rules need to allow writes to enquiries/
     return { canvasUrl: '', previewUrl: '' };
   }
 }
