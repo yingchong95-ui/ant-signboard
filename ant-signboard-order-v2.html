@@ -2311,6 +2311,7 @@ window._fbSaveEnquiry = async function(enqId) {
 
     await addDoc(collection(db, 'orders'), {
       enquiryId:    enqId,
+      id:           enqId,          // needed so track.html can find it via ?id=SB-XXXXXXX
       type:         'signboard-enquiry',
       product:      boardLabels[S.board] || 'Custom Signboard',
       desc:         `${boardLabels[S.board]||'Custom Signboard'} · ${w}ft × ${h}ft · Estimated ${priceDesc}`,

@@ -396,6 +396,12 @@ window._updateStep = async function(docId, stepId, status) {
   await updateDoc(ref, upd);
 };
 
+// Update arbitrary fields on an order doc
+window._updateFields = async function(docId, fields) {
+  const ref = doc(db, 'orders', docId);
+  await updateDoc(ref, fields);
+};
+
 // Delete an order
 window._deleteOrder = async function(docId) {
   await deleteDoc(doc(db, 'orders', docId));
@@ -794,9 +800,13 @@ function buildActions(o, steps, status) {
     btns.push(`<button class="action-btn primary" onclick="confirmOrder('${id}','${o.id||''}',${o.total||o.grandTotal||0})">✓ Confirm Order</button>`);
   }
 
-  // Request payment (only after proceed done, payment not yet started)
-  if (s.proceed?.status === 'done' && (!s.payment?.status || s.payment?.status === 'pending')) {
-    btns.push(`<button class="action-btn warn" onclick="requestPayment('${id}','${o.id||''}',${o.total||o.grandTotal||0})">💳 Request Payment</button>`);
+  // Request payment:
+  // - Regular orders: after proceed is done, payment not started yet
+  // - Enquiries (signboard): always show (they skip the proceed step), unless payment already in progress/done
+  const _payStatus = s.payment?.status || '';
+  const _payOk     = !_payStatus || _payStatus === 'pending';
+  if ((s.proceed?.status === 'done' || o.type === 'signboard-enquiry') && _payOk) {
+    btns.push(`<button class="action-btn warn" onclick="requestPayment('${id}','${o.enquiryId||o.id||''}',${o.confirmedAmount||o.total||o.grandTotal||o.priceMin||0})">💳 Request Payment</button>`);
   }
 
   // Payment received
@@ -845,9 +855,103 @@ async function confirmOrder(docId, orderId, total) {
   showToast('✅ Order confirmed!');
 }
 
-async function requestPayment(docId, orderId, total) {
-  await window._updateStep(docId, 'payment', 'inprogress');
-  showToast('💳 Payment request marked — notify customer via WhatsApp');
+function requestPayment(docId, orderId, total) {
+  const o = _findOrder(docId);
+  // Pre-fill with confirmed amount, or price range, or order total
+  const defaultAmt = o?.confirmedAmount || o?.total || o?.grandTotal || o?.priceMin || total || '';
+  const phone      = o?.phone || o?.f_phone || '';
+  const custName   = o?.customer || o?.contactName || '';
+  const priceHint  = (o?.priceMin && o?.priceMax && o?.priceMin !== o?.priceMax)
+    ? 'Estimated: RM ' + Number(o.priceMin).toLocaleString() + ' — RM ' + Number(o.priceMax).toLocaleString()
+    : (o?.priceMin ? 'Estimated: RM ' + Number(o.priceMin).toLocaleString() : '');
+
+  // Remove any existing modal
+  var old = document.getElementById('pay-req-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'pay-req-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35)">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">'
+    + '<h3 style="margin:0;font-size:1.05rem;color:#0d1f3c">💳 Confirm Payment Amount</h3>'
+    + '<button onclick="document.getElementById(\'pay-req-modal\').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888;line-height:1">×</button>'
+    + '</div>'
+    + '<div style="background:#f6f8fc;border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#374151">'
+    + '<b>Order:</b> ' + escHtml(orderId || docId) + '<br>'
+    + '<b>Customer:</b> ' + escHtml(custName || '—')
+    + (priceHint ? '<br><span style="color:#c0392b;font-size:.78rem">' + priceHint + '</span>' : '')
+    + '</div>'
+    + '<label style="display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:.4rem">Final Confirmed Amount (RM) <span style="color:#e63946">*</span></label>'
+    + '<div style="position:relative;margin-bottom:1rem">'
+    + '<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:#0d1f3c;font-size:1rem">RM</span>'
+    + '<input id="pay-req-amount" type="number" step="1" min="1" value="' + (defaultAmt || '') + '" placeholder="e.g. 4500" '
+    + 'style="width:100%;padding:.75rem .75rem .75rem 2.4rem;border:2px solid #e63946;border-radius:10px;font-size:1.2rem;font-weight:700;box-sizing:border-box;color:#0d1f3c"/>'
+    + '</div>'
+    + '<label style="display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:.4rem">Payment Note (optional)</label>'
+    + '<input id="pay-req-note" type="text" placeholder="e.g. 50% deposit required, balance upon installation" '
+    + 'style="width:100%;padding:.65rem .75rem;border:1.5px solid #e0e0e0;border-radius:10px;font-size:.85rem;box-sizing:border-box;margin-bottom:1.2rem"/>'
+    + '<div style="display:flex;gap:.6rem">'
+    + '<button onclick="document.getElementById(\'pay-req-modal\').remove()" '
+    + 'style="flex:1;padding:.75rem;background:#f0f0f0;border:none;border-radius:10px;cursor:pointer;font-size:.88rem;font-weight:500">Cancel</button>'
+    + '<button onclick="confirmRequestPayment(\'' + docId + '\',\'' + escHtml(orderId||'') + '\',\'' + escHtml(phone) + '\',\'' + escHtml(custName) + '\')" '
+    + 'style="flex:2;padding:.75rem;background:#e63946;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:.9rem;font-weight:700">Send Payment Request →</button>'
+    + '</div>'
+    + '</div>';
+  document.body.appendChild(modal);
+  setTimeout(function() { var el = document.getElementById('pay-req-amount'); if (el) { el.focus(); el.select(); } }, 80);
+}
+
+async function confirmRequestPayment(docId, orderId, phone, custName) {
+  var amountEl = document.getElementById('pay-req-amount');
+  var noteEl   = document.getElementById('pay-req-note');
+  var amount   = parseFloat(amountEl ? amountEl.value : 0);
+  var note     = noteEl ? noteEl.value.trim() : '';
+
+  if (!amount || amount <= 0) {
+    amountEl && (amountEl.style.borderColor = '#e63946');
+    alert('Please enter a valid payment amount.');
+    return;
+  }
+
+  try {
+    // 1. Save confirmed amount + note to Firestore
+    var fields = {
+      total: amount,
+      grandTotal: amount,
+      confirmedAmount: amount,
+      paymentRequestedAt: new Date().toISOString()
+    };
+    if (note) fields.paymentNote = note;
+    await window._updateFields(docId, fields);
+
+    // 2. Mark payment step as inprogress (also deposit for signboard enquiries)
+    const _o2 = _findOrder(docId);
+    if (_o2?.type === 'signboard-enquiry') {
+      await window._updateStep(docId, 'deposit', 'inprogress');
+    }
+    await window._updateStep(docId, 'payment', 'inprogress');
+
+    document.getElementById('pay-req-modal').remove();
+    showToast('✅ Payment request sent! RM ' + amount.toLocaleString());
+
+    // 3. Open WhatsApp with track link
+    if (phone) {
+      var cleaned = phone.replace(/[\s\-\(\)]/g, '');
+      var waPhone = cleaned.startsWith('0') ? '60' + cleaned.slice(1) : cleaned;
+      var trackLink = 'https://shop.jbsignboard.com/track.html?id=' + encodeURIComponent(orderId);
+      var noteText  = note ? '\n\n' + note : '';
+      var msg = encodeURIComponent(
+        'Hi ' + (custName || 'there') + ', your A&T Signboard order is confirmed!\n\n'
+        + '💳 Amount to pay: RM ' + Number(amount).toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2}) + noteText + '\n\n'
+        + '📲 Scan DuitNow QR & track your order here:\n' + trackLink
+        + '\n\nAfter payment, please send us your receipt via WhatsApp. Thank you! 🙏'
+      );
+      window.open('https://wa.me/' + waPhone + '?text=' + msg, '_blank');
+    }
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
 }
 
 async function markStep(docId, stepId, status, toast=true) {
