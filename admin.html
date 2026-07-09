@@ -694,6 +694,40 @@ function renderOrders() {
   wrap.innerHTML = filtered.map(o => orderCardHtml(o)).join('');
 }
 
+function designPreviewHtml(o) {
+  var html = '<div style="padding:.6rem 1.2rem 1rem;border-bottom:1px solid #f0f0f0">';
+  html += '<div style="font-size:.78rem;font-weight:600;color:#555;margin-bottom:.5rem">🎨 Customer Design Preview</div>';
+  html += '<div style="display:flex;gap:10px;flex-wrap:wrap">';
+  if (o.canvasImageUrl) {
+    html += '<div style="flex:1;min-width:200px">';
+    html += '<div style="font-size:.7rem;color:#888;margin-bottom:3px">Canvas Layout</div>';
+    html += '<a href="' + o.canvasImageUrl + '" target="_blank" rel="noopener">';
+    html += '<img src="' + o.canvasImageUrl + '" style="width:100%;max-width:320px;border-radius:8px;border:1px solid #e0e0e0;display:block"/>';
+    html += '</a></div>';
+  }
+  if (o.previewImageUrl) {
+    html += '<div style="flex:1;min-width:200px">';
+    html += '<div style="font-size:.7rem;color:#888;margin-bottom:3px">Signboard Preview</div>';
+    html += '<a href="' + o.previewImageUrl + '" target="_blank" rel="noopener">';
+    html += '<img src="' + o.previewImageUrl + '" style="width:100%;max-width:320px;border-radius:8px;border:1px solid #e0e0e0;display:block"/>';
+    html += '</a></div>';
+  }
+  html += '</div>';
+  if (o.boardType) {
+    html += '<div style="font-size:.72rem;color:#666;margin-top:.5rem">Type: <b>' + escHtml(o.boardType) + '</b>';
+    html += ' &middot; Lighting: <b>' + escHtml(o.lighting || '—') + '</b>';
+    html += ' &middot; Panel: <b>' + escHtml(o.panelColour || '—') + '</b>';
+    html += ' &middot; Letters: <b>' + escHtml(o.textColour || '—') + '</b></div>';
+  }
+  if (o.priceMin || o.priceMax) {
+    var priceText = 'Estimated: RM ' + (o.priceMin || 0).toLocaleString();
+    if (o.priceMax && o.priceMax !== o.priceMin) priceText += ' — RM ' + (o.priceMax || 0).toLocaleString();
+    html += '<div style="font-size:.72rem;color:#c0392b;margin-top:3px;font-weight:600">' + priceText + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
 function orderCardHtml(o) {
   const status  = getOrderStatus(o);
   const steps   = o.steps || {};
@@ -735,16 +769,7 @@ function orderCardHtml(o) {
     <div class="order-body" id="body-${o._docId}">
       <div class="order-items">${items}</div>
       ${ (o.files && o.files.length) ? '<div style="padding:.2rem 1.2rem .6rem;font-size:.78rem">📎 <b>Artwork:</b> ' + o.files.map(function(f){ return '<a href="'+f.url+'" target="_blank" rel="noopener" style="color:#1a73e8;margin-right:10px">'+escHtml(f.name)+'</a>'; }).join('') + '</div>' : '' }
-      ${ (o.canvasImageUrl || o.previewImageUrl) ? `
-        <div style="padding:.6rem 1.2rem 1rem;border-bottom:1px solid #f0f0f0">
-          <div style="font-size:.78rem;font-weight:600;color:#555;margin-bottom:.5rem">🎨 Customer Design Preview</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            ${ o.canvasImageUrl ? `<div style="flex:1;min-width:200px"><div style="font-size:.7rem;color:#888;margin-bottom:3px">Canvas Layout</div><a href="${o.canvasImageUrl}" target="_blank" rel="noopener"><img src="${o.canvasImageUrl}" style="width:100%;max-width:320px;border-radius:8px;border:1px solid #e0e0e0;display:block"/></a></div>` : '' }
-            ${ o.previewImageUrl ? `<div style="flex:1;min-width:200px"><div style="font-size:.7rem;color:#888;margin-bottom:3px">Signboard Preview</div><a href="${o.previewImageUrl}" target="_blank" rel="noopener"><img src="${o.previewImageUrl}" style="width:100%;max-width:320px;border-radius:8px;border:1px solid #e0e0e0;display:block"/></a></div>` : '' }
-          </div>
-          ${ o.boardType ? `<div style="font-size:.72rem;color:#666;margin-top:.5rem">Type: <b>${escHtml(o.boardType)}</b> · Lighting: <b>${escHtml(o.lighting||'—')}</b> · Panel: <b>${escHtml(o.panelColour||'—')}</b> · Letters: <b>${escHtml(o.textColour||'—')}</b></div>` : '' }
-          ${ (o.priceMin||o.priceMax) ? `<div style="font-size:.72rem;color:#c0392b;margin-top:3px;font-weight:600">Estimated: RM ${(o.priceMin||0).toLocaleString()}${ o.priceMax && o.priceMax !== o.priceMin ? ' — RM '+(o.priceMax||0).toLocaleString() : ''}</div>` : '' }
-        </div>` : '' }
+      ${ (o.canvasImageUrl || o.previewImageUrl) ? designPreviewHtml(o) : '' }
       <div class="pipeline">${pipeHtml}</div>
       <div class="actions-title">Quick Actions</div>
       <div class="actions-grid">${actionsHtml}</div>
