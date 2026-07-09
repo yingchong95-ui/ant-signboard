@@ -534,6 +534,32 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 .eg-modal-cap{color:#fff;font-size:.8rem;font-weight:600;text-align:center;background:rgba(0,0,0,.4);padding:.4rem .9rem;border-radius:20px}
 .eg-modal-close{position:absolute;top:18px;right:22px;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer;background:rgba(255,255,255,.12);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .eg-modal-close:hover{background:rgba(255,255,255,.25)}
+
+/* ── Sign Type Guide ── */
+.sign-guide{background:#fff;border-bottom:1px solid var(--border);padding:1.4rem 0}
+.sg-inner{max-width:1140px;margin:0 auto;padding:0 1.5rem}
+.sg-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem;gap:12px}
+.sg-top-left{display:flex;flex-direction:column;gap:2px}
+.sg-title{font-size:.93rem;font-weight:700;color:var(--t1)}
+.sg-sub{font-size:.78rem;color:var(--t3)}
+.sg-skip{background:none;border:1px solid var(--border);color:var(--t2);font-size:.73rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.sg-skip:hover{border-color:var(--red);color:var(--red)}
+.sg-cards{display:grid;grid-template-columns:repeat(8,1fr);gap:9px}
+@media(max-width:1020px){.sg-cards{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:520px){.sg-cards{grid-template-columns:repeat(3,1fr)}}
+.sg-card{border:2px solid var(--border);border-radius:10px;padding:10px 7px 9px;cursor:pointer;text-align:center;transition:all .2s;background:#fff;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sg-card:hover{border-color:#aab4c8;transform:translateY(-2px);box-shadow:0 6px 18px rgba(13,31,60,.1)}
+.sg-card.selected{border-color:var(--red);background:var(--red-bg)}
+.sg-card-title{font-size:.67rem;font-weight:700;color:var(--t1);line-height:1.3}
+.sg-card-sub{font-size:.6rem;color:var(--t3);line-height:1.3}
+.sg-card-badge{font-size:.58rem;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--off);color:var(--t2);border:1px solid var(--border)}
+.sg-card.selected .sg-card-badge{background:rgba(230,57,70,.1);color:var(--red);border-color:rgba(230,57,70,.3)}
+.sg-photo{width:100%;height:54px;border-radius:6px;overflow:hidden;position:relative;background:#060c18;flex-shrink:0}
+.sg-photo img{position:absolute;left:0;top:0;height:544px;width:auto;display:block;pointer-events:none}
+.sg-banner{display:none;background:linear-gradient(90deg,#fff0f1,#fff);border:1px solid rgba(230,57,70,.25);border-radius:8px;padding:9px 14px;font-size:.8rem;margin-top:12px;align-items:center;gap:8px;color:var(--t1)}
+.sg-banner.show{display:flex}
+.sg-banner-go{margin-left:auto;background:var(--red);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.sg-banner-go:hover{background:var(--red-dark)}
 </style>
 <script src="analytics.js"></script>
 </head>
@@ -576,6 +602,92 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
   <div class="hero-label">🪧 Signboard</div>
   <h1>Custom Signboard</h1>
   <p>Design your signboard below — our sales team will follow up with a personalised quotation within 1 business day</p>
+</div>
+
+<!-- Sign Type Guide -->
+<div id="sign-guide" class="sign-guide">
+  <div class="sg-inner">
+    <div class="sg-top">
+      <div class="sg-top-left">
+        <div class="sg-title">👀 Not sure what sign type you need?</div>
+        <div class="sg-sub">Browse below and click one — we'll set up the form for you automatically.</div>
+      </div>
+      <button class="sg-skip" onclick="closeGuide()">Skip, I know what I want →</button>
+    </div>
+    <div class="sg-cards">
+
+      <!-- 1. Non-Border Frontlit -->
+      <div class="sg-card" id="sgc-1" onclick="pickSignType('flat','frontlit',1,'Non-Border Frontlit')">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="Non-Border Frontlit" style="top:-219px"></div>
+        <div class="sg-card-title">Non-Border Frontlit</div>
+        <div class="sg-card-sub">Face-lit, no frame</div>
+        <div class="sg-card-badge">Frontlit</div>
+      </div>
+
+      <!-- 2. Border Frontlit -->
+      <div class="sg-card" id="sgc-2" onclick="pickSignType('alum','frontlit',2,'Border Frontlit')">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="Border Frontlit" style="top:-471px"></div>
+        <div class="sg-card-title">Border Frontlit</div>
+        <div class="sg-card-sub">Face-lit with border</div>
+        <div class="sg-card-badge">Frontlit</div>
+      </div>
+
+      <!-- 3. Backlit -->
+      <div class="sg-card" id="sgc-3" onclick="pickSignType('alum','backlit',3,'Alum Box Up Backlit')">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="Alum Box Up Backlit" style="top:-168px"></div>
+        <div class="sg-card-title">Alum Box Up Backlit</div>
+        <div class="sg-card-sub">Halo glow from behind</div>
+        <div class="sg-card-badge">Backlit</div>
+      </div>
+
+      <!-- 4. SS Nonlit -->
+      <div class="sg-card" id="sgc-4" onclick="pickSignType('alum','nonlit',4,'SS Box Up Nonlit')">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="SS Box Up Nonlit" style="top:-109px"></div>
+        <div class="sg-card-title">SS Box Up Nonlit</div>
+        <div class="sg-card-sub">Gold or silver metallic</div>
+        <div class="sg-card-badge">Nonlit</div>
+      </div>
+
+      <!-- 5. Wholelit Acrylic -->
+      <div class="sg-card" id="sgc-5" onclick="pickSignType('lightbox','frontlit',5,'Acrylic Wholelit')">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="Acrylic Wholelit" style="top:-275px"></div>
+        <div class="sg-card-title">Acrylic Wholelit</div>
+        <div class="sg-card-sub">Whole panel lit evenly</div>
+        <div class="sg-card-badge">Wholelit</div>
+      </div>
+
+      <!-- 6. LED Neon -->
+      <div class="sg-card" id="sgc-6" onclick="goNeonOrder()">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="LED Neon Sign" style="top:-322px"></div>
+        <div class="sg-card-title">LED Neon Sign</div>
+        <div class="sg-card-sub">Colourful neon-tube effect</div>
+        <div class="sg-card-badge">Neon</div>
+      </div>
+
+      <!-- 7. Punch Hole Frontlit -->
+      <div class="sg-card" id="sgc-7" onclick="pickSignType('flat','frontlit',7,'Punch Hole Frontlit')">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="Punch Hole Frontlit" style="top:-370px"></div>
+        <div class="sg-card-title">Punch Hole Frontlit</div>
+        <div class="sg-card-sub">Dotted pattern, lit through holes</div>
+        <div class="sg-card-badge">Frontlit</div>
+      </div>
+
+      <!-- 8. Mini Wording Backlit -->
+      <div class="sg-card" id="sgc-8" onclick="pickSignType('alum','backlit',8,'Mini Wording Backlit')">
+        <div class="sg-photo"><img src="sign-types-guide.jpg" alt="Mini Wording Backlit" style="top:-421px"></div>
+        <div class="sg-card-title">Mini Wording</div>
+        <div class="sg-card-sub">Small letters, backlit</div>
+        <div class="sg-card-badge">Backlit</div>
+      </div>
+
+    </div><!-- /sg-cards -->
+
+    <div class="sg-banner" id="sg-banner">
+      <span style="color:var(--green);font-size:1rem">✓</span>
+      <span id="sg-banner-text">Type selected — form is ready below.</span>
+      <button class="sg-banner-go" onclick="document.getElementById('step1').scrollIntoView({behavior:'smooth'})">Go to Form ↓</button>
+    </div>
+  </div>
 </div>
 
 <!-- Step Bar -->
@@ -810,7 +922,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
         <div class="pe-price" id="pePrice">RM 0</div>
         <div class="pe-sqft" id="peSqft"></div>
         <div class="pe-note">Final price subject to design complexity, materials & installation. Our team will confirm before production.</div>
-        <button class="btn-cart" onclick="addToCart()">🛒 Add to Cart</button>
+        <button class="btn-cart" onclick="goStep(2)">📋 Submit Enquiry →</button>
       </div>
     </div>
   </div>
@@ -924,7 +1036,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 </div>
 </div><!-- /step1 -->
 
-<!-- Steps 2-4 removed — using Add to Cart flow -->
+<!-- ══ STEP 2: Size & Details ══ -->
 <div id="step2" style="display:none">
 <div class="page" style="max-width:720px">
   <div class="card">
@@ -1040,6 +1152,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
         <tr><td>Location</td><td id="sum-loc">—</td></tr>
         <tr><td>Remarks</td><td id="sum-rem">—</td></tr>
         <tr><td>Reference File</td><td id="sum-file">—</td></tr>
+        <tr><td>Estimated Price</td><td id="sum-price" style="font-weight:600;color:var(--accent)">—</td></tr>
         <tr><td>Contact Name</td><td id="sum-name">—</td></tr>
         <tr><td>Phone</td><td id="sum-phone">—</td></tr>
         <tr><td>Email</td><td id="sum-email">—</td></tr>
@@ -2030,6 +2143,17 @@ function buildSummary() {
   document.getElementById('sum-loc').textContent    = document.getElementById('location').value.trim()||'—';
   document.getElementById('sum-rem').textContent    = document.getElementById('remarks').value.trim()||'—';
   document.getElementById('sum-file').textContent   = file ? file.name : 'Not uploaded';
+  // Price range
+  const minP = window._sbMinPrice, maxP = window._sbMaxPrice;
+  const sumPriceEl = document.getElementById('sum-price');
+  if(sumPriceEl) {
+    if(minP && maxP && minP !== maxP)
+      sumPriceEl.textContent = `RM ${minP.toLocaleString()} — RM ${maxP.toLocaleString()} (Estimated)`;
+    else if(minP)
+      sumPriceEl.textContent = `RM ${minP.toLocaleString()} (Estimated)`;
+    else
+      sumPriceEl.textContent = 'To be quoted by sales team';
+  }
   document.getElementById('sum-name').textContent   = document.getElementById('f-name').value.trim();
   document.getElementById('sum-phone').textContent  = document.getElementById('f-phone').value.trim();
   document.getElementById('sum-email').textContent  = document.getElementById('f-email').value.trim();
@@ -2038,9 +2162,14 @@ function buildSummary() {
 
 function submitOrder() {
   const enqId = 'SB-' + Date.now().toString().slice(-7);
-  // DEVELOPER TODO: POST to backend/Firebase, notify sales team
+  // Save to Firebase (async — non-blocking)
+  if(typeof window._fbSaveEnquiry === 'function') window._fbSaveEnquiry(enqId);
+  // Show success immediately
   document.getElementById('success-id').textContent = 'Enquiry ID: ' + enqId;
-  document.getElementById('step4').style.display='none';
+  ['step1','step2','step3','step4'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display='none';
+  });
   document.getElementById('step-success').style.display='block';
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -2110,12 +2239,144 @@ document.addEventListener('click', function(e) {
     <div class="eg-modal-cap" id="egModalCap"></div>
   </div>
 </div>
-<script>
-/* ── Unified checkout: route submit through shared cart ── */
-(function(){
-  window.submitOrder = function(){ try{ if(typeof addToCart==='function') addToCart(); }catch(e){} if(window._sbMinPrice) location.href='cart.html'; };
-})();
+<!-- Firebase: save signboard enquiry to Firestore + Storage -->
+<script type="module">
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+const app     = initializeApp(firebaseConfig, 'sb-enquiry');
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+/* ── Capture canvas design image ── */
+async function captureDesignImage(enqId) {
+  try {
+    // 1. Export the Fabric.js live designer canvas (text/logo layout)
+    const fc = window.fc;
+    if (!fc) return { canvasUrl: '', previewUrl: '' };
+
+    const dataURL = fc.toDataURL({ format: 'png', quality: 0.92, multiplier: 2 });
+    const res  = await fetch(dataURL);
+    const blob = await res.blob();
+    const canvasRef = sRef(storage, `enquiries/${enqId}/canvas-design.png`);
+    await uploadBytes(canvasRef, blob, { contentType: 'image/png' });
+    const canvasUrl = await getDownloadURL(canvasRef);
+
+    // 2. Also capture the CSS signboard preview using html2canvas (if available)
+    let previewUrl = '';
+    if (window.html2canvas) {
+      try {
+        const scene = document.getElementById('sbScene');
+        if (scene) {
+          const previewCanvas = await window.html2canvas(scene, { scale: 2, useCORS: true, logging: false });
+          const pBlob = await new Promise(r => previewCanvas.toBlob(r, 'image/png', 0.9));
+          const previewRef = sRef(storage, `enquiries/${enqId}/signboard-preview.png`);
+          await uploadBytes(previewRef, pBlob, { contentType: 'image/png' });
+          previewUrl = await getDownloadURL(previewRef);
+        }
+      } catch(e) { console.warn('[Enquiry] Preview capture failed:', e); }
+    }
+
+    return { canvasUrl, previewUrl };
+  } catch(e) {
+    console.warn('[Enquiry] Canvas capture failed:', e);
+    return { canvasUrl: '', previewUrl: '' };
+  }
+}
+
+window._fbSaveEnquiry = async function(enqId) {
+  try {
+    const boardLabels = {lightbox:'LED Lightbox Signboard',wall:'Wall Signboard',flat:'Flat Signboard',alum:'Aluminium Signboard'};
+    const S = window.S || {};
+    const w = document.getElementById('sizeW')?.value || '';
+    const h = document.getElementById('sizeH')?.value || '';
+    const minP = window._sbMinPrice || 0;
+    const maxP = window._sbMaxPrice || 0;
+    const priceDesc = minP
+      ? (maxP && maxP !== minP ? `RM ${minP.toLocaleString()} — RM ${maxP.toLocaleString()}` : `RM ${minP.toLocaleString()}`)
+      : 'To be quoted';
+
+    // Capture design images (non-blocking upload runs in background)
+    const { canvasUrl, previewUrl } = await captureDesignImage(enqId);
+
+    await addDoc(collection(db, 'orders'), {
+      enquiryId:    enqId,
+      id:           enqId,          // needed so track.html can find it via ?id=SB-XXXXXXX
+      type:         'signboard-enquiry',
+      product:      boardLabels[S.board] || 'Custom Signboard',
+      desc:         `${boardLabels[S.board]||'Custom Signboard'} · ${w}ft × ${h}ft · Estimated ${priceDesc}`,
+      status:       'new-enquiry',
+      boardType:    S.board || '',
+      lighting:     S.light || '',
+      led:          S.led   || '',
+      panelColour:  S.bg    || '',
+      textColour:   S.fg    || '',
+      sizeW:        w,
+      sizeH:        h,
+      businessName: document.getElementById('fName')?.value.trim()   || '',
+      slogan:       document.getElementById('fSlogan')?.value.trim() || '',
+      ssm:          document.getElementById('fSSM')?.value.trim()    || '',
+      location:     document.getElementById('location')?.value.trim() || '',
+      remarks:      document.getElementById('remarks')?.value.trim() || '',
+      contactName:  document.getElementById('f-name')?.value.trim()  || '',
+      phone:        document.getElementById('f-phone')?.value.trim() || '',
+      email:        document.getElementById('f-email')?.value.trim() || '',
+      company:      document.getElementById('f-company')?.value.trim() || '',
+      contactMethod: document.getElementById('f-contact')?.value || 'whatsapp',
+      priceMin:     minP,
+      priceMax:     maxP,
+      canvasImageUrl:  canvasUrl,   // Live Designer canvas (text/logo layout)
+      previewImageUrl: previewUrl,  // Full signboard CSS preview (if captured)
+      isManual:     false,
+      steps: {
+        received:   { status: 'done',    note: 'Enquiry submitted via website' },
+        quoted:     { status: 'pending', note: '' },
+        deposit:    { status: 'pending', note: '' },
+        production: { status: 'pending', note: '' },
+        jobdone:    { status: 'pending', note: '' }
+      },
+      createdAt: new Date().toISOString()
+    });
+    console.log('[Enquiry] Saved to Firestore with design image:', enqId);
+  } catch(e) {
+    console.warn('[Enquiry] Firebase save failed (will still show success):', e);
+  }
+};
 </script>
 <script src="ai-widget.js" defer></script>
+<script>
+/* ── Sign Type Guide ── */
+function pickSignType(board, light, cardId, name) {
+  // Highlight selected card
+  document.querySelectorAll('.sg-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('sgc-' + cardId);
+  if (card) card.classList.add('selected');
+  // Pre-fill the form
+  if (typeof setBoard === 'function') setBoard(board);
+  if (typeof setLight === 'function') setLight(light);
+  // Show go-to-form banner
+  const banner = document.getElementById('sg-banner');
+  const txt = document.getElementById('sg-banner-text');
+  if (txt) txt.textContent = '"' + name + '" selected — your form is ready below.';
+  if (banner) banner.classList.add('show');
+}
+function goNeonOrder() {
+  window.location.href = 'ant-neon-order.html';
+}
+function closeGuide() {
+  const g = document.getElementById('sign-guide');
+  if (g) { g.style.maxHeight = g.offsetHeight + 'px'; g.style.overflow = 'hidden'; g.style.transition = 'max-height .35s ease, opacity .3s ease'; setTimeout(() => { g.style.maxHeight = '0'; g.style.opacity = '0'; }, 10); setTimeout(() => { g.style.display = 'none'; }, 400); }
+}
+</script>
 </body>
 </html>
