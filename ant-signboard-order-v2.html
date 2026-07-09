@@ -922,7 +922,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
         <div class="pe-price" id="pePrice">RM 0</div>
         <div class="pe-sqft" id="peSqft"></div>
         <div class="pe-note">Final price subject to design complexity, materials & installation. Our team will confirm before production.</div>
-        <button class="btn-cart" onclick="addToCart()">🛒 Add to Cart</button>
+        <button class="btn-cart" onclick="goStep(2)">📋 Submit Enquiry →</button>
       </div>
     </div>
   </div>
@@ -1036,7 +1036,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 </div>
 </div><!-- /step1 -->
 
-<!-- Steps 2-4 removed — using Add to Cart flow -->
+<!-- ══ STEP 2: Size & Details ══ -->
 <div id="step2" style="display:none">
 <div class="page" style="max-width:720px">
   <div class="card">
@@ -1152,6 +1152,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
         <tr><td>Location</td><td id="sum-loc">—</td></tr>
         <tr><td>Remarks</td><td id="sum-rem">—</td></tr>
         <tr><td>Reference File</td><td id="sum-file">—</td></tr>
+        <tr><td>Estimated Price</td><td id="sum-price" style="font-weight:600;color:var(--accent)">—</td></tr>
         <tr><td>Contact Name</td><td id="sum-name">—</td></tr>
         <tr><td>Phone</td><td id="sum-phone">—</td></tr>
         <tr><td>Email</td><td id="sum-email">—</td></tr>
@@ -2142,6 +2143,17 @@ function buildSummary() {
   document.getElementById('sum-loc').textContent    = document.getElementById('location').value.trim()||'—';
   document.getElementById('sum-rem').textContent    = document.getElementById('remarks').value.trim()||'—';
   document.getElementById('sum-file').textContent   = file ? file.name : 'Not uploaded';
+  // Price range
+  const minP = window._sbMinPrice, maxP = window._sbMaxPrice;
+  const sumPriceEl = document.getElementById('sum-price');
+  if(sumPriceEl) {
+    if(minP && maxP && minP !== maxP)
+      sumPriceEl.textContent = `RM ${minP.toLocaleString()} — RM ${maxP.toLocaleString()} (Estimated)`;
+    else if(minP)
+      sumPriceEl.textContent = `RM ${minP.toLocaleString()} (Estimated)`;
+    else
+      sumPriceEl.textContent = 'To be quoted by sales team';
+  }
   document.getElementById('sum-name').textContent   = document.getElementById('f-name').value.trim();
   document.getElementById('sum-phone').textContent  = document.getElementById('f-phone').value.trim();
   document.getElementById('sum-email').textContent  = document.getElementById('f-email').value.trim();
@@ -2150,9 +2162,14 @@ function buildSummary() {
 
 function submitOrder() {
   const enqId = 'SB-' + Date.now().toString().slice(-7);
-  // DEVELOPER TODO: POST to backend/Firebase, notify sales team
+  // Save to Firebase (async — non-blocking)
+  if(typeof window._fbSaveEnquiry === 'function') window._fbSaveEnquiry(enqId);
+  // Show success immediately
   document.getElementById('success-id').textContent = 'Enquiry ID: ' + enqId;
-  document.getElementById('step4').style.display='none';
+  ['step1','step2','step3','step4'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display='none';
+  });
   document.getElementById('step-success').style.display='block';
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -2222,11 +2239,118 @@ document.addEventListener('click', function(e) {
     <div class="eg-modal-cap" id="egModalCap"></div>
   </div>
 </div>
-<script>
-/* ── Unified checkout: route submit through shared cart ── */
-(function(){
-  window.submitOrder = function(){ try{ if(typeof addToCart==='function') addToCart(); }catch(e){} if(window._sbMinPrice) location.href='cart.html'; };
-})();
+<!-- Firebase: save signboard enquiry to Firestore + Storage -->
+<script type="module">
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+const app     = initializeApp(firebaseConfig, 'sb-enquiry');
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+/* ── Capture canvas design image ── */
+async function captureDesignImage(enqId) {
+  try {
+    // 1. Export the Fabric.js live designer canvas (text/logo layout)
+    const fc = window.fc;
+    if (!fc) return { canvasUrl: '', previewUrl: '' };
+
+    const dataURL = fc.toDataURL({ format: 'png', quality: 0.92, multiplier: 2 });
+    const res  = await fetch(dataURL);
+    const blob = await res.blob();
+    const canvasRef = sRef(storage, `enquiries/${enqId}/canvas-design.png`);
+    await uploadBytes(canvasRef, blob, { contentType: 'image/png' });
+    const canvasUrl = await getDownloadURL(canvasRef);
+
+    // 2. Also capture the CSS signboard preview using html2canvas (if available)
+    let previewUrl = '';
+    if (window.html2canvas) {
+      try {
+        const scene = document.getElementById('sbScene');
+        if (scene) {
+          const previewCanvas = await window.html2canvas(scene, { scale: 2, useCORS: true, logging: false });
+          const pBlob = await new Promise(r => previewCanvas.toBlob(r, 'image/png', 0.9));
+          const previewRef = sRef(storage, `enquiries/${enqId}/signboard-preview.png`);
+          await uploadBytes(previewRef, pBlob, { contentType: 'image/png' });
+          previewUrl = await getDownloadURL(previewRef);
+        }
+      } catch(e) { console.warn('[Enquiry] Preview capture failed:', e); }
+    }
+
+    return { canvasUrl, previewUrl };
+  } catch(e) {
+    console.warn('[Enquiry] Canvas capture failed:', e);
+    return { canvasUrl: '', previewUrl: '' };
+  }
+}
+
+window._fbSaveEnquiry = async function(enqId) {
+  try {
+    const boardLabels = {lightbox:'LED Lightbox Signboard',wall:'Wall Signboard',flat:'Flat Signboard',alum:'Aluminium Signboard'};
+    const S = window.S || {};
+    const w = document.getElementById('sizeW')?.value || '';
+    const h = document.getElementById('sizeH')?.value || '';
+    const minP = window._sbMinPrice || 0;
+    const maxP = window._sbMaxPrice || 0;
+    const priceDesc = minP
+      ? (maxP && maxP !== minP ? `RM ${minP.toLocaleString()} — RM ${maxP.toLocaleString()}` : `RM ${minP.toLocaleString()}`)
+      : 'To be quoted';
+
+    // Capture design images (non-blocking upload runs in background)
+    const { canvasUrl, previewUrl } = await captureDesignImage(enqId);
+
+    await addDoc(collection(db, 'orders'), {
+      enquiryId:    enqId,
+      type:         'signboard-enquiry',
+      product:      boardLabels[S.board] || 'Custom Signboard',
+      desc:         `${boardLabels[S.board]||'Custom Signboard'} · ${w}ft × ${h}ft · Estimated ${priceDesc}`,
+      status:       'new-enquiry',
+      boardType:    S.board || '',
+      lighting:     S.light || '',
+      led:          S.led   || '',
+      panelColour:  S.bg    || '',
+      textColour:   S.fg    || '',
+      sizeW:        w,
+      sizeH:        h,
+      businessName: document.getElementById('fName')?.value.trim()   || '',
+      slogan:       document.getElementById('fSlogan')?.value.trim() || '',
+      ssm:          document.getElementById('fSSM')?.value.trim()    || '',
+      location:     document.getElementById('location')?.value.trim() || '',
+      remarks:      document.getElementById('remarks')?.value.trim() || '',
+      contactName:  document.getElementById('f-name')?.value.trim()  || '',
+      phone:        document.getElementById('f-phone')?.value.trim() || '',
+      email:        document.getElementById('f-email')?.value.trim() || '',
+      company:      document.getElementById('f-company')?.value.trim() || '',
+      contactMethod: document.getElementById('f-contact')?.value || 'whatsapp',
+      priceMin:     minP,
+      priceMax:     maxP,
+      canvasImageUrl:  canvasUrl,   // Live Designer canvas (text/logo layout)
+      previewImageUrl: previewUrl,  // Full signboard CSS preview (if captured)
+      isManual:     false,
+      steps: {
+        received:   { status: 'done',    note: 'Enquiry submitted via website' },
+        quoted:     { status: 'pending', note: '' },
+        deposit:    { status: 'pending', note: '' },
+        production: { status: 'pending', note: '' },
+        jobdone:    { status: 'pending', note: '' }
+      },
+      createdAt: new Date().toISOString()
+    });
+    console.log('[Enquiry] Saved to Firestore with design image:', enqId);
+  } catch(e) {
+    console.warn('[Enquiry] Firebase save failed (will still show success):', e);
+  }
+};
 </script>
 <script src="ai-widget.js" defer></script>
 <script>
