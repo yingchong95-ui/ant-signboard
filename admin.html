@@ -700,6 +700,60 @@ function renderOrders() {
   wrap.innerHTML = filtered.map(o => orderCardHtml(o)).join('');
 }
 
+/* ══ Job Form meta details (for orders created via job-form.html) ══ */
+function metaDetailHtml(o) {
+  var m = o.meta;
+  if (!m) return '';
+
+  var rows = [];
+  if (m.signName)   rows.push(['Sign Name', escHtml(m.signName)]);
+  if (m.size)       rows.push(['Size', escHtml(String(m.size))]);
+  if (m.qty)        rows.push(['Qty', escHtml(String(m.qty))]);
+  if (m.location)   rows.push(['Location', escHtml(m.location)]);
+  if (m.sided)      rows.push(['Sided', escHtml(m.sided)]);
+  if (m.light && m.light !== 'none')
+                    rows.push(['Light', escHtml(m.light) + (m.lightcolour ? ' · ' + escHtml(m.lightcolour) : '')]);
+  if (m.pic)        rows.push(['PIC', escHtml(m.pic)]);
+  if (o.eta)        rows.push(['Install Time', escHtml(o.eta)]);
+
+  var flags = [];
+  if (m.skylift    === 'yes' || m.skylift    === true) flags.push('🏗 Skylift');
+  if (m.spotlight  === 'yes' || m.spotlight  === true) flags.push('💡 Spotlight');
+  if (m.outstation === 'yes' || m.outstation === true) flags.push('🚗 Outstation');
+  if (m.installPlace) flags.push('🔧 Installation');
+  if (flags.length) rows.push(['Flags', flags.join(' · ')]);
+
+  var hasDepts = m.depts && m.depts.length;
+  var hasComps = m.components && m.components.length;
+  if (!rows.length && !hasDepts && !hasComps) return '';
+
+  var html = '<div style="padding:.6rem 1.2rem .8rem;border-bottom:1px solid #f0f0f0">';
+  html += '<div style="font-size:.78rem;font-weight:600;color:#555;margin-bottom:.4rem">📋 Job Form Details</div>';
+
+  if (rows.length) {
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:3px 12px;margin-bottom:.35rem">';
+    rows.forEach(function(r){
+      html += '<div style="font-size:.74rem"><span style="color:#888;font-weight:600">' + r[0] + ':</span> <span style="color:#0d1f3c">' + r[1] + '</span></div>';
+    });
+    html += '</div>';
+  }
+
+  if (hasDepts) {
+    html += '<div style="font-size:.72rem;margin-top:.25rem"><span style="color:#888;font-weight:600">Depts: </span>';
+    html += m.depts.map(function(d){ return '<span style="background:#1a1a1a;color:#fff;padding:1px 7px;border-radius:3px;margin-right:3px">' + escHtml(d) + '</span>'; }).join('');
+    html += '</div>';
+  }
+
+  if (hasComps) {
+    html += '<div style="font-size:.72rem;margin-top:.25rem"><span style="color:#888;font-weight:600">Components: </span>';
+    html += m.components.map(function(c){ return '<span style="background:#f0ede8;color:#333;padding:1px 7px;border-radius:3px;margin-right:3px">' + escHtml(c) + '</span>'; }).join('');
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
 function designPreviewHtml(o) {
   var html = '<div style="padding:.6rem 1.2rem 1rem;border-bottom:1px solid #f0f0f0">';
   html += '<div style="font-size:.78rem;font-weight:600;color:#555;margin-bottom:.5rem">🎨 Customer Design Preview</div>';
@@ -774,6 +828,7 @@ function orderCardHtml(o) {
     </div>
     <div class="order-body" id="body-${o._docId}">
       <div class="order-items">${items}</div>
+      ${ metaDetailHtml(o) }
       ${ (o.files && o.files.length) ? '<div style="padding:.2rem 1.2rem .6rem;font-size:.78rem">📎 <b>Artwork:</b> ' + o.files.map(function(f){ return '<a href="'+f.url+'" target="_blank" rel="noopener" style="color:#1a73e8;margin-right:10px">'+escHtml(f.name)+'</a>'; }).join('') + '</div>' : '' }
       ${ (o.canvasImageUrl || o.previewImageUrl) ? designPreviewHtml(o) : '' }
       <div class="pipeline">${pipeHtml}</div>
