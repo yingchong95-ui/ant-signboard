@@ -114,6 +114,25 @@ tr:hover td{background:#fafbfd}
 .error-box{background:var(--red-bg);border:1px solid #fca5a5;color:var(--red);padding:1rem 1.4rem;border-radius:10px;font-size:.84rem;line-height:1.7;text-align:left}
 .error-box code{background:rgba(0,0,0,.06);padding:2px 5px;border-radius:4px;font-size:.8rem}
 .btn-retry{margin-top:1rem;padding:.6rem 1.4rem;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer}
+
+/* ── Print / Save PDF ── */
+.print-header{display:none;padding:.8rem 0 1rem;border-bottom:2px solid var(--navy);margin-bottom:1.2rem}
+.print-header h1{font-size:1.2rem;font-weight:800;color:var(--navy)}
+.print-header p{font-size:.78rem;color:var(--t2);margin-top:4px}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .login-wrap,header,.period-bar,.filter-bar,.btn-retry{display:none!important}
+  .main-wrap{display:block!important}
+  .page{max-width:100%;padding:.5rem 1.2rem}
+  .print-header{display:block!important}
+  .summary{grid-template-columns:repeat(4,1fr)}
+  .charts{grid-template-columns:1fr 1fr;page-break-inside:avoid}
+  .chart-card.full{page-break-before:auto}
+  .table-card{page-break-before:auto;margin-top:1rem}
+  .s-card{border:1px solid #ccc}
+  tr:hover td{background:none}
+  .btn-pdf-wrap{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -144,12 +163,21 @@ tr:hover td{background:#fafbfd}
       <span class="header-badge">Orders Dashboard</span>
     </div>
     <div class="header-right">
+      <div class="btn-pdf-wrap">
+        <button class="btn-ghost" onclick="savePdf()" style="background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35)">🖨 Save PDF</button>
+      </div>
       <a href="admin.html" class="btn-ghost">← Admin Panel</a>
       <button class="btn-ghost" onclick="doLogout()">Logout</button>
     </div>
   </header>
 
   <div class="page">
+    <!-- Print-only header (hidden on screen) -->
+    <div class="print-header" id="printHeader">
+      <h1>📊 A&T Signboard — Analytics Report</h1>
+      <p id="printMeta"></p>
+    </div>
+
     <!-- Period selector + Date range -->
     <div class="period-bar">
       <div class="period-title" id="periodTitle">All Orders</div>
@@ -392,16 +420,48 @@ function applyFilters(){
     }
     return true;
   });
-  // Update title
+  // Update title and print meta
+  let rangeLabel;
   if(dateFrom||dateTo){
     const opts={day:'2-digit',month:'short',year:'numeric'};
     const f=dateFrom ? new Date(dateFrom).toLocaleDateString('en-MY',opts) : '…';
     const t=dateTo   ? new Date(dateTo).toLocaleDateString('en-MY',opts)   : 'Now';
-    document.getElementById('periodTitle').textContent=f+' → '+t;
+    rangeLabel=f+' → '+t;
   } else {
-    document.getElementById('periodTitle').textContent=periodDays===0?'All Orders':'Last '+periodDays+' Days';
+    rangeLabel=periodDays===0?'All Orders':'Last '+periodDays+' Days';
   }
+  document.getElementById('periodTitle').textContent=rangeLabel;
+  const catLabel=selectedCats.size===0?'All Products':
+    [...selectedCats].map(k=>CATEGORIES.find(c=>c.key===k)?.label||k).join(', ');
+  const printed=new Date().toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('printMeta').textContent=
+    'Period: '+rangeLabel+'  |  Products: '+catLabel+'  |  Printed: '+printed;
   render();
+}
+
+// ─── Save as PDF ─────────────────────────────────────────────
+function savePdf(){
+  // Convert Chart.js canvases to <img> so they print correctly
+  const charts=[donutInst,revenueInst,trendInst].filter(Boolean);
+  const clones=[];
+  charts.forEach(ch=>{
+    const canvas=ch.canvas;
+    const img=document.createElement('img');
+    img.src=canvas.toDataURL('image/png');
+    img.style.cssText='width:100%;height:auto;display:block';
+    img.className='_print_img_';
+    canvas.parentNode.insertBefore(img,canvas.nextSibling);
+    canvas.style.display='none';
+    clones.push({canvas,img});
+  });
+  window.print();
+  // Restore canvases after dialog closes
+  setTimeout(()=>{
+    clones.forEach(({canvas,img})=>{
+      canvas.style.display='';
+      img.remove();
+    });
+  },1000);
 }
 
 // ─── Parse items ─────────────────────────────────────────────
