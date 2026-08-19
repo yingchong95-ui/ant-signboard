@@ -58,6 +58,24 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 .period-pill{padding:.38rem .85rem;border:none;background:transparent;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s}
 .period-pill.active{background:var(--navy);color:#fff}
 
+/* ── Date range inputs ── */
+.date-range-wrap{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dr-label{font-size:.74rem;font-weight:600;color:var(--t2)}
+.dr-input{padding:.32rem .6rem;border:1.5px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--t1);outline:none;transition:border-color .2s;cursor:pointer}
+.dr-input:focus{border-color:var(--navy)}
+.dr-sep{color:var(--t3);font-size:.8rem;padding:0 1px}
+.dr-clear{padding:.3rem .65rem;border:1.5px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:.73rem;font-weight:600;color:var(--t2);font-family:'DM Sans',sans-serif;transition:all .15s}
+.dr-clear:hover{background:var(--red-bg);border-color:#fca5a5;color:var(--red)}
+
+/* ── Product filter bar ── */
+.filter-bar{display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:10px;padding:.6rem 1rem}
+.filter-label{font-size:.74rem;font-weight:700;color:var(--t2);white-space:nowrap}
+.filter-pills{display:flex;flex-wrap:wrap;gap:4px}
+.filter-pill{padding:.26rem .72rem;border:1.5px solid var(--border);background:#fff;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;border-left-width:3px}
+.filter-pill:hover{border-color:var(--navy);color:var(--navy)}
+.filter-pill.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.filter-pill#pill-all{border-left-width:1.5px}
+
 /* ── Summary cards ── */
 .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-bottom:1.5rem}
 @media(max-width:680px){.summary{grid-template-columns:repeat(2,1fr)}}
@@ -132,15 +150,30 @@ tr:hover td{background:#fafbfd}
   </header>
 
   <div class="page">
-    <!-- Period selector -->
+    <!-- Period selector + Date range -->
     <div class="period-bar">
       <div class="period-title" id="periodTitle">All Orders</div>
-      <div class="period-pills">
-        <button class="period-pill" onclick="setPeriod(30)">30d</button>
-        <button class="period-pill" onclick="setPeriod(90)">90d</button>
-        <button class="period-pill" onclick="setPeriod(180)">180d</button>
-        <button class="period-pill active" onclick="setPeriod(0)">All</button>
+      <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap">
+        <div class="period-pills">
+          <button class="period-pill" onclick="setPeriod(30)">30d</button>
+          <button class="period-pill" onclick="setPeriod(90)">90d</button>
+          <button class="period-pill" onclick="setPeriod(180)">180d</button>
+          <button class="period-pill active" onclick="setPeriod(0)">All</button>
+        </div>
+        <div class="date-range-wrap">
+          <span class="dr-label">Custom:</span>
+          <input type="date" id="drFrom" class="dr-input" onchange="setDateRange()">
+          <span class="dr-sep">→</span>
+          <input type="date" id="drTo" class="dr-input" onchange="setDateRange()">
+          <button class="dr-clear" id="drClear" onclick="clearDateRange()" style="display:none">✕ Clear</button>
+        </div>
       </div>
+    </div>
+
+    <!-- Product category filter -->
+    <div class="filter-bar" id="filterBar">
+      <span class="filter-label">🗂 Products:</span>
+      <div class="filter-pills" id="filterPills"></div>
     </div>
 
     <!-- Summary cards -->
@@ -234,10 +267,12 @@ function categorise(name){
 
 // ─── State ───────────────────────────────────────────────────
 let allOrders=[], filteredOrders=[], periodDays=0;
+let dateFrom=null, dateTo=null;        // custom date range (timestamps)
+let selectedCats=new Set();            // empty = show all categories
 let donutInst, revenueInst, trendInst;
 
 // ─── Init ────────────────────────────────────────────────────
-function init(){ loadData(); }
+function init(){ buildFilterPills(); loadData(); }
 
 // ─── Load via Netlify proxy (avoids CORS) ───────────────────
 async function loadData(){
@@ -272,19 +307,100 @@ async function loadData(){
 // ─── Period filter ───────────────────────────────────────────
 function setPeriod(days){
   periodDays=days;
+  // Clear custom date range when period pill is clicked
+  dateFrom=null; dateTo=null;
+  document.getElementById('drFrom').value='';
+  document.getElementById('drTo').value='';
+  document.getElementById('drClear').style.display='none';
   document.querySelectorAll('.period-pill').forEach(b=>{
     const d=parseInt(b.textContent)||0;
     b.classList.toggle('active', b.textContent==='All'?days===0:d===days);
   });
-  applyPeriod(days);
+  applyFilters();
 }
-function applyPeriod(days){
-  const now=Date.now();
-  filteredOrders=days===0?allOrders:allOrders.filter(o=>{
-    if(!o.time) return true;
-    return (now-new Date(o.time).getTime())<=days*86400000;
+function applyPeriod(days){ periodDays=days; applyFilters(); }
+
+// ─── Date range filter ────────────────────────────────────────
+function setDateRange(){
+  const f=document.getElementById('drFrom').value;
+  const t=document.getElementById('drTo').value;
+  dateFrom = f ? new Date(f).getTime() : null;
+  dateTo   = t ? new Date(t+'T23:59:59').getTime() : null;
+  const hasRange = !!(dateFrom||dateTo);
+  document.getElementById('drClear').style.display = hasRange ? '' : 'none';
+  if(hasRange){
+    // Deactivate all period pills when using custom range
+    document.querySelectorAll('.period-pill').forEach(b=>b.classList.remove('active'));
+  }
+  applyFilters();
+}
+function clearDateRange(){
+  dateFrom=null; dateTo=null;
+  document.getElementById('drFrom').value='';
+  document.getElementById('drTo').value='';
+  document.getElementById('drClear').style.display='none';
+  // Re-activate the current period pill
+  document.querySelectorAll('.period-pill').forEach(b=>{
+    const d=parseInt(b.textContent)||0;
+    b.classList.toggle('active', b.textContent==='All'?periodDays===0:d===periodDays);
   });
-  document.getElementById('periodTitle').textContent=days===0?'All Orders':'Last '+days+' Days';
+  applyFilters();
+}
+
+// ─── Product category filter ──────────────────────────────────
+function buildFilterPills(){
+  const container=document.getElementById('filterPills');
+  let html='<button class="filter-pill active" id="pill-all" onclick="selectAllCats()">All</button>';
+  CATEGORIES.forEach(c=>{
+    html+=`<button class="filter-pill" id="pill-${c.key}" style="border-left-color:${c.color}" onclick="toggleCat('${c.key}')">${c.label}</button>`;
+  });
+  container.innerHTML=html;
+}
+function selectAllCats(){
+  selectedCats.clear();
+  document.querySelectorAll('#filterPills .filter-pill').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pill-all').classList.add('active');
+  applyFilters();
+}
+function toggleCat(key){
+  document.getElementById('pill-all').classList.remove('active');
+  if(selectedCats.has(key)){
+    selectedCats.delete(key);
+    document.getElementById('pill-'+key).classList.remove('active');
+    if(selectedCats.size===0){ selectAllCats(); return; }
+  } else {
+    selectedCats.add(key);
+    document.getElementById('pill-'+key).classList.add('active');
+  }
+  applyFilters();
+}
+
+// ─── Combined filter logic ────────────────────────────────────
+function applyFilters(){
+  const now=Date.now();
+  filteredOrders=allOrders.filter(o=>{
+    if(dateFrom||dateTo){
+      // Custom date range takes priority over period pills
+      const t=o.time ? new Date(o.time).getTime() : null;
+      if(t!==null){
+        if(dateFrom && t<dateFrom) return false;
+        if(dateTo   && t>dateTo)   return false;
+      }
+    } else if(periodDays>0){
+      if(!o.time) return true;
+      if((now-new Date(o.time).getTime())>periodDays*86400000) return false;
+    }
+    return true;
+  });
+  // Update title
+  if(dateFrom||dateTo){
+    const opts={day:'2-digit',month:'short',year:'numeric'};
+    const f=dateFrom ? new Date(dateFrom).toLocaleDateString('en-MY',opts) : '…';
+    const t=dateTo   ? new Date(dateTo).toLocaleDateString('en-MY',opts)   : 'Now';
+    document.getElementById('periodTitle').textContent=f+' → '+t;
+  } else {
+    document.getElementById('periodTitle').textContent=periodDays===0?'All Orders':'Last '+periodDays+' Days';
+  }
   render();
 }
 
@@ -309,19 +425,21 @@ function aggregate(){
     const items=parseItems(order.items);
     if(!items.length){
       const c=CATEGORIES[CATEGORIES.length-1];
-      if(!catMap[c.key]) catMap[c.key]={label:c.label,color:c.color,orders:0,revenue:0};
+      if(!catMap[c.key]) catMap[c.key]={key:c.key,label:c.label,color:c.color,orders:0,revenue:0};
       catMap[c.key].orders++; catMap[c.key].revenue+=total; return;
     }
     const totalQty=items.reduce((s,i)=>s+i.qty,0);
     const seen=new Set();
     items.forEach(item=>{
       const cat=categorise(item.name);
-      if(!catMap[cat.key]) catMap[cat.key]={label:cat.label,color:cat.color,orders:0,revenue:0};
+      if(!catMap[cat.key]) catMap[cat.key]={key:cat.key,label:cat.label,color:cat.color,orders:0,revenue:0};
       if(!seen.has(cat.key)){ catMap[cat.key].orders++; seen.add(cat.key); }
       catMap[cat.key].revenue+=totalQty>0?total*(item.qty/totalQty):0;
     });
   });
-  const rows=Object.values(catMap).sort((a,b)=>b.orders-a.orders);
+  let rows=Object.values(catMap).sort((a,b)=>b.orders-a.orders);
+  // Apply product category filter (only affects rows, not totals)
+  if(selectedCats.size>0) rows=rows.filter(r=>selectedCats.has(r.key));
   return{rows,totalOrders,totalRevenue};
 }
 
