@@ -162,12 +162,15 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
       <div class="login-title">A&T Admin Panel</div>
       <div class="login-sub">Manage orders & production status</div>
     </div>
-    <div class="form-group">
-      <label class="form-label" for="pw-input">Password</label>
-      <input class="form-input" type="password" id="pw-input" placeholder="Enter admin password" autocomplete="current-password"/>
+    <button class="login-btn" onclick="doLogin()"
+            style="display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#3c4043;border:1.5px solid #dadce0">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="login-err" id="login-err">Access denied.</div>
+    <div style="font-size:.72rem;color:#9aa3b2;text-align:center;margin-top:1rem;line-height:1.5">
+      Only authorised A&amp;T admin accounts can sign in.
     </div>
-    <button class="login-btn" onclick="doLogin()">Sign In</button>
-    <div class="login-err" id="login-err">Incorrect password. Please try again.</div>
   </div>
 </div>
 
@@ -362,6 +365,8 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
@@ -372,8 +377,40 @@ const firebaseConfig = {
   appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+/* ══ Google Sign-In (replaces the old client-side hash check) ══
+   This list must match isAdmin() in firestore.rules. The UI check below
+   is only for a friendly error message — the real enforcement is in the
+   Firestore rules, which reject any account not on that list. */
+const ADMIN_EMAILS = [
+  'antsign.shop@gmail.com',
+  'yingchong95@gmail.com'      // ← 备用管理员，不要时删掉这行（rules 也要同步删）
+];
+window._ADMIN_EMAILS = ADMIN_EMAILS;
+
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
+window._adminSignIn  = function(){ return signInWithPopup(auth, provider); };
+window._adminSignOut = function(){ return signOut(auth); };
+
+// Firebase persists the session itself — no sessionStorage flag needed
+onAuthStateChanged(auth, async user => {
+  window._authReady = true;
+  if (!user) { if (window.showLogin) window.showLogin(); return; }
+
+  if (!ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
+    // Signed in with a non-admin Google account — kick them back out
+    await signOut(auth);
+    if (window.showLoginError) window.showLoginError(
+      'This Google account is not authorised for the admin panel.');
+    return;
+  }
+  if (window.showAdmin) window.showAdmin();
+});
 
 // Listen to all orders
 window._startListening = function() {
@@ -450,42 +487,50 @@ window._createOrder = async function(data) {
 </script>
 
 <script>
-// ── Auth ──────────────────────────────────────────────
-const ADMIN_HASH = 'f22bdebcc55594f266548260a7baa2e6725c180a3263f281e8a3173778e7e043';
-
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
+// ── Auth (Google Sign-In — enforced by Firestore rules) ───────
+window.showLoginError = function(msg){
+  const errEl = document.getElementById('login-err');
+  errEl.textContent   = msg;
+  errEl.style.display = 'block';
+};
 
 async function doLogin() {
-  const pw = document.getElementById('pw-input').value;
-  if (!pw) return;
-  const hash = await sha256(pw);
-  if (hash === ADMIN_HASH) {
-    sessionStorage.setItem('ant_admin', '1');
-    showAdmin();
-  } else {
-    document.getElementById('login-err').style.display = 'block';
-    document.getElementById('pw-input').value = '';
+  const errEl = document.getElementById('login-err');
+  const btn   = document.querySelector('.login-btn');
+  errEl.style.display = 'none';
+  if (btn) btn.disabled = true;
+
+  try {
+    await window._adminSignIn();      // onAuthStateChanged handles the rest
+  } catch (err) {
+    if (err.code !== 'auth/popup-closed-by-user' &&
+        err.code !== 'auth/cancelled-popup-request') {
+      window.showLoginError(
+        err.code === 'auth/popup-blocked'
+          ? 'Popup blocked — please allow popups for this site and try again.'
+          : 'Sign-in failed. Please try again.');
+    }
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
-document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
 
-function doLogout() {
-  sessionStorage.removeItem('ant_admin');
+async function doLogout() {
+  try { await window._adminSignOut(); } catch(e){}
   location.reload();
 }
 
-function showAdmin() {
+window.showAdmin = function showAdmin() {
+  if (!window._startListening) { setTimeout(window.showAdmin, 200); return; }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-wrap').style.display   = 'block';
-  if (window._startListening) window._startListening();
-  else { setTimeout(showAdmin, 200); return; }
-}
+  window._startListening();
+};
 
-// Auto-login if session active
-if (sessionStorage.getItem('ant_admin') === '1') showAdmin();
+window.showLogin = function showLogin() {
+  document.getElementById('login-screen').style.display = '';
+  document.getElementById('admin-wrap').style.display   = 'none';
+};
 
 // ── Edit Order Modal ──────────────────────────────────
 function openEditModal(docId) {
@@ -700,6 +745,60 @@ function renderOrders() {
   wrap.innerHTML = filtered.map(o => orderCardHtml(o)).join('');
 }
 
+/* ══ Job Form meta details (for orders created via job-form.html) ══ */
+function metaDetailHtml(o) {
+  var m = o.meta;
+  if (!m) return '';
+
+  var rows = [];
+  if (m.signName)   rows.push(['Sign Name', escHtml(m.signName)]);
+  if (m.size)       rows.push(['Size', escHtml(String(m.size))]);
+  if (m.qty)        rows.push(['Qty', escHtml(String(m.qty))]);
+  if (m.location)   rows.push(['Location', escHtml(m.location)]);
+  if (m.sided)      rows.push(['Sided', escHtml(m.sided)]);
+  if (m.light && m.light !== 'none')
+                    rows.push(['Light', escHtml(m.light) + (m.lightcolour ? ' · ' + escHtml(m.lightcolour) : '')]);
+  if (m.pic)        rows.push(['PIC', escHtml(m.pic)]);
+  if (o.eta)        rows.push(['Install Time', escHtml(o.eta)]);
+
+  var flags = [];
+  if (m.skylift    === 'yes' || m.skylift    === true) flags.push('🏗 Skylift');
+  if (m.spotlight  === 'yes' || m.spotlight  === true) flags.push('💡 Spotlight');
+  if (m.outstation === 'yes' || m.outstation === true) flags.push('🚗 Outstation');
+  if (m.installPlace) flags.push('🔧 Installation');
+  if (flags.length) rows.push(['Flags', flags.join(' · ')]);
+
+  var hasDepts = m.depts && m.depts.length;
+  var hasComps = m.components && m.components.length;
+  if (!rows.length && !hasDepts && !hasComps) return '';
+
+  var html = '<div style="padding:.6rem 1.2rem .8rem;border-bottom:1px solid #f0f0f0">';
+  html += '<div style="font-size:.78rem;font-weight:600;color:#555;margin-bottom:.4rem">📋 Job Form Details</div>';
+
+  if (rows.length) {
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:3px 12px;margin-bottom:.35rem">';
+    rows.forEach(function(r){
+      html += '<div style="font-size:.74rem"><span style="color:#888;font-weight:600">' + r[0] + ':</span> <span style="color:#0d1f3c">' + r[1] + '</span></div>';
+    });
+    html += '</div>';
+  }
+
+  if (hasDepts) {
+    html += '<div style="font-size:.72rem;margin-top:.25rem"><span style="color:#888;font-weight:600">Depts: </span>';
+    html += m.depts.map(function(d){ return '<span style="background:#1a1a1a;color:#fff;padding:1px 7px;border-radius:3px;margin-right:3px">' + escHtml(d) + '</span>'; }).join('');
+    html += '</div>';
+  }
+
+  if (hasComps) {
+    html += '<div style="font-size:.72rem;margin-top:.25rem"><span style="color:#888;font-weight:600">Components: </span>';
+    html += m.components.map(function(c){ return '<span style="background:#f0ede8;color:#333;padding:1px 7px;border-radius:3px;margin-right:3px">' + escHtml(c) + '</span>'; }).join('');
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
 function designPreviewHtml(o) {
   var html = '<div style="padding:.6rem 1.2rem 1rem;border-bottom:1px solid #f0f0f0">';
   html += '<div style="font-size:.78rem;font-weight:600;color:#555;margin-bottom:.5rem">🎨 Customer Design Preview</div>';
@@ -774,6 +873,7 @@ function orderCardHtml(o) {
     </div>
     <div class="order-body" id="body-${o._docId}">
       <div class="order-items">${items}</div>
+      ${ metaDetailHtml(o) }
       ${ (o.files && o.files.length) ? '<div style="padding:.2rem 1.2rem .6rem;font-size:.78rem">📎 <b>Artwork:</b> ' + o.files.map(function(f){ return '<a href="'+f.url+'" target="_blank" rel="noopener" style="color:#1a73e8;margin-right:10px">'+escHtml(f.name)+'</a>'; }).join('') + '</div>' : '' }
       ${ (o.canvasImageUrl || o.previewImageUrl) ? designPreviewHtml(o) : '' }
       <div class="pipeline">${pipeHtml}</div>

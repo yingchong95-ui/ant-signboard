@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Signage Job Form</title>
+
+<!-- PWA Support -->
+<!-- PWA manifest removed - SignTrack app only -->
+<meta name="theme-color" content="#1a1a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sign Job">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- ── Firebase: sync job form → SignTrack ── -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const storage = getStorage(app);
+const auth = getAuth(app);
+
+/* ══ Admin guard ══
+   Firebase Auth persists per-origin, so signing in on admin.html carries
+   over here automatically. If someone opens this page directly without a
+   session, say so instead of letting the save fail silently. */
+onAuthStateChanged(auth, user => {
+  if (user) return;
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div id="authGate" style="position:fixed;inset:0;z-index:99999;background:#0d1f3c;'
+  + 'color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;'
+  + 'font-family:system-ui,sans-serif;padding:2rem">'
+  + '<div><div style="font-size:2.2rem;margin-bottom:.8rem">🔒</div>'
+  + '<div style="font-size:1.05rem;font-weight:700;margin-bottom:.5rem">Admin sign-in required</div>'
+  + '<div style="font-size:.85rem;opacity:.75;margin-bottom:1.4rem;line-height:1.6">'
+  + 'Please sign in from the Admin Panel first,<br/>then open the Job Form again.</div>'
+  + '<a href="admin.html" style="background:#fff;color:#0d1f3c;padding:.6rem 1.4rem;'
+  + 'border-radius:8px;text-decoration:none;font-weight:700;font-size:.85rem">'
+  + '→ Go to Admin Panel</a></div></div>');
+});
+
+// Build default workflow steps (matching SignTrack STEPS)
+function mkSteps() {
+  const ids = ["proceed","payment","ironframe","sticker","cutting","edging","painting","assembly","delivery","jobdone"];
+  const steps = {};
+  ids.forEach(id => {
+    steps[id] = { status: "pending", completedAt: null, photos: [], note: "" };
+  });
+  // Auto-confirm "Order Confirmed" since job form submission = order confirmed
+  steps["proceed"] = {
+    status: "done",
+    completedAt: new Date().toISOString().split("T")[0],
+    photos: [],
+    note: "Auto-confirmed via Job Form"
+  };
+  return steps;
+}
+
+// Expose save function to window so regular JS can call it
+window._fbSaveJob = async (orderData) => {
+  const order = {
+    id:        orderData.id,
+    customer:  orderData.customer,   // Code 代码
+    phone:     orderData.phone,      // Contact 联系
+    desc:      orderData.desc,       // Overall Job Description
+    eta:       orderData.eta,        // Install Time
+    steps:     mkSteps(),
+    createdAt: new Date().toISOString(),
+    // Extra job form details stored for reference
+    meta: {
+      qty:          orderData.qty,
+      pic:          orderData.pic,
+      skylift:      orderData.skylift,
+      size:         orderData.size,
+      location:     orderData.location,
+      sided:        orderData.sided,
+      light:        orderData.light,
+      lightcolour:  orderData.lightcolour,
+      spotlight:    orderData.spotlight,
+      installPlace: orderData.installPlace,
+      outstation:   orderData.outstation,
+      depts:        orderData.depts,
+      components:   orderData.components,
+      signName:     orderData.signName,
+    }
+  };
+  await setDoc(doc(db, "orders", order.id), order);
+
+  // Upload artwork to Firebase Storage and save URL to proceed step photos
+  const artworkInput = document.getElementById('artworkUpload');
+  if (artworkInput && artworkInput.files && artworkInput.files[0]) {
+    try {
+      const file = artworkInput.files[0];
+      const storagePath = `orders/${order.id}/proceed/${Date.now()}_artwork`;
+      const sRef = storageRef(storage, storagePath);
+      await uploadBytes(sRef, file);
+      const url = await getDownloadURL(sRef);
+      const photoObj = { url, name: file.name, time: new Date().toISOString(), path: storagePath };
+      await updateDoc(doc(db, "orders", order.id), {
+        "steps.proceed.photos": arrayUnion(photoObj)
+      });
+    } catch (e) {
+      console.warn("Artwork upload failed:", e);
+      // Non-fatal — order still created successfully
+    }
+  }
+};
+</script>
+<style>
+:root {
+  --bg: #f0ede8;
+  --white: #ffffff;
+  --dark: #1a1a1a;
+  --mid: #444;
+  --muted: #777;
+  --border: #d4d0c8;
+  --accent: #c8392b;
+  --accent2: #e8a020;
+  --tag-bg: #1a1a1a;
+  --success: #2d8a4e;
+  --error: #c8392b;
+  --radius: 5px;
+  --section-bg: #fafaf7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--dark);
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.topbar-brand {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: white;
+}
+.topbar-brand span { color: var(--accent2); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.st-link { color: rgba(255,255,255,0.7); font-size: 11px; text-decoration: none; font-weight: 600; letter-spacing: 0.04em; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.08); transition: background 0.2s; }
+.st-link:hover { background: rgba(255,255,255,0.18); color: white; }
+.job-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--accent2);
+  padding: 6px 14px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+}
+.progress-wrap { height: 3px; background: rgba(0,0,0,0.1); }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s ease; width: 0%; }
+
+/* ── LAYOUT ── */
+.page { max-width: 960px; margin: 0 auto; padding: 24px 20px 0; }
+
+/* ── SECTION CARD ── */
+.section-card {
+  background: var(--white);
+  border: 1.5px solid var(--dark);
+  margin-bottom: 0;
+  overflow: hidden;
+}
+.section-card + .section-card { border-top: none; }
+
+/* ── TOP INFO ROW ── */
+.info-grid {
+  display: grid;
+  grid-template-columns: 110px 1fr 1fr 1fr 110px;
+  border: 1.5px solid var(--dark);
+  background: var(--white);
+  margin-bottom: 0;
+}
+.info-cell {
+  border-right: 1px solid var(--dark);
+  padding: 0;
+}
+.info-cell:last-child { border-right: none; }
+.info-cell-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 10px 2px;
+  border-bottom: 1px solid var(--border);
+  background: var(--section-bg);
+}
+.info-cell input, .info-cell select {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
+  padding: 6px 10px 8px;
+  background: transparent;
+}
+.info-cell input.error { background: #fff5f5; }
+
+/* ── SPEC BAR ── */
+.spec-bar {
+  border: 1.5px solid var(--dark);
+  border-top: none;
+  background: var(--white);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.spec-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 16px;
+  margin-right: 12px;
+  border-right: 1px solid var(--border);
+}
+.spec-item:last-child { border-right: none; }
+.spec-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.spec-item input[type="number"] {
+  width: 68px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 8px;
+  font-size: 14px;
+  font-family: 'DM Mono', monospace;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.spec-item input[type="number"]:focus { border-color: var(--accent); }
+.spec-item input[type="number"].error { border-color: var(--error); background: #fff5f5; }
+.dim-x { font-size: 13px; color: var(--muted); margin: 0 4px; }
+.dim-unit { font-size: 11px; color: var(--muted); }
+
+/* Pill toggles */
+.toggle-group { display: flex; gap: 4px; }
+.toggle-group input { display: none; }
+.toggle-group label {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--mid);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.toggle-group input:checked + label {
+  background: #e53e3e;
+  color: #fff;
+  border-color: #e53e3e;
+  box-shadow: 0 2px 8px rgba(229,62,62,0.3);
+  font-weight: 700;
+}
+.toggle-group.error-highlight label { border-color: var(--error); }
+
+.light-group input:checked + label.warm,
+.light-group input:checked + label.cool,
+.light-group input:checked + label.none-light,
+.light-group input:checked + label.frontlit,
+.light-group input:checked + label.backlit {
+  background: #e53e3e;
+  border-color: #e53e3e;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(229,62,62,0.3);
+  font-weight: 700;
+}
+
+/* Install pill */
+.install-pill-check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.install-pill-check input { display: none; }
+.install-pill-box {
+  width: 32px; height: 18px; border-radius: 9px;
+  background: var(--border); position: relative; transition: background 0.2s;
+}
+.install-pill-box::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: white; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.install-pill-check input:checked ~ .install-pill-box { background: var(--success); }
+.install-pill-check input:checked ~ .install-pill-box::after { left: 16px; }
+.install-pill-label { font-size: 11px; color: var(--mid); font-weight: 600; }
+.install-pill-check input:checked ~ .install-pill-label { color: var(--success); }
+
+/* ── DEPT TAGS ── */
+.dept-bar {
+  border: 1.5px solid var(--dark);
+  border-top: none;
+  background: var(--white);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dept-label { font-size: 10px; color: var(--muted); font-weight: 700; margin-right: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+.dept-toggle input { display: none; }
+.dept-toggle label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.dept-toggle input:checked + label { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  background: var(--section-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── ARTWORK ZONE (components only, full width) ── */
+.artwork-zone {
+  border: 1.5px solid var(--dark);
+  border-top: none;
+  background: var(--white);
+  overflow: hidden;
+}
+.artwork-main {
+  padding: 16px 18px;
+}
+
+/* Description box */
+.desc-box {
+  width: 100%;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  color: var(--dark);
+  resize: none;
+  min-height: 60px;
+  background: var(--section-bg);
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 14px;
+}
+.desc-box:focus { border-color: var(--accent); background: white; }
+.desc-box.error { border-color: var(--error); }
+
+/* Components list */
+.components-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.comp-grid { display: flex; flex-direction: column; gap: 5px; }
+.comp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--section-bg);
+  transition: background 0.15s;
+}
+.comp-row:hover { background: #f5f3ef; }
+.comp-check input { display: none; }
+.comp-check label {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.comp-check input:checked + label {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+.comp-check input:checked + label::after { content: '✓'; font-size: 11px; font-weight: 700; }
+.comp-name { font-size: 13px; font-weight: 500; flex: 1; }
+.comp-detail { display: flex; gap: 6px; }
+.comp-detail input, .comp-detail select {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'Barlow', sans-serif;
+  outline: none;
+  background: white;
+  color: var(--dark);
+}
+.comp-detail input:focus, .comp-detail select:focus { border-color: var(--accent); }
+.comp-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 2px;
+  background: #eee;
+  color: var(--muted);
+}
+
+/* ── ARTWORK & LOCATION PHOTO ZONE (below components) ── */
+.media-zone {
+  border: 1.5px solid var(--dark);
+  border-top: none;
+  background: var(--white);
+  overflow: hidden;
+}
+.media-inner {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  min-height: 380px;
+}
+.media-col {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.media-col:first-child {
+  border-right: 1.5px solid var(--dark);
+}
+.media-col-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Photo upload areas - large */
+.photo-drop {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  flex: 1;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--section-bg);
+  text-align: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.photo-drop:hover { border-color: var(--accent); background: #fff5f4; }
+.photo-drop-icon { font-size: 36px; }
+.photo-drop-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+#artworkPlaceholder, #locationPlaceholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+}
+
+.side-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.side-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: 'Barlow', sans-serif;
+  outline: none;
+  background: white;
+}
+.side-input:focus { border-color: var(--accent); }
+
+/* ── BOTTOM ROWS ── */
+.install-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.install-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: 'Barlow', sans-serif;
+  color: var(--dark);
+  padding: 2px 0;
+}
+
+.footer-cell-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* ── CHECKLIST PANEL ── */
+.checklist-panel {
+  margin-top: 20px;
+  background: var(--white);
+  border: 1.5px solid var(--dark);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.checklist-header {
+  background: var(--dark);
+  color: white;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.checklist-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.checklist-score {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--accent2);
+}
+.checklist-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.ck-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ck-item:hover { background: var(--section-bg); }
+.ck-item:nth-child(even) { border-right: none; }
+.ck-item input { display: none; }
+.ck-box {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.ck-item input:checked ~ .ck-box { background: var(--success); border-color: var(--success); }
+.ck-item input:checked ~ .ck-box::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+.ck-text { font-size: 13px; color: var(--mid); }
+.ck-item input:checked ~ .ck-text { color: var(--dark); font-weight: 500; }
+
+/* ── ERROR MSG ── */
+.err { font-size: 11px; color: var(--error); font-family: 'DM Mono', monospace; display: none; padding: 2px 0 0; }
+.err.show { display: block; }
+
+/* ── SUBMIT BAR ── */
+.submit-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 100;
+  border-top: 3px solid var(--accent);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+}
+.submit-info { font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; }
+.submit-info strong { color: var(--accent2); }
+.btn-print {
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 9px 18px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.btn-print:hover { color: white; border-color: rgba(255,255,255,0.5); }
+.btn-submit {
+  margin-left: auto;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 11px 28px;
+  border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(200,57,43,0.3);
+}
+.btn-submit:hover { background: #a02e22; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: white;
+  border-radius: 8px;
+  padding: 40px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+}
+.modal-icon { font-size: 44px; margin-bottom: 12px; }
+.modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--success); margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+.modal-sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
+.modal-code { font-family: 'DM Mono', monospace; font-size: 18px; color: var(--accent); background: #fff5f4; border: 1px solid #fdd; padding: 10px 24px; border-radius: 4px; display: inline-block; margin-bottom: 24px; }
+.modal-btns { display: flex; gap: 10px; justify-content: center; }
+.btn-new { background: var(--dark); color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; }
+.btn-close-modal { background: white; color: var(--mid); font-size: 13px; padding: 10px 18px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+
+/* conditional */
+.cond { display: none; }
+.cond.on { display: flex; }
+
+/* ══════════════════════════════════════════
+   PRINT STYLES — A4 OPTIMIZED
+   ══════════════════════════════════════════ */
+@media print {
+  @page { size: A4 portrait; margin: 6mm 8mm; }
+
+  .topbar, .progress-wrap, .submit-bar, .checklist-panel,
+  #artworkPlaceholder, #locationPlaceholder,
+  button { display: none !important; }
+
+  body { background: white; padding: 0; margin: 0; font-size: 12px; }
+  .page { padding: 0; max-width: 100%; margin: 0; }
+
+  /* All borders black for print clarity */
+  .info-grid, .spec-bar, .dept-bar, .artwork-zone, .media-zone,
+  [style*="border:1.5px solid var(--dark)"] { border-color: #000 !important; }
+
+  /* Header row */
+  .info-grid { grid-template-columns: 80px 1fr 1fr 1fr 80px; }
+  .info-cell-label { font-size: 9px; padding: 4px 8px 1px; }
+  .info-cell input { font-size: 13px; padding: 3px 8px 5px; }
+
+  /* Spec bar */
+  .spec-bar { padding: 6px 12px; flex-wrap: nowrap; }
+  .spec-label { font-size: 10px; }
+  .spec-item { padding-right: 12px; margin-right: 10px; }
+  .toggle-group label { font-size: 10px; padding: 4px 10px; }
+  .spec-item input[type="number"] { width: 55px; font-size: 12px; padding: 3px 5px; }
+
+  /* Dept bar */
+  .dept-bar { padding: 5px 12px; }
+  .dept-label { font-size: 9px; }
+  .dept-toggle label { font-size: 9px; padding: 4px 8px; }
+
+  /* Selected = red bg */
+  .toggle-group input:checked + label,
+  .light-group input:checked + label,
+  .dept-toggle input:checked + label {
+    background: #e53e3e !important; color: #fff !important;
+    border-color: #e53e3e !important; font-weight: 800 !important;
+  }
+  .comp-check input:checked + label { background: #e53e3e !important; border-color: #e53e3e !important; }
+
+  /* Components zone - compact */
+  .artwork-zone { border-color: #000 !important; }
+  .section-header { padding: 5px 12px; }
+  .section-title { font-size: 10px; }
+  .artwork-main { padding: 10px 12px; }
+  .desc-box {
+    font-size: 12px; font-weight: 600;
+    border: none !important; background: transparent !important;
+    padding: 0; min-height: unset; margin-bottom: 8px; resize: none;
+  }
+  .components-title { font-size: 9px; margin-bottom: 6px; }
+  .comp-grid { gap: 4px; }
+  .comp-row { padding: 4px 8px; border-color: #ddd; }
+  .comp-name { font-size: 11px; }
+  .comp-detail select, .comp-detail input[type="text"] { font-size: 10px; padding: 2px 5px; }
+  .comp-check label { width: 14px; height: 14px; }
+
+  /* ── MEDIA ZONE: artwork + location photo LARGE ── */
+  .media-zone { border-color: #000 !important; page-break-inside: avoid; }
+  .media-inner {
+    grid-template-columns: 7fr 3fr !important;
+    min-height: 280px !important;
+  }
+  .media-col { padding: 10px 12px !important; }
+  .media-col:first-child { border-right: 1.5px solid #000 !important; }
+  .media-col-label { font-size: 10px; margin-bottom: 6px; }
+
+  .photo-drop {
+    min-height: 180px !important;
+    border: 1px solid #ccc !important;
+    cursor: default;
+    background: #fafafa !important;
+  }
+  #artworkPreviewImg {
+    display: block !important;
+    width: 100% !important; height: 100% !important;
+    object-fit: contain !important;
+    position: absolute; inset: 0; padding: 4px; background: white;
+  }
+  #photoPreview {
+    display: block !important;
+    width: 100% !important; height: 100% !important;
+    object-fit: cover !important;
+    position: absolute; inset: 0;
+  }
+
+  /* Bottom rows */
+  .install-label { font-size: 9px; }
+  .install-input { font-size: 12px; padding: 3px 0; }
+  .footer-cell-label { font-size: 9px; }
+  [style*="border:1.5px solid var(--dark)"] input { font-size: 12px; }
+
+  /* Ensure no page break in awkward places */
+  .info-grid, .spec-bar, .dept-bar { page-break-inside: avoid; }
+}
+
+@media (max-width: 700px) {
+  .info-grid { grid-template-columns: 1fr 1fr; }
+  .media-inner { grid-template-columns: 1fr; }
+  .checklist-body { grid-template-columns: 1fr; }
+  .ck-item { border-right: none; }
+}
+
+/* ── MOBILE / PWA OPTIMIZATIONS ── */
+@media (max-width: 480px) {
+  body { font-size: 13px; padding-bottom: 90px; }
+  .topbar { padding: 12px 16px; }
+  .topbar-brand { font-size: 18px; }
+  .page { padding: 12px 10px 0; }
+  .info-grid { grid-template-columns: 1fr 1fr; gap: 0; }
+  .info-cell { padding: 8px 10px; }
+  .info-cell input { font-size: 14px; }
+  .spec-bar { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+  .spec-group { flex-wrap: wrap; gap: 4px; }
+  .dept-bar { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+  .dept-btn { padding: 6px 12px; font-size: 11px; }
+  .toggle-btn { padding: 6px 10px; font-size: 12px; }
+  .section-label { font-size: 10px; padding: 8px 12px; }
+  .bottom-bar { padding: 10px 12px; }
+  .confirm-btn { padding: 12px 20px; font-size: 13px; }
+  .checklist-body { grid-template-columns: 1fr; }
+  .ck-item { border-right: none; }
+}
+
+/* Safe area for notch phones */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .topbar { padding-top: max(16px, env(safe-area-inset-top)); }
+  .bottom-bar { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">SIGN<span>·</span>JOB</div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:0.05em;">PRODUCTION ORDER FORM</div>
+  <div class="topbar-right">
+    <a href="admin.html" class="st-link" title="返回 SignTrack">◀ SignTrack</a>
+    <div class="job-badge" id="jobBadge">—</div>
+  </div>
+</div>
+<div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="page">
+
+  <!-- ── ROW 1: Header info ── -->
+  <div class="info-grid">
+    <div class="info-cell">
+      <div class="info-cell-label">Quantity 数量 <span style="color:var(--error)">*</span></div>
+      <input type="text" id="qty" placeholder="e.g. 1 set" oninput="liveUpdate()">
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">Code 代码 <span style="color:var(--error)">*</span></div>
+      <input type="text" id="code" placeholder="e.g. 44355" oninput="liveUpdate()">
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">Person In Charge 负责人 <span style="color:var(--error)">*</span></div>
+      <input type="text" id="pic" placeholder="e.g. TJW" oninput="liveUpdate()">
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">Install Time 安装时间 <span style="color:var(--error)">*</span></div>
+      <input type="date" id="installTime" oninput="liveUpdate()">
+    </div>
+    <div class="info-cell">
+      <div class="info-cell-label">Skylift</div>
+      <div style="padding:6px 10px;">
+        <div class="toggle-group">
+          <input type="radio" name="skylift" id="sky-y" value="Yes" onchange="liveUpdate()">
+          <label for="sky-y">Yes</label>
+          <input type="radio" name="skylift" id="sky-n" value="No" onchange="liveUpdate()">
+          <label for="sky-n">No</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROW 2: Spec bar ── -->
+  <div class="spec-bar">
+    <div class="spec-item">
+      <span class="spec-label">Size <span style="color:var(--error)">*</span></span>
+      <input type="number" id="sizeW" placeholder="W" min="1" oninput="liveUpdate()" title="Width">
+      <span class="dim-x">×</span>
+      <input type="number" id="sizeH" placeholder="H" min="1" oninput="liveUpdate()" title="Height">
+      <span class="dim-unit" id="sizeUnitLabel">in</span>
+      <div class="toggle-group" style="margin-left:6px">
+        <input type="radio" name="sizeUnit" id="unit-in" value="in" checked onchange="liveUpdate()">
+        <label for="unit-in">in</label>
+        <input type="radio" name="sizeUnit" id="unit-ft" value="ft" onchange="liveUpdate()">
+        <label for="unit-ft">ft</label>
+        <input type="radio" name="sizeUnit" id="unit-mm" value="mm" onchange="liveUpdate()">
+        <label for="unit-mm">mm</label>
+      </div>
+    </div>
+    <div class="spec-item">
+      <span class="spec-label">Location <span style="color:var(--error)">*</span></span>
+      <div class="toggle-group" id="tg-location">
+        <input type="radio" name="location" id="loc-in" value="Indoor" onchange="liveUpdate()">
+        <label for="loc-in">Indoor</label>
+        <input type="radio" name="location" id="loc-out" value="Outdoor" onchange="liveUpdate()">
+        <label for="loc-out">Outdoor</label>
+      </div>
+    </div>
+    <div class="spec-item">
+      <span class="spec-label">Sided <span style="color:var(--error)">*</span></span>
+      <div class="toggle-group" id="tg-sided">
+        <input type="radio" name="sided" id="sd-single" value="Single Sided" onchange="liveUpdate()">
+        <label for="sd-single">Single</label>
+        <input type="radio" name="sided" id="sd-double" value="Double Sided" onchange="liveUpdate()">
+        <label for="sd-double">Double</label>
+      </div>
+    </div>
+    <div class="spec-item">
+      <span class="spec-label">Type <span style="color:var(--error)">*</span></span>
+      <div class="toggle-group light-group" id="tg-light">
+        <input type="radio" name="light" id="lt-frontlit" value="Frontlit" onchange="liveUpdate()">
+        <label for="lt-frontlit" class="frontlit">Frontlit</label>
+        <input type="radio" name="light" id="lt-backlit" value="Backlit" onchange="liveUpdate()">
+        <label for="lt-backlit" class="backlit">Backlit</label>
+        <input type="radio" name="light" id="lt-none" value="No Light" onchange="liveUpdate()">
+        <label for="lt-none" class="none-light">No Light</label>
+      </div>
+    </div>
+    <div class="spec-item">
+      <span class="spec-label">Light <span style="color:var(--error)">*</span></span>
+      <div class="toggle-group light-group" id="tg-lightcolour">
+        <input type="radio" name="lightcolour" id="lc-cool" value="Cool White" onchange="liveUpdate()">
+        <label for="lc-cool" class="cool">❄ Cool 11000K</label>
+        <input type="radio" name="lightcolour" id="lc-warm" value="Warm White" onchange="liveUpdate()">
+        <label for="lc-warm" class="warm">☀ Warm 3000K</label>
+        <input type="radio" name="lightcolour" id="lc-non" value="Non" onchange="liveUpdate()">
+        <label for="lc-non">Non</label>
+      </div>
+    </div>
+    <div class="spec-item" style="border-right:none; gap:16px; flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="spec-label">Spotlight <span style="color:var(--error)">*</span></span>
+        <div class="toggle-group" id="tg-spotlight">
+          <input type="radio" name="spotlight" id="sp-y" value="Yes" onchange="liveUpdate()">
+          <label for="sp-y">Yes</label>
+          <input type="radio" name="spotlight" id="sp-n" value="No" onchange="liveUpdate()">
+          <label for="sp-n">No</label>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px; padding-left:12px; border-left:1px solid var(--border);">
+        <span class="spec-label">Installation</span>
+        <label class="install-pill-check" for="cin-spec">
+          <input type="checkbox" id="cin-spec" onchange="liveUpdate()">
+          <div class="install-pill-box"></div>
+          <span class="install-pill-label">Include</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROW 3: Dept tags ── -->
+  <div class="dept-bar">
+    <span class="dept-label">Dept:</span>
+    <div class="dept-toggle"><input type="checkbox" id="dept-dp" onchange="liveUpdate()"><label for="dept-dp">Direct Print</label></div>
+    <div class="dept-toggle"><input type="checkbox" id="dept-pr" onchange="liveUpdate()"><label for="dept-pr">Printing</label></div>
+    <div class="dept-toggle"><input type="checkbox" id="dept-lr" onchange="liveUpdate()"><label for="dept-lr">Laser & Router</label></div>
+    <div class="dept-toggle"><input type="checkbox" id="dept-pd" onchange="liveUpdate()"><label for="dept-pd">Production</label></div>
+    <div class="dept-toggle"><input type="checkbox" id="dept-da" onchange="liveUpdate()"><label for="dept-da">Dama</label></div>
+    <div class="dept-toggle"><input type="checkbox" id="dept-ot" onchange="liveUpdate()"><label for="dept-ot">Outdoor</label></div>
+  </div>
+
+  <!-- ── SIGN COMPONENTS ZONE ── -->
+  <div class="artwork-zone">
+    <div class="section-header">
+      <div class="section-title">Job Description & Sign Components</div>
+      <div style="margin-left:auto;font-size:11px;color:var(--muted)">填写所有组件详情 · Fill all component details</div>
+    </div>
+    <div class="artwork-main">
+
+      <!-- Overall description -->
+      <div style="margin-bottom:14px">
+        <div class="components-title">Overall Job Description <span style="color:var(--error)">*</span></div>
+        <textarea class="desc-box" id="jobDesc" rows="3" placeholder="e.g. 3D box up champagne gold stainless steel hairline backlit LED with installation..." oninput="liveUpdate()"></textarea>
+        <div class="err show" id="err-jobDesc" style="display:none">请填写工作描述</div>
+      </div>
+
+      <!-- Components -->
+      <div class="components-title">Sign Components 招牌组件</div>
+      <div class="comp-grid">
+
+        <!-- 3D Box Up Letters x3 -->
+        <div class="comp-row" id="comp-3d1">
+          <div class="comp-check"><input type="checkbox" id="c3d1" onchange="toggleComp('3d1')"><label for="c3d1"></label></div>
+          <span class="comp-name" style="min-width:auto;white-space:nowrap;">3D Box Up Letters <span style="color:var(--muted);font-size:11px">-1</span> <span style="color:var(--muted);font-size:11px">(</span><input type="text" placeholder="e.g. Logo" style="width:110px;border:none;border-bottom:1px solid var(--border);padding:0 4px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;background:transparent;color:var(--dark);" oninput="liveUpdate()"><span style="color:var(--muted);font-size:11px">)</span></span>
+          <div class="comp-detail" id="det-3d1" style="display:none">
+            <select onchange="liveUpdate()">
+              <option value="">材料</option>
+              <option>Stainless Steel</option>
+              <option>Aluminium</option>
+              <option>Acrylic</option>
+              <option>10mm Foamboard</option>
+              <option>20mm Foamboard</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">表面</option>
+              <option>Plain</option>
+              <option>Hairline</option>
+              <option>Mirror</option>
+              <option>Spray Paint</option>
+              <option>Print Sticker</option>
+              <option>Oracal</option>
+              <option>Mactac</option>
+              <option>Custom</option>
+            </select>
+            <input type="text" placeholder="颜色 e.g. Champagne Gold" style="width:160px" oninput="liveUpdate()">
+            <input type="text" placeholder="Side (custom)" style="width:130px" oninput="liveUpdate()">
+          </div>
+        </div>
+        <div class="comp-row" id="comp-3d2">
+          <div class="comp-check"><input type="checkbox" id="c3d2" onchange="toggleComp('3d2')"><label for="c3d2"></label></div>
+          <span class="comp-name" style="min-width:auto;white-space:nowrap;">3D Box Up Letters <span style="color:var(--muted);font-size:11px">-2</span> <span style="color:var(--muted);font-size:11px">(</span><input type="text" placeholder="e.g. Logo" style="width:110px;border:none;border-bottom:1px solid var(--border);padding:0 4px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;background:transparent;color:var(--dark);" oninput="liveUpdate()"><span style="color:var(--muted);font-size:11px">)</span></span>
+          <div class="comp-detail" id="det-3d2" style="display:none">
+            <select onchange="liveUpdate()">
+              <option value="">材料</option>
+              <option>Stainless Steel</option>
+              <option>Aluminium</option>
+              <option>Acrylic</option>
+              <option>10mm Foamboard</option>
+              <option>20mm Foamboard</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">表面</option>
+              <option>Plain</option>
+              <option>Hairline</option>
+              <option>Mirror</option>
+              <option>Spray Paint</option>
+              <option>Print Sticker</option>
+              <option>Oracal</option>
+              <option>Mactac</option>
+              <option>Custom</option>
+            </select>
+            <input type="text" placeholder="颜色 e.g. Purple" style="width:160px" oninput="liveUpdate()">
+            <input type="text" placeholder="Side (custom)" style="width:130px" oninput="liveUpdate()">
+          </div>
+        </div>
+        <div class="comp-row" id="comp-3d3">
+          <div class="comp-check"><input type="checkbox" id="c3d3" onchange="toggleComp('3d3')"><label for="c3d3"></label></div>
+          <span class="comp-name" style="min-width:auto;white-space:nowrap;">3D Box Up Letters <span style="color:var(--muted);font-size:11px">-3</span> <span style="color:var(--muted);font-size:11px">(</span><input type="text" placeholder="e.g. Logo" style="width:110px;border:none;border-bottom:1px solid var(--border);padding:0 4px;font-size:12px;font-family:'Barlow',sans-serif;outline:none;background:transparent;color:var(--dark);" oninput="liveUpdate()"><span style="color:var(--muted);font-size:11px">)</span></span>
+          <div class="comp-detail" id="det-3d3" style="display:none">
+            <select onchange="liveUpdate()">
+              <option value="">材料</option>
+              <option>Stainless Steel</option>
+              <option>Aluminium</option>
+              <option>Acrylic</option>
+              <option>10mm Foamboard</option>
+              <option>20mm Foamboard</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">表面</option>
+              <option>Plain</option>
+              <option>Hairline</option>
+              <option>Mirror</option>
+              <option>Spray Paint</option>
+              <option>Print Sticker</option>
+              <option>Oracal</option>
+              <option>Mactac</option>
+              <option>Custom</option>
+            </select>
+            <input type="text" placeholder="颜色 e.g. Silver" style="width:160px" oninput="liveUpdate()">
+            <input type="text" placeholder="Side (custom)" style="width:130px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+        <!-- Base Plate -->
+        <div class="comp-row">
+          <div class="comp-check"><input type="checkbox" id="cbp" onchange="toggleComp('bp')"><label for="cbp"></label></div>
+          <span class="comp-name" style="min-width:160px">Base Plate / 底板</span>
+          <div class="comp-detail" id="det-bp" style="display:none;flex-wrap:wrap;gap:6px;">
+            <select onchange="liveUpdate()">
+              <option value="">材料</option>
+              <option>GI</option>
+              <option>ACP</option>
+              <option>Poly</option>
+              <option>Alum Strip</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">表面处理</option>
+              <option>Plain</option>
+              <option>Sticker</option>
+              <option>Paint</option>
+              <option>Oracal</option>
+              <option>Mactac</option>
+            </select>
+            <input type="text" placeholder="Custom 自定义" style="width:140px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+        <!-- Lightbox -->
+        <div class="comp-row">
+          <div class="comp-check"><input type="checkbox" id="clb" onchange="toggleComp('lb')"><label for="clb"></label></div>
+          <span class="comp-name" style="min-width:160px">Lightbox 灯箱</span>
+          <div class="comp-detail" id="det-lb" style="display:none;flex-wrap:wrap;gap:6px;">
+            <select onchange="liveUpdate()">
+              <option value="">类型</option>
+              <option>Traditional</option>
+              <option>Double Side</option>
+              <option>Fabric</option>
+              <option>Alum Hollow</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">面材</option>
+              <option>Poly</option>
+              <option>Acrylic</option>
+              <option>Fabric</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">物料</option>
+              <option>Lightbox Sticker</option>
+              <option>Oracal Sticker</option>
+            </select>
+            <input type="text" placeholder="Custom 自定义" style="width:140px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+        <!-- Sticker / Tarpauline -->
+        <div class="comp-row">
+          <div class="comp-check"><input type="checkbox" id="cst" onchange="toggleComp('st')"><label for="cst"></label></div>
+          <span class="comp-name" style="min-width:160px">Sticker / Tarpauline</span>
+          <div class="comp-detail" id="det-st" style="display:none;flex-wrap:wrap;gap:6px;">
+            <select onchange="liveUpdate()">
+              <option value="">物料</option>
+              <option>White Vinyl</option>
+              <option>Lightbox</option>
+              <option>Clear</option>
+              <option>Clear Reverse</option>
+              <option>Grey Base</option>
+              <option>Wall Sticker</option>
+              <option>Frosted Sticker</option>
+              <option>Tarpauline</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">覆膜</option>
+              <option>Matt</option>
+              <option>Gloss</option>
+            </select>
+            <input type="text" placeholder="Custom 自定义" style="width:140px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+        <!-- Hollow Structure -->
+        <div class="comp-row">
+          <div class="comp-check"><input type="checkbox" id="chs" onchange="toggleComp('hs')"><label for="chs"></label></div>
+          <span class="comp-name">Hollow Structure 空心结构</span>
+          <div class="comp-detail" id="det-hs" style="display:none">
+            <input type="text" placeholder="材料 e.g. ACP" style="width:120px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+        <!-- Dimiliki / Legal text -->
+        <div class="comp-row">
+          <div class="comp-check"><input type="checkbox" id="cdm" onchange="toggleComp('dm')"><label for="cdm"></label></div>
+          <span class="comp-name">Dimiliki / Legal Text</span>
+          <div class="comp-detail" id="det-dm" style="display:none">
+            <input type="text" placeholder="公司名 + 注册号" style="width:200px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+        <!-- Roadsign -->
+        <div class="comp-row">
+          <div class="comp-check"><input type="checkbox" id="crs" onchange="toggleComp('rs')"><label for="crs"></label></div>
+          <span class="comp-name" style="min-width:160px">Roadsign 路牌</span>
+          <div class="comp-detail" id="det-rs" style="display:none;flex-wrap:wrap;gap:6px;">
+            <select onchange="liveUpdate()">
+              <option value="">材料</option>
+              <option>GI</option>
+              <option>ACP</option>
+            </select>
+            <select onchange="liveUpdate()">
+              <option value="">表面处理</option>
+              <option>Inkjet</option>
+              <option>Reflective</option>
+              <option>HIP</option>
+            </select>
+            <input type="text" placeholder="Custom 自定义" style="width:160px" oninput="liveUpdate()">
+            <input type="text" placeholder="备注 Special Requirements / Remarks" style="width:100%;margin-top:4px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+
+        <!-- Custom Component -->
+        <div class="comp-row">
+          <div class="comp-check"><input type="checkbox" id="ccu" onchange="toggleComp('cu')"><label for="ccu"></label></div>
+          <span class="comp-name" style="min-width:160px">Custom 自定义组件</span>
+          <div class="comp-detail" id="det-cu" style="display:none;flex-wrap:wrap;gap:6px;">
+            <input type="text" placeholder="请描述 Describe custom component" style="width:300px" oninput="liveUpdate()">
+          </div>
+        </div>
+
+      </div><!-- /comp-grid -->
+    </div>
+  </div>
+
+  <!-- ── ARTWORK REVIEW & LOCATION PHOTO (below components, large) ── -->
+  <div class="media-zone">
+    <div class="section-header">
+      <div class="section-title">Artwork Review & Location Photo</div>
+      <div style="margin-left:auto;font-size:11px;color:var(--muted)">上传设计稿和现场照片 · Upload artwork & site photo</div>
+    </div>
+    <div class="media-inner">
+      <!-- Artwork Preview -->
+      <div class="media-col">
+        <div class="media-col-label">
+          <span>Artwork Preview 设计稿预览</span>
+          <span style="font-size:10px;color:var(--success);font-weight:600">✓ 打印时显示</span>
+        </div>
+        <div class="photo-drop" id="artworkDropZone" onclick="document.getElementById('artworkUpload').click()">
+          <input type="file" id="artworkUpload" accept="image/*" style="display:none" onchange="handleArtworkUpload(this)">
+          <div id="artworkPlaceholder">
+            <div class="photo-drop-icon">🖼</div>
+            <div class="photo-drop-text">点击上传 Artwork 截图<br><span style="color:var(--accent);font-weight:600">JPG / PNG</span><br><span style="font-size:10px">打印时会一并印出</span></div>
+          </div>
+          <img id="artworkPreviewImg" alt="" style="display:none;width:100%;height:100%;object-fit:contain;position:absolute;inset:0;background:#fff;padding:6px;">
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input class="side-input" type="text" id="artworkFile" placeholder="档案名 e.g. FLO_v3_FINAL.ai" oninput="liveUpdate()" style="flex:1;font-size:12px">
+          <button onclick="clearArtwork()" style="font-size:10px;padding:5px 10px;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;color:var(--muted);white-space:nowrap" title="Clear">✕ Clear</button>
+        </div>
+      </div>
+      <!-- Location Photo -->
+      <div class="media-col">
+        <div class="media-col-label">
+          <span>Location Photo 现场照片</span>
+        </div>
+        <div class="photo-drop" id="photoDropZone" onclick="document.getElementById('locationUpload').click()">
+          <input type="file" id="locationUpload" accept="image/*" style="display:none" onchange="handleLocationPhoto(this)">
+          <div id="locationPlaceholder">
+            <div class="photo-drop-icon">📷</div>
+            <div class="photo-drop-text">点击上传现场照片<br>Upload site photo</div>
+          </div>
+          <img class="photo-preview" id="photoPreview" alt="" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Install Place + Outstation ── -->
+  <div style="border:1.5px solid var(--dark);border-top:none;background:var(--white);display:grid;grid-template-columns:1fr auto;">
+    <div style="padding:8px 14px;border-right:1px solid var(--border);">
+      <div class="install-label">Install Place 安装地址 <span style="color:var(--error)">*</span></div>
+      <input class="install-input" type="text" id="installPlace" placeholder="e.g. NO 58 Jalan Jaya Putra 7/2, Bandar Jaya Putra, 81100 Johor Bahru, Johor" oninput="liveUpdate()">
+    </div>
+    <div style="padding:8px 14px;min-width:140px;">
+      <div class="install-label">Outstation 外坡</div>
+      <div style="padding-top:4px">
+        <div class="toggle-group">
+          <input type="radio" name="outstation" id="out-y" value="Yes" onchange="liveUpdate()">
+          <label for="out-y">Yes</label>
+          <input type="radio" name="outstation" id="out-n" value="No" onchange="liveUpdate()">
+          <label for="out-n">No</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sign + Contact + Date ── -->
+  <div style="border:1.5px solid var(--dark);border-top:none;background:var(--white);display:grid;grid-template-columns:1fr 1fr 1fr;">
+    <div style="border-right:1px solid var(--dark);padding:8px 14px;">
+      <div class="footer-cell-label">Sign 签名</div>
+      <input style="width:100%;border:none;outline:none;font-size:13px;font-family:'Barlow',sans-serif;color:var(--dark);padding:2px 0;" type="text" id="signName" placeholder="签名 / Name" oninput="liveUpdate()">
+    </div>
+    <div style="border-right:1px solid var(--dark);padding:8px 14px;">
+      <div class="footer-cell-label">Contact 联系</div>
+      <input style="width:100%;border:none;outline:none;font-size:13px;font-family:'Barlow',sans-serif;color:var(--dark);padding:2px 0;" type="text" id="contact" placeholder="e.g. 012-764 1452" oninput="liveUpdate()">
+    </div>
+    <div style="padding:8px 14px;">
+      <div class="footer-cell-label">Jobform Date</div>
+      <input style="width:100%;border:none;outline:none;font-size:13px;font-family:'Barlow',sans-serif;color:var(--dark);padding:2px 0;" type="date" id="jfDate2" oninput="liveUpdate()">
+    </div>
+  </div>
+
+  <!-- ── Checklist Panel ── -->
+  <div class="checklist-panel">
+    <div class="checklist-header">
+      <div class="checklist-title">Before Proceed — Final Artwork Checklist</div>
+      <div class="checklist-score" id="ckScore">0 / 7 checked</div>
+    </div>
+    <div class="checklist-body">
+      <label class="ck-item" for="ck1"><input type="checkbox" id="ck1" onchange="liveUpdate()"><div class="ck-box"></div><span class="ck-text">尺寸已按 Job Form 核对 (Size confirmed)</span></label>
+      <label class="ck-item" for="ck2"><input type="checkbox" id="ck2" onchange="liveUpdate()"><div class="ck-box"></div><span class="ck-text">LED 灯色已确认 (LED colour confirmed)</span></label>
+      <label class="ck-item" for="ck3"><input type="checkbox" id="ck3" onchange="liveUpdate()"><div class="ck-box"></div><span class="ck-text">单/双面已标明 (Single / Double sided OK)</span></label>
+      <label class="ck-item" for="ck4"><input type="checkbox" id="ck4" onchange="liveUpdate()"><div class="ck-box"></div><span class="ck-text">所有组件材料已确认 (All materials confirmed)</span></label>
+      <label class="ck-item" for="ck5"><input type="checkbox" id="ck5" onchange="liveUpdate()"><div class="ck-box"></div><span class="ck-text">客户已确认 Final Artwork (Client approved)</span></label>
+      <label class="ck-item" for="ck6"><input type="checkbox" id="ck6" onchange="liveUpdate()"><div class="ck-box"></div><span class="ck-text">字体颜色与 Job Form 一致 (Colour match)</span></label>
+      <label class="ck-item" for="ck7"><input type="checkbox" id="ck7" onchange="liveUpdate()"><div class="ck-box"></div><span class="ck-text">安装地址已填 (Install address filled)</span></label>
+    </div>
+  </div>
+
+  <div style="height:20px"></div>
+</div><!-- /page -->
+
+<!-- Submit Bar -->
+<div class="submit-bar">
+  <div class="submit-info">Missing required fields: <strong id="missingCount">—</strong></div>
+  <button class="btn-print" onclick="showPrintPreview()">👁 Preview</button>
+  <button class="btn-print" onclick="window.print()">🖨 Print</button>
+  <button class="btn-submit" onclick="submitForm()">Confirm Job ▸</button>
+</div>
+
+<!-- Print Preview Modal -->
+<div class="modal-overlay" id="printPreviewOverlay" style="align-items:flex-start;padding:20px;overflow-y:auto;">
+  <div style="background:white;width:100%;max-width:900px;margin:0 auto;border-radius:6px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="background:var(--dark);color:white;padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;">Print Preview</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.5);">这是打印出来的效果</span>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <button onclick="window.print()" style="background:var(--accent);color:white;border:none;padding:7px 16px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.05em;cursor:pointer;">🖨 Print Now</button>
+        <button onclick="document.getElementById('printPreviewOverlay').style.display='none'" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);padding:7px 14px;border-radius:3px;font-size:12px;cursor:pointer;">✕ Close</button>
+      </div>
+    </div>
+    <div id="printPreviewContent" style="padding:20px;background:#e8e8e8;">
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon">✅</div>
+    <div class="modal-title">Job Confirmed!</div>
+    <div class="modal-sub">所有必填项目已完成。<br>请将此表格交给生产部门。</div>
+    <div class="modal-code" id="modalCode">—</div>
+
+    <!-- SignTrack sync status -->
+    <div style="margin-bottom:16px;">
+      <div id="syncStatus" style="font-size:13px;font-weight:600;margin-bottom:10px;transition:color 0.3s;">⏳ Syncing to SignTrack...</div>
+      <a id="trackBtn"
+         href="https://signtrack-production.netlify.app/"
+         target="_blank"
+         style="display:none;background:#2563eb;color:white;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;letter-spacing:0.04em;">
+        📊 View in SignTrack →
+      </a>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn-new" onclick="location.reload()">New Job +</button>
+      <button class="btn-close-modal" onclick="document.getElementById('modalOverlay').classList.remove('show');window.print()">🖨 Print</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Init
+function genId() {
+  const n = new Date();
+  const pad = v => String(v).padStart(2,'0');
+  return `${n.getFullYear()}${pad(n.getMonth()+1)}${pad(n.getDate())}-${Math.floor(Math.random()*900)+100}`;
+}
+const JOB_ID = genId();
+document.getElementById('jobBadge').textContent = 'JOB-' + JOB_ID;
+document.getElementById('modalCode').textContent = 'JOB-' + JOB_ID;
+
+// Set today
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('jfDate2').value = today;
+
+// Toggle component detail row
+function toggleComp(id) {
+  const det = document.getElementById('det-' + id);
+  if (det) det.style.display = (event.target.checked) ? 'flex' : 'none';
+  liveUpdate();
+}
+
+function checkLedWarning() {
+  const ledChecked = document.getElementById('cled')?.checked;
+  const lightVal = document.querySelector('input[name="light"]:checked')?.value;
+  const warn = document.getElementById('ledWarning');
+  if (warn) {
+    if (ledChecked && lightVal && lightVal === 'No Light') {
+      warn.style.display = 'inline-block';
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+}
+
+// Unit label
+document.querySelectorAll('input[name="sizeUnit"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('sizeUnitLabel').textContent = r.value;
+    liveUpdate();
+  });
+});
+
+// Artwork upload
+function handleArtworkUpload(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('artworkPreviewImg');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.getElementById('artworkPlaceholder').style.display = 'none';
+      const fn = document.getElementById('artworkFile');
+      if (!fn.value) fn.value = input.files[0].name;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+function clearArtwork() {
+  document.getElementById('artworkPreviewImg').style.display = 'none';
+  document.getElementById('artworkPreviewImg').src = '';
+  document.getElementById('artworkPlaceholder').style.display = 'flex';
+  document.getElementById('artworkUpload').value = '';
+}
+function handleLocationPhoto(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('photoPreview');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.getElementById('locationPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Required fields
+const REQUIRED = [
+  { id: 'qty', label: 'Quantity' },
+  { id: 'code', label: 'Code' },
+  { id: 'pic', label: 'Person In Charge' },
+  { id: 'installTime', label: 'Install Time' },
+  { id: 'sizeW', label: 'Size Width' },
+  { id: 'sizeH', label: 'Size Height' },
+  { id: 'jobDesc', label: 'Job Description' },
+  { id: 'installPlace', label: 'Install Place' },
+  { radio: 'location', label: 'Indoor/Outdoor' },
+  { radio: 'sided', label: 'Single/Double Sided' },
+  { radio: 'light', label: 'Type (Frontlit/Backlit/No Light)' },
+  { radio: 'lightcolour', label: 'Light Colour (Cool/Warm White)' },
+  { radio: 'spotlight', label: 'Spotlight' },
+];
+
+function liveUpdate() {
+  checkLedWarning();
+  let missing = 0;
+  REQUIRED.forEach(f => {
+    if (f.radio) {
+      if (!document.querySelector(`input[name="${f.radio}"]:checked`)) missing++;
+    } else {
+      const el = document.getElementById(f.id);
+      if (el && !el.value.trim()) missing++;
+    }
+  });
+
+  const mc = document.getElementById('missingCount');
+  mc.textContent = missing === 0 ? '✓ All complete' : missing + ' field(s)';
+  mc.style.color = missing === 0 ? '#4ade80' : '#fbbf24';
+
+  const total = REQUIRED.length;
+  const pct = Math.round(((total - missing) / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  let ckDone = 0;
+  for (let i = 1; i <= 7; i++) {
+    if (document.getElementById('ck' + i)?.checked) ckDone++;
+  }
+  document.getElementById('ckScore').textContent = `${ckDone} / 7 checked`;
+}
+
+function submitForm() {
+  let missing = [];
+  REQUIRED.forEach(f => {
+    if (f.radio) {
+      if (!document.querySelector(`input[name="${f.radio}"]:checked`)) missing.push(f.label);
+    } else {
+      const el = document.getElementById(f.id);
+      if (el && !el.value.trim()) {
+        missing.push(f.label);
+        el.classList.add('error');
+        el.addEventListener('input', () => el.classList.remove('error'), { once: true });
+      }
+    }
+  });
+
+  if (missing.length > 0) {
+    const firstErr = document.querySelector('input.error, select.error');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    ['location','sided','light'].forEach(name => {
+      if (!document.querySelector(`input[name="${name}"]:checked`)) {
+        const tg = document.getElementById('tg-' + name);
+        if (tg) {
+          tg.classList.add('error-highlight');
+          setTimeout(() => tg.classList.remove('error-highlight'), 3000);
+        }
+      }
+    });
+    alert(`请填写以下必填项目：\n• ${missing.join('\n• ')}`);
+    return;
+  }
+
+  // Show modal immediately
+  document.getElementById('modalOverlay').classList.add('show');
+
+  // ── Sync to SignTrack via Firebase ──
+  const syncEl  = document.getElementById('syncStatus');
+  const syncBtn = document.getElementById('trackBtn');
+  syncEl.textContent  = '⏳ Syncing to SignTrack...';
+  syncEl.style.color  = '#e8a020';
+  syncBtn.style.display = 'none';
+
+  // Collect active depts
+  const deptMap = {dp:'Direct Print',pr:'Printing',lr:'Laser & Router',pd:'Production',da:'Dama',ot:'Outdoor'};
+  const activeDepts = Object.keys(deptMap).filter(k => document.getElementById('dept-'+k)?.checked).map(k => deptMap[k]);
+
+  // Collect active components
+  const compIds = ['3d1','3d2','3d3','bp','lb','st','hs','dm','rs'];
+  const activeComps = compIds.filter(id => document.getElementById('c'+id)?.checked).map(id => {
+    const det = document.getElementById('det-'+id);
+    const parts = [];
+    if (det) {
+      det.querySelectorAll('select').forEach(s => { if (s.value) parts.push(s.value); });
+      det.querySelectorAll('input[type="text"]').forEach(i => { if (i.value) parts.push(i.value); });
+    }
+    return id + (parts.length ? ': ' + parts.join(' · ') : '');
+  });
+
+  const orderData = {
+    id:          'JOB-' + JOB_ID,
+    customer:    v('code'),           // Code 代码 as customer identifier
+    phone:       v('contact'),
+    desc:        v('jobDesc'),
+    eta:         v('installTime'),
+    qty:         v('qty'),
+    pic:         v('pic'),
+    skylift:     r('skylift'),
+    size:        `${v('sizeW')} × ${v('sizeH')} ${r('sizeUnit')||'in'}`,
+    location:    r('location'),
+    sided:       r('sided'),
+    light:       r('light'),
+    lightcolour: r('lightcolour'),
+    spotlight:   r('spotlight'),
+    installPlace:v('installPlace'),
+    outstation:  r('outstation'),
+    signName:    v('signName'),
+    depts:       activeDepts,
+    components:  activeComps,
+  };
+
+  if (typeof window._fbSaveJob === 'function') {
+    window._fbSaveJob(orderData)
+      .then(() => {
+        syncEl.textContent = '✅ 已同步到 SignTrack';
+        syncEl.style.color = '#2d8a4e';
+        syncBtn.style.display = 'inline-block';
+      })
+      .catch(err => {
+        syncEl.textContent = '⚠️ 同步失败（请检查网络）';
+        syncEl.style.color = '#c8392b';
+        console.error('Firebase sync error:', err);
+      });
+  } else {
+    // Firebase not yet loaded (rare race condition)
+    setTimeout(() => {
+      if (typeof window._fbSaveJob === 'function') {
+        window._fbSaveJob(orderData)
+          .then(() => {
+            syncEl.textContent = '✅ 已同步到 SignTrack';
+            syncEl.style.color = '#2d8a4e';
+            syncBtn.style.display = 'inline-block';
+          })
+          .catch(() => {
+            syncEl.textContent = '⚠️ 同步失败（请检查网络）';
+            syncEl.style.color = '#c8392b';
+          });
+      } else {
+        syncEl.textContent = '⚠️ Firebase 未加载，请检查网络';
+        syncEl.style.color = '#c8392b';
+      }
+    }, 2000);
+  }
+}
+
+// ── PRINT PREVIEW ──
+function showPrintPreview() {
+  const overlay = document.getElementById('printPreviewOverlay');
+  overlay.style.display = 'flex';
+
+  const qty = v('qty'), code = v('code'), pic = v('pic'), installTime = v('installTime'), skylift = r('skylift');
+  const sizeW = v('sizeW'), sizeH = v('sizeH'), sizeUnit = r('sizeUnit') || 'in';
+  const location = r('location'), sided = r('sided'), light = r('light');
+  const jobDesc = v('jobDesc');
+  const installPlace = v('installPlace');
+  const jfDate = v('jfDate2'), signName = v('signName'), outstation = r('outstation'), contact = v('contact');
+  const artworkFile = v('artworkFile');
+  const artworkSrc = document.getElementById('artworkPreviewImg').src;
+  const photoSrc = document.getElementById('photoPreview').src;
+  const artworkHasImg = artworkSrc && artworkSrc.length > 100;
+  const photoHasImg = photoSrc && photoSrc.length > 100;
+
+  const depts = ['dp','pr','lr','pd','da','ot'];
+  const deptNames = {'dp':'Direct Print','pr':'Printing','lr':'Laser & Router','pd':'Production','da':'Dama','ot':'Outdoor'};
+  const activeDepts = depts.filter(d => document.getElementById('dept-'+d)?.checked).map(d => deptNames[d]);
+
+  const compDefs = [
+    {id:'3d1', name:'3D Box Up Letters -1'},{id:'3d2', name:'3D Box Up Letters -2'},{id:'3d3', name:'3D Box Up Letters -3'},
+    {id:'bp', name:'Base Plate / 底板'},{id:'lb', name:'Lightbox 灯箱'},
+    {id:'st', name:'Sticker / Tarpauline'},{id:'hs', name:'Hollow Structure'},
+    {id:'dm', name:'Dimiliki / Legal Text'},{id:'rs', name:'Roadsign 路牌'},{id:'cu', name:'Custom 自定义'},
+  ];
+  const activeComps = compDefs.filter(c => document.getElementById('c'+c.id)?.checked).map(c => {
+    const det = document.getElementById('det-'+c.id);
+    let details = '';
+    if (det) {
+      const parts = [];
+      det.querySelectorAll('select').forEach(s => { if (s.value) parts.push(s.value); });
+      det.querySelectorAll('input[type="text"]').forEach(i => { if (i.value) parts.push(i.value); });
+      details = parts.join(' · ');
+    }
+    return { name: c.name, details };
+  });
+
+  const lightStyle = light === 'Warm White' ? 'background:#b8860b;color:white;' :
+                     light === 'Cool White' ? 'background:#4a7ab5;color:white;' :
+                     light === 'Non' ? 'background:#888;color:white;' :
+                     (light === 'Frontlit' || light === 'Backlit') ? 'background:#e53e3e;color:white;' :
+                     light ? 'background:#555;color:white;' : 'background:#eee;color:#666;';
+
+  const html = `
+  <div style="background:white;border:2px solid #111;font-family:Arial,sans-serif;font-size:13px;max-width:860px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr 80px;border-bottom:1.5px solid #111;">
+      ${pcell('Quantity 数量', qty||'—')}${pcell('Code 代码', code||'—')}${pcell('Person In Charge 负责人', pic||'—')}${pcell('Install Time 安装时间', installTime||'—')}${pcell('Skylift', skylift||'—')}
+    </div>
+    <div style="padding:8px 14px;border-bottom:1px solid #ddd;display:flex;gap:18px;flex-wrap:wrap;align-items:center;background:#fafafa;">
+      <span style="font-size:10px;color:#888;font-weight:700;">SIZE</span>
+      <span style="font-weight:700;font-size:15px;font-family:monospace;">${sizeW||'?'} × ${sizeH||'?'} ${sizeUnit}</span>
+      <span style="background:#eee;width:1px;height:18px;display:inline-block;"></span>
+      <span style="font-size:10px;color:#888;font-weight:700;">LOCATION</span><span style="font-weight:600;">${location||'—'}</span>
+      <span style="background:#eee;width:1px;height:18px;display:inline-block;"></span>
+      <span style="font-size:10px;color:#888;font-weight:700;">SIDED</span><span style="font-weight:600;">${sided||'—'}</span>
+      <span style="background:#eee;width:1px;height:18px;display:inline-block;"></span>
+      <span style="font-size:10px;color:#888;font-weight:700;">LIGHT</span>
+      <span style="font-weight:700;padding:3px 10px;border-radius:3px;font-size:12px;${lightStyle}">${light||'—'}</span>
+    </div>
+    ${activeDepts.length > 0 ? `<div style="padding:5px 14px;border-bottom:1px solid #ddd;background:#f0f0f0;display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:9px;color:#888;font-weight:700;">DEPT:</span>
+      ${activeDepts.map(d=>`<span style="background:#111;color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:2px;">${d}</span>`).join('')}
+    </div>` : ''}
+    <div style="padding:10px 14px;border-bottom:1px solid #ddd;">
+      <div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Job Description</div>
+      <div style="font-size:14px;font-weight:700;color:#c8392b;line-height:1.5;">${jobDesc||'—'}</div>
+    </div>
+    ${activeComps.length > 0 ? `
+    <div style="padding:10px 14px;border-bottom:1px solid #ddd;">
+      <div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Sign Components</div>
+      ${activeComps.map(c=>`<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #f0f0f0;">
+        <span style="color:#2d8a4e;font-weight:700;font-size:12px;">✓</span>
+        <span style="font-size:12px;font-weight:600;">${c.name}</span>
+        ${c.details ? `<span style="font-size:11px;color:#666;">— ${c.details}</span>` : ''}
+      </div>`).join('')}
+    </div>` : ''}
+    <div style="display:grid;grid-template-columns:7fr 3fr;border-bottom:1px solid #ddd;min-height:300px;">
+      <div style="border-right:1px solid #ddd;padding:12px 14px;">
+        <div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:8px;">Artwork Preview 设计稿</div>
+        ${artworkHasImg
+          ? `<div style="border:1px solid #ddd;background:#f8f8f8;text-align:center;display:flex;align-items:center;justify-content:center;min-height:260px;">
+               <img src="${artworkSrc}" style="max-width:100%;max-height:280px;object-fit:contain;" alt="Artwork">
+             </div>`
+          : `<div style="border:1px dashed #ccc;min-height:260px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px;background:#fafafa;">No artwork uploaded</div>`}
+        ${artworkFile ? `<div style="font-size:10px;color:#888;margin-top:5px;">📄 ${artworkFile}</div>` : ''}
+      </div>
+      <div style="padding:12px 14px;">
+        <div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:8px;">Location Photo 现场照片</div>
+        ${photoHasImg
+          ? `<div style="border:1px solid #ddd;text-align:center;display:flex;align-items:center;justify-content:center;min-height:260px;overflow:hidden;"><img src="${photoSrc}" style="max-width:100%;max-height:280px;object-fit:cover;border:1px solid #ddd;" alt="Location"></div>`
+          : `<div style="border:1px dashed #ccc;min-height:260px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;background:#fafafa;">No photo</div>`}
+      </div>
+    </div>
+    <div style="padding:8px 14px;border-bottom:1px solid #ddd;">
+      <div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:2px;">Install Place 安装地址</div>
+      <div style="font-size:13px;">${installPlace||'—'}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;">
+      ${pcell('Jobform Date', jfDate||'—')}${pcell('Sign 签名', signName||'')}${pcell('Outstation 外坡', outstation||'—')}${pcell('Contact 联系', contact||'—')}
+    </div>
+  </div>`;
+
+  document.getElementById('printPreviewContent').innerHTML = html;
+}
+
+function v(id) { return document.getElementById(id)?.value?.trim() || ''; }
+function r(name) { return document.querySelector(`input[name="${name}"]:checked`)?.value || ''; }
+function pcell(label, value) {
+  return `<div style="padding:5px 10px;border-right:1px solid #ddd;">
+    <div style="font-size:9px;color:#888;font-weight:700;text-transform:uppercase;border-bottom:1px solid #eee;padding-bottom:2px;margin-bottom:3px;">${label}</div>
+    <div style="font-size:13px;font-weight:600;">${value}</div>
+  </div>`;
+}
+
+liveUpdate();
+</script>
+
+<!-- PWA: Service Worker Registration -->
+
+</body>
+</html>
