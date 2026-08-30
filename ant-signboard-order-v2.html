@@ -2242,7 +2242,7 @@ document.addEventListener('click', function(e) {
 <!-- Firebase: save signboard enquiry to Firestore + Storage -->
 <script type="module">
 import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -2323,7 +2323,10 @@ window._fbSaveEnquiry = async function(enqId) {
     // Capture design images (non-blocking upload runs in background)
     const { canvasUrl, previewUrl } = await captureDesignImage(enqId);
 
-    await addDoc(collection(db, 'orders'), {
+    // Document ID = enquiry ID, so track.html can fetch it directly.
+    // (With a random doc ID, track.html falls back to a collection query,
+    //  which anonymous visitors are not allowed to run.)
+    await setDoc(doc(db, 'orders', enqId), {
       enquiryId:    enqId,
       id:           enqId,          // needed so track.html can find it via ?id=SB-XXXXXXX
       type:         'signboard-enquiry',
