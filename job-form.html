@@ -20,6 +20,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
@@ -33,6 +34,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 const storage = getStorage(app);
+const auth = getAuth(app);
+
+/* ══ Admin guard ══
+   Firebase Auth persists per-origin, so signing in on admin.html carries
+   over here automatically. If someone opens this page directly without a
+   session, say so instead of letting the save fail silently. */
+onAuthStateChanged(auth, user => {
+  if (user) return;
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div id="authGate" style="position:fixed;inset:0;z-index:99999;background:#0d1f3c;'
+  + 'color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;'
+  + 'font-family:system-ui,sans-serif;padding:2rem">'
+  + '<div><div style="font-size:2.2rem;margin-bottom:.8rem">🔒</div>'
+  + '<div style="font-size:1.05rem;font-weight:700;margin-bottom:.5rem">Admin sign-in required</div>'
+  + '<div style="font-size:.85rem;opacity:.75;margin-bottom:1.4rem;line-height:1.6">'
+  + 'Please sign in from the Admin Panel first,<br/>then open the Job Form again.</div>'
+  + '<a href="admin.html" style="background:#fff;color:#0d1f3c;padding:.6rem 1.4rem;'
+  + 'border-radius:8px;text-decoration:none;font-weight:700;font-size:.85rem">'
+  + '→ Go to Admin Panel</a></div></div>');
+});
 
 // Build default workflow steps (matching SignTrack STEPS)
 function mkSteps() {
