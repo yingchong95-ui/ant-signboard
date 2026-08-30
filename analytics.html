@@ -465,13 +465,29 @@ function savePdf(){
 }
 
 // ─── Parse items ─────────────────────────────────────────────
-// Format: "LED Lightbox Signboard (Estimate) ×1, Neon Sign ×2"
+// Real sheet format (newline separated, one line per item):
+//   "• Inkjet Printing x1 = RM 22.00\n• Display Set x1 = RM 1780.00"
+// Legacy format (comma separated, no line price):
+//   "LED Lightbox Signboard (Estimate) ×1, Neon Sign ×2"
 function parseItems(str){
   if(!str) return [];
-  return str.split('📎')[0].trim().split(/,\s*/).map(p=>{
-    const m=p.match(/^(.+?)\s*[×x]\s*(\d+)$/i);
-    return m?{name:m[1].trim(),qty:parseInt(m[2])}:{name:p.trim(),qty:1};
-  }).filter(i=>i.name);
+  return str.split('📎')[0].trim()
+    .split(/\r?\n|,\s*/)                       // split on newline OR comma
+    .map(p=>p.replace(/^[•\-\*•]\s*/,'').trim())  // strip bullet
+    .filter(Boolean)
+    .map(p=>{
+      // "Name xQTY = RM PRICE"  |  "Name ×QTY"
+      const m=p.match(/^(.+?)\s*[×x]\s*(\d+(?:\.\d+)?)\s*(?:=\s*RM\s*([\d,]+(?:\.\d+)?))?\s*$/i);
+      if(m){
+        return {
+          name : m[1].trim(),
+          qty  : parseFloat(m[2])||1,
+          line : m[3] ? parseFloat(m[3].replace(/,/g,'')) : null
+        };
+      }
+      return {name:p, qty:1, line:null};
+    })
+    .filter(i=>i.name);
 }
 
 // ─── Aggregate ───────────────────────────────────────────────
@@ -488,13 +504,18 @@ function aggregate(){
       if(!catMap[c.key]) catMap[c.key]={key:c.key,label:c.label,color:c.color,orders:0,revenue:0};
       catMap[c.key].orders++; catMap[c.key].revenue+=total; return;
     }
-    const totalQty=items.reduce((s,i)=>s+i.qty,0);
+    // Prefer exact line prices from the sheet; fall back to qty-proportional split
+    const lineSum  = items.reduce((s,i)=>s+(i.line||0),0);
+    const useLines = items.every(i=>i.line!==null) && lineSum>0;
+    const totalQty = items.reduce((s,i)=>s+i.qty,0);
     const seen=new Set();
     items.forEach(item=>{
       const cat=categorise(item.name);
       if(!catMap[cat.key]) catMap[cat.key]={key:cat.key,label:cat.label,color:cat.color,orders:0,revenue:0};
       if(!seen.has(cat.key)){ catMap[cat.key].orders++; seen.add(cat.key); }
-      catMap[cat.key].revenue+=totalQty>0?total*(item.qty/totalQty):0;
+      catMap[cat.key].revenue += useLines
+        ? total*(item.line/lineSum)                        // exact, scaled to order total
+        : (totalQty>0 ? total*(item.qty/totalQty) : 0);
     });
   });
   let rows=Object.values(catMap).sort((a,b)=>b.orders-a.orders);
