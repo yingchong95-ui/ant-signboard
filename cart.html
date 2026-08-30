@@ -333,6 +333,32 @@
     if (!custInfo.name.trim())  { alert('请填写姓名 · Please enter your name.');           var nmEl=document.getElementById('cust-name');  if(nmEl)nmEl.focus(); return; }
     if (!custInfo.phone.trim()) { alert('请填写电话/WhatsApp · Please enter your phone.');  var phEl=document.getElementById('cust-phone'); if(phEl)phEl.focus(); return; }
 
+    // ── Require Google sign-in so the order carries a userId ──
+    // Without this the order saves with userId:null and the customer can
+    // never see it under "My Orders" — not even after signing in later.
+    if (!window._fbCurrentUser) {
+      var proceedAnyway = false;
+      try {
+        await window._fbSignIn();
+        // onAuthStateChanged is async — wait briefly for it to land
+        for (var w = 0; w < 20 && !window._fbCurrentUser; w++) {
+          await new Promise(function(r){ setTimeout(r, 100); });
+        }
+      } catch (e) {
+        if (e && (e.code === 'auth/popup-blocked')) {
+          alert('浏览器挡住了登入视窗，请允许弹出视窗后再试。\n\nPopup was blocked — please allow popups and try again.');
+          return;
+        }
+        // User closed the popup / cancelled
+        proceedAnyway = confirm(
+          '登入 Google 就能随时查看订单进度。不登入也能下单，但要自己保存订单号码。\n' +
+          'Sign in to track this order anytime. You can still order without it, ' +
+          'but you\'ll need to keep your order number.\n\n' +
+          '确定 OK = 不登入继续　·　取消 Cancel = 回去登入');
+        if (!proceedAnyway) return;
+      }
+    }
+
     var btn = document.getElementById('btn-checkout');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving order…'; }
 
