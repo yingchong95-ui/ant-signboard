@@ -364,7 +364,7 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 <!-- Firebase -->
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -481,7 +481,10 @@ window._createOrder = async function(data) {
     createdAt:   new Date().toISOString()
   };
 
-  await addDoc(collection(db, 'orders'), doc_data);
+  // Use the order number as the document ID (not a random one) so that
+  // track.html can fetch it directly by ID. A random doc ID would force
+  // track.html into its query fallback, which anonymous visitors can't run.
+  await setDoc(doc(db, 'orders', orderNum), doc_data);
   return orderNum;
 };
 </script>
