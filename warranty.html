@@ -301,17 +301,48 @@ onAuthStateChanged(auth, async user => {
 });
 
 // ── Signboard eligibility (mirror of admin.html logic) ────────
+// ── Warranty eligibility ─────────────────────────────────────
+// Keep this in sync with hasWarranty() in track.html, so what the customer
+// sees and what this dashboard counts never disagree.
+//
+// Only fabricated/illuminated signage is covered. Print jobs are not.
+// Previously this fell back to `return !o.isManual`, which quietly marked
+// every unrecognised online order as covered — including print jobs.
+const WARRANTY_PAGES = ['ant-signboard-order-v2', 'ant-neon-order'];
+
+function normPage(p) {
+  return String(p || '').split('/').pop().replace(/\.html?$/i, '').toLowerCase();
+}
+
 function isWarrantyEligible(o) {
-  const SIGN_KW  = ['signboard','招牌','neon','霓虹','灯箱','led lightbox','led 灯箱'];
-  const PRINT_KW = ['acrylic','亚加力','壓克力','bomba','banner','横幅','name card','名片','foam','泡沫','inkjet','喷绘','vehicle','车身','flyer','sticker print'];
-  const haystack = [
-    o.product || '',
-    o.desc    || '',
-    ...(o.items || []).map(i => i.name || '')
-  ].join(' ').toLowerCase();
-  if (PRINT_KW.some(k => haystack.includes(k))) return false;
-  if (SIGN_KW.some(k  => haystack.includes(k))) return true;
-  return !o.isManual; // online orders without clear type → eligible
+  if (!o) return false;
+
+  // 1. E-shop orders carry an explicit flag from cart.html
+  if (o.warranty && typeof o.warranty.applicable === 'boolean') {
+    return o.warranty.applicable;
+  }
+
+  // 2. Signboard enquiries
+  if (o.type === 'signboard-enquiry') return true;
+
+  // 3. Product pages recorded on the order
+  const pages = []
+    .concat((o.products || []).map(p => p && p.page))
+    .concat((o.items    || []).map(p => p && p.page))
+    .concat(o.page ? [o.page] : [])
+    .map(normPage)
+    .filter(Boolean);
+  if (pages.length) return pages.some(p => WARRANTY_PAGES.includes(p));
+
+  // 4. Manual orders typed by admin — fall back to the product name
+  const text = [o.product, o.desc, o.boardType]
+    .concat((o.items || []).map(i => i && i.name))
+    .join(' ').toLowerCase();
+  if (/inkjet|喷绘|foam|泡沫|acrylic|亚加力|壓克力|bomba|display set|banner|横幅|sticker|flyer|name card|名片|vehicle|车身/.test(text)) return false;
+  if (/signboard|招牌|lightbox|灯箱|neon|霓虹|led|channel letter|3d letter/.test(text)) return true;
+
+  // Unknown → not covered (was: covered, which over-counted)
+  return false;
 }
 
 // ── Warranty config ───────────────────────────────────────────
