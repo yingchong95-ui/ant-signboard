@@ -770,7 +770,7 @@ function addToCart(){
   var items=getCart();
   items.push({ id:'item-'+Date.now(), name:order.service||(document.title.split('—')[0]||'Product').trim(),
     desc:(order.summaryRows||[]).map(function(r){return r[0]+': '+r[1];}).join(', '),
-    price:order.total, qty:1, page:location.pathname.split('/').pop() });
+    price:order.total, qty:1, page:'ant-neon-order.html' });
   saveCart(items);
   var toast=document.getElementById('cart-toast'); if(toast){ toast.style.display='flex'; setTimeout(function(){toast.style.display='none';},3000); }
 }

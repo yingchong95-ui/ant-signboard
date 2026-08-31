@@ -384,10 +384,18 @@
     // Compute grand total
     var grandTotal = items.reduce(function(s, i) { return s + i.price * i.qty; }, 0);
 
-    // Detect warranty products
-    var warrantyPages = { 'ant-signboard-order-v2.html': 12, 'ant-neon-order.html': 12 };
-    var wItems = items.filter(function(i) { return warrantyPages[i.page]; });
-    var wMonths = wItems.length > 0 ? Math.max.apply(null, wItems.map(function(i) { return warrantyPages[i.page] || 12; })) : 12;
+    // Detect warranty products.
+    // Netlify pretty URLs mean `page` can arrive with or without ".html"
+    // (e.g. "ant-neon-order" vs "ant-neon-order.html") — normalise first,
+    // otherwise neon orders silently lose their warranty.
+    var warrantyPages = { 'ant-signboard-order-v2': 12, 'ant-neon-order': 12 };
+    var normPage = function(p) {
+      return String(p || '').split('/').pop().replace(/\.html?$/i, '').toLowerCase();
+    };
+    var wItems  = items.filter(function(i) { return warrantyPages[normPage(i.page)]; });
+    var wMonths = wItems.length > 0
+      ? Math.max.apply(null, wItems.map(function(i) { return warrantyPages[normPage(i.page)] || 12; }))
+      : 12;
 
     var cu = window._fbCurrentUser || null;
     var orderDoc = {
