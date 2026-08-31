@@ -25,6 +25,15 @@
   to = "/.netlify/functions/warranty-sync"
   status = 200
 
+# ── Don't serve function source code as static files ──
+# publish = "." means the whole repo is uploaded, so without this rule
+# anyone could download /netlify/functions/*.js and read the server code.
+[[redirects]]
+  from = "/netlify/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
 # ── Security headers (all responses) ──
 [[headers]]
   for = "/*"
