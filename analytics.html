@@ -13,7 +13,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+         getRedirectResult, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const app = initializeApp({
@@ -28,8 +29,29 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
-window._signIn     = () => signInWithPopup(auth, provider);
-window._signOut    = () => signOut(auth);
+// Popup first; if the browser blocks it, fall back to a full-page redirect
+window._signIn = async () => {
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (err) {
+    const code = err && err.code;
+    if (code === 'auth/popup-blocked' ||
+        code === 'auth/operation-not-supported-in-this-environment' ||
+        code === 'auth/web-storage-unsupported') {
+      await signInWithRedirect(auth, provider);
+      return null;
+    }
+    throw err;
+  }
+};
+window._signOut = () => signOut(auth);
+
+// Completes the redirect flow when Google sends the user back
+getRedirectResult(auth).catch(err => {
+  if (err && err.code && window.showLoginErr) {
+    window.showLoginErr('Sign-in failed (' + err.code + ')');
+  }
+});
 window._getIdToken = () => auth.currentUser ? auth.currentUser.getIdToken() : Promise.resolve(null);
 
 // The real authorisation check happens server-side in /api/analytics-proxy —
@@ -280,20 +302,22 @@ tr:hover td{background:#fafbfd}
 // ─── Auth ────────────────────────────────────────────────────
 // Google Sign-In. The ID token is sent to /api/analytics-proxy, which
 // verifies it server-side — so there is no password in this file to leak.
-function showLoginErr(msg){
+window.showLoginErr = function(msg){
   const e=document.getElementById('loginErr');
   e.textContent=msg; e.style.display='block';
-}
+};
+const showLoginErr = window.showLoginErr;
 function doLogin(){
   const btn=document.querySelector('.login-btn');
   document.getElementById('loginErr').style.display='none';
   if(btn) btn.disabled=true;
   window._signIn()
     .catch(err=>{
-      if(err.code!=='auth/popup-closed-by-user' && err.code!=='auth/cancelled-popup-request'){
-        showLoginErr(err.code==='auth/popup-blocked'
-          ? 'Popup blocked — please allow popups and try again.'
-          : 'Sign-in failed. Please try again.');
+      const code=(err&&err.code)||'';
+      if(code!=='auth/popup-closed-by-user' && code!=='auth/cancelled-popup-request'){
+        showLoginErr(code==='auth/unauthorized-domain'
+          ? 'Domain not authorised in Firebase: '+location.hostname
+          : 'Sign-in failed ('+(code||'unknown')+')');
       }
     })
     .finally(()=>{ if(btn) btn.disabled=false; });

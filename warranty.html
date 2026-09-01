@@ -232,7 +232,8 @@ tr:hover td{background:#fafbfd}
 
 <!-- Firebase -->
 <script type="module">
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+         getRedirectResult, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getFirestore, collection, getDocs }
@@ -273,17 +274,28 @@ function showLogin(msg){
   }
 }
 
+// Completes the redirect flow when Google sends the user back
+getRedirectResult(auth).catch(err => {
+  if(err && err.code) showLogin('Sign-in failed (' + err.code + ')');
+});
+
 window.doLogin = async () => {
   const errEl = document.getElementById('loginErr');
   errEl.style.display = 'none';
   try {
     await signInWithPopup(auth, provider);   // onAuthStateChanged handles the rest
   } catch(err){
-    if(err.code !== 'auth/popup-closed-by-user' &&
-       err.code !== 'auth/cancelled-popup-request'){
-      errEl.textContent = (err.code === 'auth/popup-blocked')
-        ? 'Popup blocked — please allow popups and try again.'
-        : 'Sign-in failed. Please try again.';
+    const code = (err && err.code) || '';
+    // Popup blocked → fall back to full-page redirect (always works)
+    if(code === 'auth/popup-blocked' ||
+       code === 'auth/operation-not-supported-in-this-environment' ||
+       code === 'auth/web-storage-unsupported'){
+      try { await signInWithRedirect(auth, provider); return; } catch(e2){}
+    }
+    if(code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request'){
+      errEl.textContent = (code === 'auth/unauthorized-domain')
+        ? 'Domain not authorised in Firebase: ' + location.hostname
+        : 'Sign-in failed (' + (code || 'unknown') + ')';
       errEl.style.display = 'block';
     }
   }

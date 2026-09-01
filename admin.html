@@ -365,7 +365,8 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+         getRedirectResult, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -394,8 +395,31 @@ window._ADMIN_EMAILS = ADMIN_EMAILS;
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
-window._adminSignIn  = function(){ return signInWithPopup(auth, provider); };
+/* Popup first (nicer — stays on the page), but many browsers block popups,
+   which looks to the user like "it rejected me without even asking".
+   When that happens, fall back to a full-page redirect, which always works. */
+window._adminSignIn = async function(){
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (err) {
+    const code = err && err.code;
+    if (code === 'auth/popup-blocked' ||
+        code === 'auth/operation-not-supported-in-this-environment' ||
+        code === 'auth/web-storage-unsupported') {
+      await signInWithRedirect(auth, provider);   // page navigates away
+      return null;
+    }
+    throw err;
+  }
+};
 window._adminSignOut = function(){ return signOut(auth); };
+
+// Completes the redirect flow when Google sends the user back
+getRedirectResult(auth).catch(err => {
+  if (err && err.code && window.showLoginError) {
+    window.showLoginError('Sign-in failed (' + err.code + ')');
+  }
+});
 
 // Firebase persists the session itself — no sessionStorage flag needed
 onAuthStateChanged(auth, async user => {
@@ -506,12 +530,19 @@ async function doLogin() {
   try {
     await window._adminSignIn();      // onAuthStateChanged handles the rest
   } catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user' &&
-        err.code !== 'auth/cancelled-popup-request') {
-      window.showLoginError(
-        err.code === 'auth/popup-blocked'
-          ? 'Popup blocked — please allow popups for this site and try again.'
-          : 'Sign-in failed. Please try again.');
+    const code = (err && err.code) || '';
+    if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+      let msg;
+      if (code === 'auth/unauthorized-domain') {
+        msg = 'This domain is not authorised in Firebase. Add "' + location.hostname +
+              '" under Firebase Console → Authentication → Settings → Authorized domains.';
+      } else if (code === 'auth/network-request-failed') {
+        msg = 'Network error — check your connection and try again.';
+      } else {
+        // Always show the code: a generic message makes this impossible to debug
+        msg = 'Sign-in failed (' + (code || 'unknown') + ')';
+      }
+      window.showLoginError(msg);
     }
   } finally {
     if (btn) btn.disabled = false;
