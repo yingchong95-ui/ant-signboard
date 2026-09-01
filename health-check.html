@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Health Check — A&T</title>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#0d1f3c"/>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0d1f3c;--red:#e63946;--red-bg:#fff0f1;--green:#16a34a;--green-bg:#edfdf4;
+      --amber:#ca8a04;--amber-bg:#fefce8;--border:#e3e7ef;--off:#f6f8fc;--t2:#5a6478;--t3:#9aa3b2}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);min-height:100vh}
+header{background:var(--navy);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 1.2rem}
+header .logo{color:#fff;font-weight:700;font-size:.95rem}
+header a,header button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;
+  font:600 .76rem 'DM Sans',sans-serif;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none;margin-left:6px}
+.page{max-width:820px;margin:0 auto;padding:1.3rem}
+.origin{font-size:.8rem;color:var(--t2);margin-bottom:1.1rem}
+.origin b{color:var(--navy)}
+.score{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1.1rem;
+  display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.score .big{font-size:1.9rem;font-weight:800;line-height:1}
+.score.pass{border-left:4px solid var(--green)} .score.pass .big{color:var(--green)}
+.score.fail{border-left:4px solid var(--red)}   .score.fail .big{color:var(--red)}
+.grp{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+.grp h2{font-size:.85rem;padding:.8rem 1.1rem;border-bottom:1px solid var(--border);background:#fafbfd}
+.grp h2 span{font-weight:400;color:var(--t3);font-size:.74rem}
+.row{display:flex;align-items:flex-start;gap:.7rem;padding:.72rem 1.1rem;border-bottom:1px solid #f2f4f8;font-size:.83rem}
+.row:last-child{border-bottom:none}
+.ic{flex:0 0 auto;font-size:.95rem;line-height:1.3}
+.row .nm{flex:1}
+.row .dt{font-size:.72rem;color:var(--t3);margin-top:2px}
+.row.bad{background:var(--red-bg)} .row.bad .dt{color:var(--red)}
+.row.warn{background:var(--amber-bg)} .row.warn .dt{color:var(--amber)}
+.btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:.65rem 1.3rem;
+  font:700 .85rem 'DM Sans',sans-serif;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}
+.note{font-size:.76rem;color:var(--t2);line-height:1.65;background:#fff;border:1px solid var(--border);
+  border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1rem}
+.note b{color:var(--navy)}
+.gate{position:fixed;inset:0;z-index:999;background:var(--navy);color:#fff;display:flex;
+  align-items:center;justify-content:center;text-align:center;padding:2rem}
+.gate button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:.8rem;
+  background:#fff;color:#3c4043;border:none;border-radius:8px;font:700 .9rem 'DM Sans',sans-serif;cursor:pointer}
+.gerr{color:#fca5a5;font-size:.8rem;margin-top:1rem;display:none;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div style="max-width:320px;width:100%">
+    <div style="font-size:2.2rem;margin-bottom:.6rem">🩺</div>
+    <div style="font-size:1.05rem;font-weight:700;margin-bottom:.35rem">Health Check</div>
+    <div style="font-size:.82rem;opacity:.7;margin-bottom:1.4rem">A&amp;T 网站安全自检</div>
+    <button onclick="gateSignIn()">
+      <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="gerr" id="gerr"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+<header>
+  <span class="logo">🩺 Health Check</span>
+  <span>
+    <a href="admin.html">← Admin</a>
+    <button onclick="doSignOut()">Logout</button>
+  </span>
+</header>
+
+<div class="page">
+  <div class="origin">目前检查的站：<b id="host"></b></div>
+
+  <div class="note">
+    <b>怎么用：</b>你有两个站部署同一份程式码的不同分支
+    （<code>main</code> → shop、<code>signtrack-pwa</code> → signtrack）。
+    每次更新完，<b>在两个站各开一次这个页面</b>：<br/>
+    · <b>安全漏洞</b>那一区两边结果相同（可跨站检查）<br/>
+    · <b>本站程式码版本</b>那一区只反映你目前开着的站 —— 这一区就是用来抓分支漂移的
+  </div>
+
+  <button class="btn" id="runBtn" onclick="runAll()">🔄 重新检查</button>
+
+  <div id="score"></div>
+  <div id="out"></div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+         getRedirectResult, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const app = initializeApp({
+  apiKey:"AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain:"sign-track-ff7f3.firebaseapp.com",
+  projectId:"sign-track-ff7f3",
+  storageBucket:"sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId:"63683429806",
+  appId:"1:63683429806:web:6c75bfaf4f851157bc743f"
+});
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt:'select_account' });
+const ADMIN_EMAILS = ['antsign.shop@gmail.com','yingchong95@gmail.com'];
+
+window.gateSignIn = async () => {
+  const e = document.getElementById('gerr'); e.style.display='none';
+  try { await signInWithPopup(auth, provider); }
+  catch (err) {
+    const c = (err&&err.code)||'';
+    if (c==='auth/popup-blocked'||c==='auth/operation-not-supported-in-this-environment'){
+      try { await signInWithRedirect(auth, provider); return; } catch(e2){}
+    }
+    if (c!=='auth/popup-closed-by-user' && c!=='auth/cancelled-popup-request'){
+      e.textContent = c==='auth/unauthorized-domain'
+        ? 'Domain not authorised in Firebase: '+location.hostname
+        : 'Sign-in failed ('+(c||'unknown')+')';
+      e.style.display='block';
+    }
+  }
+};
+window.doSignOut = () => signOut(auth).then(()=>location.reload());
+getRedirectResult(auth).catch(()=>{});
+
+onAuthStateChanged(auth, async user => {
+  if (user && ADMIN_EMAILS.includes((user.email||'').toLowerCase())){
+    document.getElementById('gate').style.display='none';
+    document.getElementById('app').style.display='';
+    document.getElementById('host').textContent = location.host;
+    window.runAll();
+    return;
+  }
+  if (user){
+    await signOut(auth).catch(()=>{});
+    const e=document.getElementById('gerr');
+    e.textContent='这个 Google 帐号没有权限'; e.style.display='block';
+  }
+});
+</script>
+
+<script>
+const SHOP      = 'https://shop.jbsignboard.com';
+const SIGNTRACK = 'https://signtrack-production.netlify.app';
+const FB_KEY    = 'AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4';
+const FS        = 'https://firestore.googleapis.com/v1/projects/sign-track-ff7f3/databases/(default)/documents';
+
+async function get(url, opt){
+  try { const r = await fetch(url, Object.assign({cache:'no-store'}, opt||{}));
+        return {ok:true, status:r.status, text:await r.text()}; }
+  catch(e){ return {ok:false, err:e.message}; }
+}
+
+/* ── Cross-site checks: these read fine from either origin ─────────── */
+async function securityChecks(){
+  const out = [];
+
+  for (const [name, base] of [['shop.jbsignboard.com', SHOP], ['signtrack-production', SIGNTRACK]]){
+    const r = await get(base + '/api/analytics-proxy');
+    if (!r.ok) out.push(['warn', name + ' 报表 API', '无法连线（' + r.err + '）']);
+    else if (r.text.includes('"customer"'))
+      out.push(['bad',  name + ' 报表 API', '🔴 未登入就吐出订单资料！立刻处理']);
+    else if (r.status === 401)
+      out.push(['ok',   name + ' 报表 API', '401 需要登入']);
+    else if (r.status === 500)
+      out.push(['bad',  name + ' 报表 API', '500 — 这个站的 ADMIN_EMAILS 环境变数没设']);
+    else out.push(['warn', name + ' 报表 API', '非预期状态 ' + r.status]);
+  }
+
+  // Firestore — anonymous list must be blocked
+  let r = await get(FS + '/orders?pageSize=1&key=' + FB_KEY);
+  out.push(r.ok && r.status === 403
+    ? ['ok',  'Firestore 匿名列举订单', '403 已挡']
+    : ['bad', 'Firestore 匿名列举订单', '🔴 回传 ' + (r.status||r.err) + ' — 规则可能被改回去了']);
+
+  // Firestore — anonymous write must be blocked (non-destructive probe)
+  r = await get(FS + '/orders/healthProbeNonExistent999?key=' + FB_KEY +
+                '&currentDocument.exists=true&updateMask.fieldPaths=p',
+                {method:'PATCH', headers:{'Content-Type':'application/json'},
+                 body: JSON.stringify({fields:{p:{stringValue:'x'}}})});
+  out.push(r.ok && r.status === 403
+    ? ['ok',  'Firestore 匿名改单/删单', '403 已挡']
+    : ['bad', 'Firestore 匿名改单/删单', '🔴 回传 ' + (r.status||r.err) + ' — 外人可能能改你的订单']);
+
+  // Firestore — tracking by order ID must still work (guards against over-locking)
+  r = await get(FS + '/orders/SHOP-20260708-Q5MU?key=' + FB_KEY);
+  out.push(r.ok && r.status === 200
+    ? ['ok',  '客户凭单号追踪', '200 正常']
+    : ['warn','客户凭单号追踪', '回传 ' + (r.status||r.err) + ' — 客户可能查不到订单']);
+
+  return out;
+}
+
+/* ── Same-origin checks: only cover the site this page is loaded on ── */
+async function codeChecks(){
+  const out = [];
+
+  let r = await get('/index.html.bak');
+  out.push(r.status === 404
+    ? ['ok','备份源码 index.html.bak','404 已移除']
+    : ['bad','备份源码 index.html.bak','🔴 ' + r.status + ' — 旧版源码可被下载']);
+
+  r = await get('/netlify/functions/analytics-proxy.js');
+  out.push(!r.text || !r.text.includes('exports.handler')
+    ? ['ok','函式源码','已挡下']
+    : ['bad','函式源码','🔴 伺服器程式码可被下载']);
+
+  const files = [
+    ['admin.html',                  'signInWithPopup',                 'Google 登入'],
+    ['admin.html',                  'signInWithRedirect',              '弹窗被挡时的 redirect 备援'],
+    ['analytics.html',              "'Bearer ' + token",               '报表带 token'],
+    ['analytics.html',              '!antshop2024',                    '明文密码已移除'],
+    ['warranty.html',               'WARRANTY_PAGES',                  '保固判断规则'],
+    ['cart.html',                   'proceedAnyway',                   '结帐登入提示'],
+    ['cart.html',                   'normPage',                        'Neon pretty-URL 修正'],
+    ['track.html',                  'function hasWarranty',            '保固卡只对招牌显示'],
+    ['ant-signboard-order-v2.html', '_fbSaveEnquiryWithRetry',         '询价存档重试 + 失败提示'],
+    ['ant-signboard-order-v2.html', 'userId:       _u ? _u.uid   : null', '询价单写入 userId'],
+  ];
+  const cache = {};
+  for (const [file, marker, label] of files){
+    if (!(file in cache)){ const rr = await get('/' + file); cache[file] = rr.ok ? rr.text : null; }
+    const txt = cache[file];
+    if (txt === null){ out.push(['warn', label, file + ' 读取失败']); continue; }
+    const neg = marker.startsWith('!');
+    const has = txt.includes(neg ? marker.slice(1) : marker);
+    const good = neg ? !has : has;
+    out.push(good ? ['ok', label, file + ' ✓']
+                  : ['bad', label, '🔴 ' + file + ' 是旧版 — 这个分支漏更新了']);
+  }
+  return out;
+}
+
+function render(id, title, sub, rows){
+  const html = '<div class="grp"><h2>' + title + ' <span>' + sub + '</span></h2>' +
+    rows.map(([st, nm, dt]) =>
+      '<div class="row ' + (st==='ok'?'':st) + '">' +
+      '<span class="ic">' + (st==='ok'?'✅':st==='warn'?'⚠️':'❌') + '</span>' +
+      '<span class="nm">' + nm + '<div class="dt">' + dt + '</div></span></div>').join('') +
+    '</div>';
+  document.getElementById(id).insertAdjacentHTML('beforeend', html);
+}
+
+window.runAll = async function(){
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.textContent = '检查中…';
+  document.getElementById('out').innerHTML = '';
+  document.getElementById('score').innerHTML = '';
+
+  const sec  = await securityChecks();
+  const code = await codeChecks();
+
+  const all  = sec.concat(code);
+  const bad  = all.filter(r => r[0] === 'bad').length;
+  const warn = all.filter(r => r[0] === 'warn').length;
+
+  document.getElementById('score').innerHTML =
+    '<div class="score ' + (bad ? 'fail' : 'pass') + '">' +
+    '<div class="big">' + (bad ? '❌ ' + bad : '✅ 全部通过') + '</div>' +
+    '<div style="font-size:.83rem;color:var(--t2)">' +
+    (bad ? '有 ' + bad + ' 项需要立刻处理' + (warn ? '，另有 ' + warn + ' 项警告' : '')
+         : '共 ' + all.length + ' 项检查' + (warn ? '（' + warn + ' 项警告）' : '')) +
+    '<br/>检查时间 ' + new Date().toLocaleString('zh-Hans') + '</div></div>';
+
+  render('out', '🔐 安全漏洞', '两个站都会检查', sec);
+  render('out', '📦 本站程式码版本', '只反映 ' + location.host + ' — 请在另一个站也开一次', code);
+
+  btn.disabled = false; btn.textContent = '🔄 重新检查';
+};
+</script>
+</body>
+</html>
