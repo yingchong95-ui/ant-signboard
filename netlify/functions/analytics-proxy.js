@@ -14,8 +14,17 @@
 //                  public web key below, which is safe to expose by design.
 // ──────────────────────────────────────────────────────────────────────
 
-const SHEETS_URL   = 'https://script.google.com/macros/s/AKfycbzdf3SsRgKQ3ljq-lcg2tG-29XTIfTyiNLVa8FSOv_tthCNAcT1xidSPmgU8HZcgDI/exec';
-const ALLOW_ORIGIN = 'https://shop.jbsignboard.com';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzdf3SsRgKQ3ljq-lcg2tG-29XTIfTyiNLVa8FSOv_tthCNAcT1xidSPmgU8HZcgDI/exec';
+
+// Origins allowed to call this endpoint. Still a strict allow-list — an
+// unknown site gets the default origin back, so its fetch is rejected.
+// Must match the Authorized domains list in Firebase Auth.
+const ALLOWED_ORIGINS = [
+  'https://shop.jbsignboard.com',
+  'https://signtrack-production.netlify.app',
+  'https://ant-signboard.netlify.app',
+];
+const DEFAULT_ORIGIN = ALLOWED_ORIGINS[0];
 
 // Firebase Web API keys are public identifiers, not secrets.
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY
@@ -31,7 +40,7 @@ function adminEmails() {
 function baseHeaders(origin) {
   return {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': origin === ALLOW_ORIGIN ? origin : ALLOW_ORIGIN,
+    'Access-Control-Allow-Origin': ALLOWED_ORIGINS.includes(origin) ? origin : DEFAULT_ORIGIN,
     'Access-Control-Allow-Headers': 'Authorization, Content-Type',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Vary': 'Origin',
