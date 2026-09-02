@@ -982,7 +982,14 @@ function buildActions(o, steps, status) {
   }
 
   // WA notify button
-  btns.push(`<button class="action-btn" onclick="waNotify('${o.id||o._docId}','${o.customer||''}','${o.phone||''}')">📲 WhatsApp Customer</button>`);
+  // Customer-supplied values go into escaped data-* attributes, never inside the
+  // onclick string. A customer name like   '); fetch('//evil'); //   would
+  // otherwise execute as JavaScript in the admin's own session (stored XSS).
+  btns.push('<button class="action-btn" onclick="waNotify(this)"'
+    + ' data-oid="'   + escHtml(o.id || o._docId || '') + '"'
+    + ' data-cust="'  + escHtml(o.customer || '')       + '"'
+    + ' data-phone="' + escHtml(o.phone || '')          + '"'
+    + '>📲 WhatsApp Customer</button>');
 
   return btns.join('');
 }
@@ -1148,7 +1155,15 @@ async function cycleStep(docId, stepId, currentStatus) {
   }
 }
 
-function waNotify(orderId, customer, phone) {
+function waNotify(elOrOrderId, customer, phone) {
+  // Preferred: waNotify(this) — reads escaped values from data-* attributes.
+  // Legacy 3-argument form still works if called from anywhere else.
+  let orderId = elOrOrderId;
+  if (elOrOrderId && elOrOrderId.dataset) {
+    orderId  = elOrOrderId.dataset.oid   || '';
+    customer = elOrOrderId.dataset.cust  || '';
+    phone    = elOrOrderId.dataset.phone || '';
+  }
   if (!phone) {
     alert('❌ No phone number found for this customer.\nPlease edit the order and add a phone number first.');
     return;
