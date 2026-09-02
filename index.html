@@ -93,9 +93,9 @@ header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;ba
 .logo-text{display:flex;flex-direction:column}
 .logo-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.04em;line-height:1.1}
 .logo-tagline{font-size:.65rem;font-weight:400;color:rgba(255,255,255,.55);letter-spacing:.06em;text-transform:uppercase}
-.wa-btn{display:flex;align-items:center;gap:6px;background:#25D366;color:#fff;font-size:.8rem;font-weight:600;padding:8px 16px;border-radius:6px;text-decoration:none;transition:filter .2s}
+.wa-btn{display:flex;align-items:center;gap:6px;background:#25D366;color:#fff;font-size:.8rem;font-weight:600;padding:11px 16px;border-radius:6px;text-decoration:none;transition:filter .2s}
 .wa-btn:hover{filter:brightness(1.08)}
-.cart-hdr-btn{position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:1.15rem;cursor:pointer;text-decoration:none;transition:background .2s;flex-shrink:0}
+.cart-hdr-btn{position:relative;display:flex;align-items:center;justify-content:center;width:44px;height:44px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:1.15rem;cursor:pointer;text-decoration:none;transition:background .2s;flex-shrink:0}
 .cart-hdr-btn:hover{background:rgba(255,255,255,.22)}
 .cart-hdr-badge{position:absolute;top:-5px;right:-5px;background:#DC2626;color:#fff;font-size:.55rem;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 3px}
 
@@ -218,8 +218,9 @@ header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;ba
 .hero-ai-suggestions{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
 .hero-ai-suggest-btn{
   background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.55);font-size:.7rem;padding:3px 10px;border-radius:14px;
+  color:rgba(255,255,255,.55);font-size:.7rem;padding:7px 12px;border-radius:16px;
   cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;
+  min-height:32px;                /* WCAG 2.5.8 点击目标最小 24px */
 }
 .hero-ai-suggest-btn:hover{background:rgba(255,255,255,.15);color:rgba(255,255,255,.85)}
 .thinking-dots span{animation:blink 1.2s infinite;display:inline-block}
@@ -371,7 +372,7 @@ footer a:hover{color:#fff}
 .ai-panel-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#34a853;display:inline-block}
 .ai-panel-close{
   background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);
-  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  width:36px;height:36px;border-radius:50%;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:background .2s;
   font-size:1.1rem;line-height:1;
 }
@@ -398,8 +399,9 @@ footer a:hover{color:#fff}
 .ai-quick-btn{
   background:var(--gemini-bg);border:1px solid rgba(66,133,244,.3);
   color:var(--gemini-dark);font-size:.7rem;font-weight:600;
-  padding:4px 10px;border-radius:12px;cursor:pointer;transition:all .2s;
+  padding:7px 12px;border-radius:14px;cursor:pointer;transition:all .2s;
   font-family:'DM Sans',sans-serif;
+  min-height:32px;                /* WCAG 2.5.8 点击目标最小 24px */
 }
 .ai-quick-btn:hover{background:var(--gemini);color:#fff}
 
@@ -414,7 +416,7 @@ footer a:hover{color:#fff}
 }
 .ai-input:focus{border-color:var(--gemini)}
 .ai-send{
-  width:36px;height:36px;background:var(--gemini);border:none;border-radius:10px;
+  width:40px;height:40px;background:var(--gemini);border:none;border-radius:10px;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   transition:background .2s;flex-shrink:0;
 }
@@ -470,21 +472,21 @@ footer a:hover{color:#fff}
   <div class="hero-ai-box">
     <div class="hero-ai-label">
       <span class="gemini-dot"></span>
-      AI · 帮你找到合适的产品
+      AI · Find the right product for you
     </div>
     <div class="hero-ai-input-row">
-      <input class="hero-ai-input" id="heroAiInput" type="text" placeholder="描述你的需求，例如：展览用的展示架…" autocomplete="off" aria-label="描述你的需求，AI 帮你推荐产品"/>
+      <input class="hero-ai-input" id="heroAiInput" type="text" placeholder="Describe what you need, e.g. outdoor shop signboard…" autocomplete="off" aria-label="Describe your needs, AI will recommend products"/>
       <button class="hero-ai-btn" id="heroAiBtn" onclick="heroAiSearch()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        推荐产品
+        Recommend
       </button>
     </div>
     <div class="hero-ai-suggestions">
-      <button class="hero-ai-suggest-btn" onclick="heroAiFill('室内展览展示架')">室内展览展示架</button>
-      <button class="hero-ai-suggest-btn" onclick="heroAiFill('消防安全标志')">消防安全标志</button>
-      <button class="hero-ai-suggest-btn" onclick="heroAiFill('活动横幅横额')">活动横幅横额</button>
-      <button class="hero-ai-suggest-btn" onclick="heroAiFill('门店招牌')">门店招牌</button>
-      <button class="hero-ai-suggest-btn" onclick="heroAiFill('霓虹灯装饰')">霓虹灯装饰</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('indoor display stand')">Indoor display stand</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('fire safety sign')">Fire safety sign</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('event banner')">Event banner</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('shop signboard')">Shop signboard</button>
+      <button class="hero-ai-suggest-btn" onclick="heroAiFill('neon light decor')">Neon light decor</button>
     </div>
     <div class="hero-ai-result" id="heroAiResult"></div>
   </div>
@@ -941,7 +943,7 @@ footer a:hover{color:#fff}
 </a>
 
 <!-- PLAN A: AI Chat FAB -->
-<button class="ai-fab" id="aiFab" onclick="toggleChat()" title="AI 询价助手" aria-label="Open AI assistant">
+<button class="ai-fab" id="aiFab" onclick="toggleChat()" title="AI Assistant" aria-label="Open AI assistant">
   <span class="ai-fab-dot" id="aiFabDot"></span>
   <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white" fill-opacity="0.95"/>
@@ -955,7 +957,7 @@ footer a:hover{color:#fff}
       <svg viewBox="0 0 28 28" fill="none"><path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white" fill-opacity="0.9"/></svg>
     </div>
     <div class="ai-panel-info">
-      <div class="ai-panel-name">A&T AI 询价助手</div>
+      <div class="ai-panel-name">A&T AI Assistant</div>
       <div class="ai-panel-status">Powered by Claude AI</div>
     </div>
     <button class="ai-panel-close" onclick="toggleChat()" aria-label="Close chat">✕</button>
@@ -964,19 +966,19 @@ footer a:hover{color:#fff}
   <div class="ai-messages" id="aiMessages">
     <div class="ai-msg bot">
       <div class="ai-msg-avatar"><svg viewBox="0 0 28 28" fill="none"><path d="M14 3C14 3 15.5 9.5 19 13C22.5 16.5 26 14 26 14C26 14 22.5 15.5 19 19C15.5 22.5 14 26 14 26C14 26 12.5 22.5 9 19C5.5 15.5 2 14 2 14C2 14 5.5 12.5 9 9C12.5 5.5 14 3 14 3Z" fill="white"/></svg></div>
-      <div class="ai-bubble">你好！我是 A&T 的 AI 助手 👋<br/>请问你需要什么类型的标牌或印刷品？我可以帮你推荐合适的产品和估算价格。</div>
+      <div class="ai-bubble">Hi! I'm A&T's AI assistant 👋<br/>What type of signage or printing do you need? I can recommend the right product and estimate pricing for you.</div>
     </div>
   </div>
 
   <div class="ai-quick-btns" id="aiQuickBtns">
-    <button class="ai-quick-btn" onclick="chatQuick('消防标志多少钱？')">🧯 消防标志</button>
-    <button class="ai-quick-btn" onclick="chatQuick('我要做店招牌')">🪧 店招牌</button>
-    <button class="ai-quick-btn" onclick="chatQuick('横幅横额印刷')">🖨️ 横额印刷</button>
-    <button class="ai-quick-btn" onclick="chatQuick('LED霓虹灯牌')">💡 霓虹灯</button>
+    <button class="ai-quick-btn" onclick="chatQuick('How much for fire safety signs?')">🧯 Fire sign</button>
+    <button class="ai-quick-btn" onclick="chatQuick('I need a shop signboard')">🪧 Shop sign</button>
+    <button class="ai-quick-btn" onclick="chatQuick('Banner printing price')">🖨️ Banner</button>
+    <button class="ai-quick-btn" onclick="chatQuick('LED neon sign')">💡 Neon sign</button>
   </div>
 
   <div class="ai-input-row">
-    <input class="ai-input" id="aiInput" type="text" placeholder="输入你的问题…" autocomplete="off" aria-label="输入你的问题" onkeydown="if(event.key==='Enter')sendChat()"/>
+    <input class="ai-input" id="aiInput" type="text" placeholder="Type your question…" autocomplete="off" aria-label="Type your question" onkeydown="if(event.key==='Enter')sendChat()"/>
     <button class="ai-send" onclick="sendChat()" aria-label="Send message">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
@@ -995,19 +997,19 @@ const PRODUCTS = [
   {id:'neon',     name:'LED Neon Sign',             price:'RM 15/m起',url:'ant-neon-order.html',           tags:'neon led light decoration interior event colour font custom'},
 ];
 
-const SYSTEM_PROMPT = `你是 A&T Signboard & Printing 的 AI 询价助手。公司位于 Ulu Tiram (JB)、Subang Jaya (KL) 和 Singapore，主营招牌、印刷、展示产品。
+const SYSTEM_PROMPT = `You are A&T Signboard & Printing's AI pricing assistant. The company is based in Ulu Tiram (JB), Subang Jaya (KL) and Singapore, specialising in signboards, printing and display products.
 
-产品列表：
-${PRODUCTS.map(p=>`- ${p.name}（${p.price}）：${p.tags}`).join('\n')}
+Products:
+${PRODUCTS.map(p=>`- ${p.name} (${p.price}): ${p.tags}`).join('\n')}
 
-回答规则：
-1. 用简体中文、英文或马来文（Bahasa Melayu）回复，自动跟随用户的语言
-2. 闲聊或推荐时简洁（100 字内）；报价时可分行列出明细
-3. 推荐产品时加上链接格式：[产品名](url)
-4. 用户想知道价格时：先问清必要参数（尺寸、材料、数量、款式、是否安装等），参数齐了再调用 calculate_price 工具算出精确价格，并把单价、面积、明细、总价讲清楚。不要凭空报价
-5. 报价后务必说明这是估价，最终以 WhatsApp (+60 19-790 1150) 确认为准
-6. 如果问题超出产品范围，礼貌说明并引导联系客服
-7. 如果用户询问订单进度或给出订单号（如 SHOP-…、DS-…、SB-…），用链接格式引导他去实时查询页：[查询订单进度](https://shop.jbsignboard.com/track.html?id=订单号)（把"订单号"换成用户的实际订单号）`;
+Rules:
+1. Reply in English by default. If the user writes in Chinese or Malay, reply in their language.
+2. Keep casual replies concise (under 80 words); break down pricing line by line when quoting.
+3. When recommending products, include links: [Product Name](url)
+4. For pricing: ask for necessary details first (size, material, quantity, style, installation, etc.), then give an estimate. Do not quote without knowing the specs.
+5. Always clarify that quotes are estimates — final price confirmed via WhatsApp (+60 19-790 1150).
+6. If the question is outside your product range, politely redirect to customer service.
+7. If the user asks about order status or provides an order number (e.g. SHOP-…, DS-…, SB-…), guide them with a link: [Track your order](https://shop.jbsignboard.com/track.html?id=ORDERID) (replace ORDERID with their actual order number).`;
 
 // ─── Claude API call (via Netlify proxy — key is server-side only) ──
 const AI_URL = '/api/gemini';
@@ -1114,13 +1116,13 @@ setTimeout(()=>{
 }, 3000);
 
 // ─── PLAN B: Hero AI Product Recommender ──────────────────────
-const HERO_SYSTEM = `你是 A&T Signboard & Printing 的产品推荐 AI。根据用户需求，从以下产品中推荐 1-3 个最合适的，并简单说明原因（不超过60字）。
+const HERO_SYSTEM = `You are A&T Signboard & Printing's product recommendation AI. Based on the user's request, recommend 1-3 of the most suitable products from the list below, with a brief reason (max 60 words).
 
-产品列表（用product id回复）：
+Products (reply using product id):
 ${PRODUCTS.map(p=>`id:${p.id} | ${p.name} | ${p.tags}`).join('\n')}
 
-必须严格用以下JSON格式回复，不要有其他内容：
-{"summary":"一句话总结推荐原因","ids":["id1","id2"]}`;
+You MUST reply strictly in this JSON format with no other content:
+{"summary":"one-line summary of why these are recommended","ids":["id1","id2"]}`;
 
 function heroAiFill(text) {
   document.getElementById('heroAiInput').value = text;
@@ -1136,7 +1138,7 @@ async function heroAiSearch() {
   const result = document.getElementById('heroAiResult');
 
   btn.disabled = true;
-  btn.innerHTML = '<span class="thinking-dots"><span>·</span><span>·</span><span>·</span></span> 分析中';
+  btn.innerHTML = '<span class="thinking-dots"><span>·</span><span>·</span><span>·</span></span> Analysing';
   result.className = 'hero-ai-result';
   result.innerHTML = '';
 
@@ -1202,12 +1204,12 @@ async function heroAiSearch() {
     }, 400);
 
   } catch(e) {
-    result.innerHTML = '<span style="opacity:.6">⚠ AI 暂时无法连接，请直接浏览产品</span>';
+    result.innerHTML = '<span style="opacity:.6">⚠ AI temporarily unavailable — please browse products directly</span>';
     result.classList.add('show');
   }
 
   btn.disabled = false;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 推荐产品';
+  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Recommend';
 }
 
 function resetCards() {
