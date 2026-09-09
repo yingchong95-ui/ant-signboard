@@ -486,7 +486,30 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 .cart-toast.show{opacity:1;transform:translateY(0)}
 
 /* ── Canvas Editor ── */
-.canvas-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:.7rem 1rem;background:#f6f8fc;border-bottom:1px solid var(--border);border-radius:var(--r-md) var(--r-md) 0 0}
+/* ── 版型范本列 ── */
+.layout-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:.6rem 1rem;
+  background:#eef2f9;border-bottom:1px solid var(--border);border-radius:var(--r-md) var(--r-md) 0 0}
+.lb-label{font-size:.7rem;font-weight:700;color:var(--t2);letter-spacing:.04em;margin-right:2px}
+.lb-spacer{flex:1}
+.layout-btn{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1.5px solid var(--border);
+  color:var(--t1);font-family:'DM Sans',sans-serif;font-size:.73rem;font-weight:600;
+  padding:7px 11px;border-radius:7px;cursor:pointer;transition:all .15s;min-height:32px;white-space:nowrap}
+.layout-btn:hover{border-color:var(--red);color:var(--red)}
+.layout-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.layout-btn.add{border-color:var(--green);color:var(--green)}
+.layout-btn.add:hover{background:var(--green);color:#fff}
+.layout-btn:disabled{opacity:.4;cursor:default}
+.layout-btn:disabled:hover{border-color:var(--border);color:var(--t1)}
+.lb-ico{font-weight:800;opacity:.65}
+.ct-btn.danger{border-color:#fca5a5;color:var(--red)}
+.ct-btn.danger:hover{background:var(--red);color:#fff;border-color:var(--red)}
+@media(max-width:560px){
+  .layout-bar{gap:5px;padding:.55rem .7rem}
+  .layout-btn{font-size:.68rem;padding:7px 9px}
+  .lb-spacer{flex-basis:100%;height:0}
+}
+
+.canvas-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:.7rem 1rem;background:#f6f8fc;border-bottom:1px solid var(--border);border-radius:0}
 .ct-group{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;color:var(--t2)}
 .ct-group select,.ct-group input[type=range]{font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:3px 6px;background:#fff;color:var(--t1);cursor:pointer}
 .ct-group input[type=range]{width:80px;cursor:pointer;accent-color:var(--red)}
@@ -969,6 +992,20 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
       </div>
 
       <!-- Canvas toolbar -->
+      <!-- 版型范本：一键排好，客户不用自己拖 -->
+      <div class="layout-bar">
+        <span class="lb-label">版型 Layout</span>
+        <button class="layout-btn" data-layout="center"   onclick="applyLayout('center')">
+          <span class="lb-ico">≡</span> 置中堆叠</button>
+        <button class="layout-btn" data-layout="logoLeft" onclick="applyLayout('logoLeft')">
+          <span class="lb-ico">◧</span> Logo 左 + 文字右</button>
+        <button class="layout-btn" data-layout="bigName"  onclick="applyLayout('bigName')">
+          <span class="lb-ico">A</span> 满版大字</button>
+        <div class="lb-spacer"></div>
+        <button class="layout-btn add" onclick="addTextToCanvas()">＋ 加文字</button>
+        <button class="layout-btn" id="undoBtn" onclick="doUndo()" disabled title="还原上一步">↶ 还原</button>
+      </div>
+
       <div class="canvas-toolbar">
         <div class="ct-group">
           <span>Font</span>
@@ -984,17 +1021,29 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
           </select>
         </div>
         <div class="ct-sep"></div>
+        <!-- 以下三项作用于「目前选取的元素」 -->
         <div class="ct-group">
-          <span>Name</span>
-          <input type="range" id="nameSizeSlider" min="14" max="80" value="36" oninput="updateNameSize(this.value)">
-          <span id="nameSizeVal">36</span>
+          <span>大小 Size</span>
+          <input type="range" id="elSizeSlider" min="8" max="90" value="36" oninput="updateElSize(this.value)">
+          <span id="elSizeVal">36</span>
         </div>
         <div class="ct-group">
-          <span>Slogan</span>
-          <input type="range" id="sloganSizeSlider" min="8" max="40" value="14" oninput="updateSloganSize(this.value)">
-          <span id="sloganSizeVal">14</span>
+          <span>颜色</span>
+          <input type="color" id="elColour" value="#ffffff" onchange="updateElColour(this.value)"
+                 title="改选取文字的颜色" style="width:30px;height:26px;padding:0;border:1px solid var(--border);border-radius:5px;cursor:pointer;background:none">
         </div>
+        <div class="ct-group" id="alignGroup">
+          <span>对齐</span>
+          <button class="ct-btn" onclick="alignSelected('left')"    title="靠左">⇤</button>
+          <button class="ct-btn" onclick="alignSelected('centerX')" title="水平置中">⇔</button>
+          <button class="ct-btn" onclick="alignSelected('right')"   title="靠右">⇥</button>
+          <button class="ct-btn" onclick="alignSelected('centerY')" title="垂直置中">⇕</button>
+        </div>
+        <button class="ct-btn danger" id="delElBtn" onclick="deleteSelected()" style="display:none" title="删除选取的元素">🗑 删除</button>
         <div class="ct-sep"></div>
+        <!-- 保留旧的滑桿以相容旧程式码呼叫，但不显示 -->
+        <input type="range" id="nameSizeSlider" style="display:none" value="36"><span id="nameSizeVal" style="display:none">36</span>
+        <input type="range" id="sloganSizeSlider" style="display:none" value="14"><span id="sloganSizeVal" style="display:none">14</span>
         <!-- Alum strip orientation (only shown when alum board selected) -->
         <div class="ct-group" id="alumDirGroup" style="display:none">
           <span>Strips</span>
@@ -1015,7 +1064,10 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
       <div class="canvas-wrap" id="canvasWrap">
         <canvas id="designCanvas"></canvas>
       </div>
-      <div class="canvas-hint">Click any element to select · Drag to reposition · Use sliders to resize text</div>
+      <div class="canvas-hint">
+        <span id="selHint">未选取任何元素</span>
+        · 点选元素后可改字体／大小／颜色 · 拖动会自动对齐中线 · 双击文字可直接编辑
+      </div>
 
       <!-- Mockup scene (hidden by default) -->
       <div class="mockup-scene" id="mockupScene">
@@ -1244,14 +1296,260 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 <script>
 /* ══ Fabric.js Canvas Designer ══ */
 var fc, fcBg, fcName, fcSlogan, fcBiz, fcSsm, fcLogo = null;
+var fcExtras = [];        // 客户自己新增的文字元素
+var undoStack = [];       // 还原用的快照
+var undoRestoring = false;
 var mockupVisible = false;
 var nightMode = false;
+
+/* ═══════════════════════════════════════════════════════════════════════
+   灯光模型 — 数值来自 A&T 实拍照片取样，不是凭感觉调的
+
+   实测（OneHealth Clinic 日夜对照 / K&K Carpentry 灯开关对照）：
+
+     Frontlit 白天   字/底板 亮度比 1.75   （对比很低，靠颜色和立体感辨识）
+     Frontlit 晚上   字/底板 亮度比 208    （底板几乎全黑，只剩字在发光）
+                     发光色 #d3eabb（暖白 LED 透白亚克力，带一点绿）
+     Backlit 灯开    字 82 < 底板 90       （字是不透光实心，比底板暗！）
+                     光晕 141 = 底板的 1.57 倍
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 把颜色的亮度乘上一个系数（模拟环境光变暗） */
+function dimColour(hex, factor, tintHex) {
+  var c = hexToRgb(hex);
+  if (!c) return hex;
+  var t = tintHex ? hexToRgb(tintHex) : null;
+  var r = c.r * factor, g = c.g * factor, b = c.b * factor;
+  if (t) {   // 夜间环境光偏冷，稍微带一点色偏
+    r = r * 0.85 + t.r * 0.15;
+    g = g * 0.85 + t.g * 0.15;
+    b = b * 0.85 + t.b * 0.15;
+  }
+  return 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   立体字厚度（box-up 字的侧壁）
+
+   实拍里每一块招牌的字都是立体的、有厚度和投影。平面的字再怎么发光都像海报。
+   做法：在真正的字後面叠几层往右下偏移的深色副本，形成侧壁。
+
+   重点：frontlit 晚上「字面发光但侧壁仍是暗的」—— 侧壁不透光，
+   所以这里的颜色永远取自字面的暗色版，不跟著发光色走。
+   ═══════════════════════════════════════════════════════════════════════ */
+var EXTRUDE_LAYERS = 5;      // 中等精细度
+var _extrudeHidden = false;
+
+function clearExtrusion() {
+  if (!fc) return;
+  fc.getObjects().slice().forEach(function(o){ if (o.__ext) fc.remove(o); });
+}
+
+function buildExtrusion() {
+  if (!fc || _extrudeHidden) return;
+  clearExtrusion();
+
+  // Lightbox 的字是印在箱面上的平面油墨，没有厚度 —— 不该有立体侧壁
+  if (S.board === 'lightbox') return;
+
+  var h = fc.height;
+  var depth = Math.max(2, h * 0.045);      // 总厚度
+  var targets = [
+    { o: fcName,   layers: EXTRUDE_LAYERS },
+    { o: fcSlogan, layers: 1 }
+  ].concat(fcExtras.map(function(o){ return { o:o, layers:2 }; }));
+
+  var made = [];
+  targets.forEach(function(t){
+    var o = t.o;
+    if (!o || !fc.contains(o) || o.visible === false) return;
+    if (!o.text || !String(o.text).trim()) return;
+
+    // 侧壁颜色：字面的暗色版（不透光，所以不发光）
+    var faceForSide = o.__customFill ? o.fill : (S.fg || '#ffffff');
+    var side = dimColour(faceForSide, nightMode ? 0.16 : 0.34, '#0b0d12');
+
+    for (var i = t.layers; i >= 1; i--) {
+      var k = i / t.layers;
+      var c = new fabric.Text(String(o.text), {
+        left: o.left + depth * k * 0.75,
+        top:  o.top  + depth * k,
+        originX:o.originX, originY:o.originY,
+        fontSize:o.fontSize, fontFamily:o.fontFamily, fontWeight:o.fontWeight,
+        textAlign:o.textAlign,
+        scaleX:o.scaleX, scaleY:o.scaleY,
+        fill: side,
+        selectable:false, evented:false, __ext:true
+      });
+      made.push(c);
+      fc.add(c);
+    }
+  });
+
+  // 层级：底板 → 灯光效果 → 侧壁 → 真正的字
+  made.forEach(function(c){ fc.sendToBack(c); });
+  fc.getObjects().forEach(function(o){ if (o.__fx) fc.sendToBack(o); });
+  fc.sendToBack(fcBg);
+  [fcName, fcSlogan, fcBiz, fcSsm].concat(fcExtras).forEach(function(o){
+    if (o && fc.contains(o)) fc.bringToFront(o);
+  });
+  if (fcLogo && fc.contains(fcLogo)) fc.bringToFront(fcLogo);
+}
+
+/* 拖动时先收掉侧壁，放开手再补回来 —— 手机上才不会卡 */
+function suspendExtrusion() {
+  if (_extrudeHidden) return;
+  _extrudeHidden = true;
+  clearExtrusion();
+}
+function resumeExtrusion() {
+  if (!_extrudeHidden) return;
+  _extrudeHidden = false;
+  buildExtrusion();
+  fc.renderAll();
+}
+
+function lumOf(hex) {
+  var c = hexToRgb(hex);
+  return c ? (0.299*c.r + 0.587*c.g + 0.114*c.b) : 128;
+}
+
+/* Frontlit 发光色：亮色字面 → 直接用 LED 色；深色/彩色字面 → 该颜色被点亮 */
+function frontlitGlow(faceHex, isWarm) {
+  var led = isWarm ? {r:0xd3,g:0xea,b:0xbb}   // 实测 #d3eabb 暖白
+                   : {r:0xe8,g:0xf2,b:0xff};  // 冷白
+  var f = hexToRgb(faceHex) || {r:255,g:255,b:255};
+  var fl = (0.299*f.r + 0.587*f.g + 0.114*f.b) / 255;
+  if (fl > 0.7) {
+    // 白色/浅色字面 → 发出 LED 本身的颜色
+    return 'rgb(' + led.r + ',' + led.g + ',' + led.b + ')';
+  }
+  // 有颜色的字面（红字、蓝字）→ 该颜色被打亮，保留色相但拉高亮度
+  var boost = 1.9;
+  var r = Math.min(255, f.r*boost + led.r*0.25),
+      g = Math.min(255, f.g*boost + led.g*0.25),
+      b = Math.min(255, f.b*boost + led.b*0.25);
+
+  // Frontlit 的字面一定是透光材质（白色或彩色亚克力），亮起来必然是画面上最亮的东西。
+  // 客户若选了很深的字色（深蓝、黑），单纯乘倍数会算出一块看不清的暗牌 —— 那不是
+  // frontlit 该有的样子。这里设一个亮度下限，同时保留色相。
+  var MIN_LUM = 150;
+  var l = 0.299*r + 0.587*g + 0.114*b;
+  if (l < MIN_LUM) {
+    if (l < 8) { r = led.r; g = led.g; b = led.b; }   // 近乎纯黑 → 直接用 LED 色
+    else {
+      var k = MIN_LUM / l;
+      r = Math.min(255, r*k); g = Math.min(255, g*k); b = Math.min(255, b*k);
+    }
+  }
+  return 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+}
+
+/* 依「灯型 × 日夜」算出底板色、字色、光晕 */
+/* 把字色的亮度压到「底板亮度 × target」之下，但保留原本的色相。
+   不能只是「调暗几成」—— 白字调暗後还是比深色底板亮。
+   backlit 和 lightbox 都靠这个来保证「字一定比底暗」。 */
+function opaqueOn(panel, face, target) {
+  var pl = lumOf(panel), fl = lumOf(face) || 1;
+  var want = Math.max(6, pl * target);
+  return dimColour(face, Math.min(1, want / fl));
+}
+
+/* 把颜色变饱和 —— lightbox 亮起来时颜色会更浓（实测 POH LI 黄 #bbccd6 → #fee611） */
+function saturateColour(hex, amount, brighten) {
+  var c = hexToRgb(hex);
+  var l = (c.r + c.g + c.b) / 3;
+  var r = l + (c.r - l) * amount,
+      g = l + (c.g - l) * amount,
+      b = l + (c.b - l) * amount;
+  return 'rgb(' + Math.round(Math.min(255, r * brighten)) + ','
+               + Math.round(Math.min(255, g * brighten)) + ','
+               + Math.round(Math.min(255, b * brighten)) + ')';
+}
+
+function lightingFor(light, isNight, panelHex, textHex, isWarm, board) {
+  var ledRgb = isWarm ? '255,196,90' : '226,240,255';
+  var out = { panel: panelHex, name: textHex, slogan: null,
+              nameShadow: null, sloganShadow: null, ambient: null,
+              boxEdge: null, flatText: false };
+
+  /* ═══ LED Lightbox（箱体）═══
+     跟另外两种完全相反：发光的是「整个箱面」，字是印在发光面上的不透光油墨，
+     所以字比箱面暗很多。
+
+     实测（MH LABELS / POH LI 灯开）：
+       箱面亮度 213~217，字亮度 31~47，字/箱面 = 0.15~0.22
+       亮起来时颜色会饱和（#bbccd6 → #fee611）
+
+     这是个箱子，侧边看得到白色箱体和铝框 —— boxEdge 用来画那圈边。 */
+  if (board === 'lightbox') {
+    out.flatText = true;          // 印刷字：没有发光、没有立体厚度
+    out.boxEdge  = isNight ? 'rgba(210,215,225,0.55)' : 'rgba(228,232,238,0.9)';
+    if (isNight) {
+      // 亮起来：饱和 + 提亮，但不要冲到纯白（实拍箱面亮度 213，不是 255）
+      var litFace = saturateColour(panelHex, 1.45, 1.30);
+      var fl = lumOf(litFace);
+      if (fl > 225) litFace = dimColour(litFace, 225 / fl);   // 上限，避免过曝
+      if (fl < 90)  litFace = saturateColour(panelHex, 1.5, 90 / Math.max(fl, 1)); // 深色面也要看得出在发光
+      out.panel = litFace;
+      // 字是不透光油墨，一定比箱面暗很多（实测 0.15~0.22）
+      out.name  = opaqueOn(out.panel, textHex, 0.20);
+      out.nameShadow = null;                                 // 印刷的字不会发光
+    } else {
+      out.panel = panelHex;
+      out.name  = opaqueOn(panelHex, textHex, 0.55);         // 白天实测 0.35~0.55
+      out.nameShadow = null;
+    }
+    return out;
+  }
+
+  if (light === 'nonlit') {
+    if (isNight) {
+      // 不发光：晚上只有街灯，整体压暗、对比降低
+      out.panel = dimColour(panelHex, 0.22, '#20242e');
+      out.name  = dimColour(textHex,  0.34, '#20242e');
+      out.ambient = 'street';          // 上方街灯的微弱渐层
+    }
+    // 立体字的投影，白天晚上都有（这是辨识 3D 字的关键）
+    out.nameShadow = new fabric.Shadow({ color:'rgba(0,0,0,0.45)', blur:4, offsetX:2, offsetY:3 });
+
+  } else if (light === 'frontlit') {
+    if (isNight) {
+      // 实测：底板掉到接近全黑，字亮度 ~222
+      out.panel = dimColour(panelHex, 0.06, '#05060a');
+      out.name  = frontlitGlow(textHex, isWarm);
+      out.nameShadow   = new fabric.Shadow({ color:'rgba('+ledRgb+',0.95)', blur:26, offsetX:0, offsetY:0 });
+      out.sloganShadow = new fabric.Shadow({ color:'rgba('+ledRgb+',0.7)',  blur:14, offsetX:0, offsetY:0 });
+    } else {
+      // 白天：对比只有 1.75，几乎看不出在发光，只有立体投影
+      out.nameShadow = new fabric.Shadow({ color:'rgba(0,0,0,0.35)', blur:4, offsetX:2, offsetY:3 });
+    }
+
+  } else if (light === 'backlit') {
+    // 关键：字面是不透光的实心材质，亮度一定低於底板（实拍 82 vs 90）。
+    // 用共用的 opaqueOn() 把字色锚定在底板亮度之下（见上方定义）。
+    if (isNight) {
+      out.panel = dimColour(panelHex, 0.30, '#0a0c12');   // 底板暗，但不到全黑（有溢光）
+      out.name  = opaqueOn(out.panel, textHex, 0.80);     // 字比底板暗（实拍 82/90 = 0.91）
+      // 光晕：贴著字缘、无偏移、LED 色
+      out.nameShadow   = new fabric.Shadow({ color:'rgba('+ledRgb+',0.9)', blur:22, offsetX:0, offsetY:0 });
+      out.sloganShadow = new fabric.Shadow({ color:'rgba('+ledRgb+',0.6)', blur:12, offsetX:0, offsetY:0 });
+    } else {
+      // 白天：字面同样是深色实心，光晕较弱但仍看得见
+      out.name = opaqueOn(panelHex, textHex, 0.62);
+      out.nameShadow   = new fabric.Shadow({ color:'rgba('+ledRgb+',0.55)', blur:16, offsetX:0, offsetY:0 });
+      out.sloganShadow = new fabric.Shadow({ color:'rgba('+ledRgb+',0.35)', blur:9,  offsetX:0, offsetY:0 });
+    }
+  }
+  return out;
+}
 var alumDir = 'horizontal'; // 'horizontal' | 'vertical'
 
 function initCanvas() {
   var wrap = document.getElementById('canvasWrap');
   var w = wrap.offsetWidth || 580;
-  var h = Math.round(w * 0.20); // 6m × 1.2m = 5:1 ratio
+  // 236in × 48in — A&T 的标准招牌尺寸，也是大多数店面的尺寸
+  var h = Math.round(w * (48 / 236));
   fc = new fabric.Canvas('designCanvas', { width: w, height: h, selection: true });
 
   // Background rect
@@ -1289,12 +1587,25 @@ function initCanvas() {
   });
 
   fc.add(fcName, fcSlogan, fcBiz, fcSsm);
+  [fcBg, fcName, fcSlogan, fcBiz, fcSsm].forEach(tagUid);
+  setupSnapping();
+  syncToolbarToSelection();
   fc.renderAll();
 }
 
+/* 同时支援 "#rrggbb" 和 "rgb(r,g,b)" —— 灯光模型会产生 rgb() 字串再丢回来算，
+   只切 hex 的旧版会算出 NaN。 */
 function hexToRgb(hex) {
-  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  return {r:r, g:g, b:b};
+  if (!hex) return {r:255,g:255,b:255};
+  var s = String(hex).trim();
+  var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(s);
+  if (m) return { r:parseInt(m[1],16), g:parseInt(m[2],16), b:parseInt(m[3],16) };
+  m = /rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i.exec(s);
+  if (m) return { r:Math.round(+m[1]), g:Math.round(+m[2]), b:Math.round(+m[3]) };
+  // 3 码短 hex，例如 #fff
+  m = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(s);
+  if (m) return { r:parseInt(m[1]+m[1],16), g:parseInt(m[2]+m[2],16), b:parseInt(m[3]+m[3],16) };
+  return {r:255,g:255,b:255};
 }
 function rgbaFg(alpha) {
   var c = hexToRgb(S.fg || '#ffffff');
@@ -1435,11 +1746,98 @@ function updateCanvasAppearance() {
     sloganShadow = null;
   }
 
-  // Apply text colours and shadows — always use user's chosen colour regardless of lighting mode
-  fcName.set({ fill: S.fg,           shadow: nameShadow });
-  fcSlogan.set({ fill: rgbaFg(0.80), shadow: sloganShadow });
-  fcBiz.set({ fill: rgbaFg(0.55),   shadow: null });
-  fcSsm.set({ fill: rgbaFg(0.35),   shadow: null });
+  /* ── 依实拍数据决定底板色、字色、光晕 ── */
+  var LM = lightingFor(S.light, nightMode, S.bg, S.fg, S.led === 'warm', S.board);
+
+  /* Lightbox 是个箱子 —— 画出可见的铝框／箱体边 */
+  if (LM.boxEdge) {
+    var edgeW = Math.max(3, h * 0.055);
+    var boxFrame = new fabric.Rect({
+      left: edgeW/2, top: edgeW/2, width: w - edgeW, height: h - edgeW,
+      fill: 'transparent', stroke: LM.boxEdge, strokeWidth: edgeW,
+      selectable:false, evented:false, __fx:true
+    });
+    fc.add(boxFrame);
+  }
+
+  // 底板：晚上会大幅压暗（frontlit 几乎全黑、backlit 保留一点溢光、nonlit 只剩街灯）
+  fcBg.set('fill', LM.panel);
+
+  // 晚上加一层由上而下的环境光，模拟街灯
+  if (nightMode && LM.ambient === 'street') {
+    var amb = new fabric.Rect({
+      left:0, top:0, width:w, height:h,
+      fill: new fabric.Gradient({
+        type:'linear', gradientUnits:'pixels',
+        coords:{ x1:0, y1:0, x2:0, y2:h },
+        colorStops:[ {offset:0, color:'rgba(255,236,190,0.13)'},
+                     {offset:0.6, color:'rgba(255,236,190,0.03)'},
+                     {offset:1, color:'rgba(0,0,0,0)'} ]
+      }),
+      selectable:false, evented:false, __fx:true
+    });
+    fc.add(amb);
+  }
+
+  // 文字颜色：__customFill = 使用者自己挑过颜色的，不覆盖
+  if (!fcName.__customFill)   fcName.set({ fill: LM.name });
+  if (!fcSlogan.__customFill) fcSlogan.set({ fill: nightMode ? LM.name : rgbaFg(0.80) });
+  if (!fcBiz.__customFill)    fcBiz.set({ fill: nightMode ? dimColour(S.fg, 0.45) : rgbaFg(0.55) });
+  if (!fcSsm.__customFill)    fcSsm.set({ fill: nightMode ? dimColour(S.fg, 0.30) : rgbaFg(0.35) });
+
+  nameShadow   = LM.nameShadow;
+  sloganShadow = LM.sloganShadow;
+  fcName.set({ shadow: nameShadow });
+  fcSlogan.set({ shadow: sloganShadow });
+  fcBiz.set({ shadow: null });
+  fcSsm.set({ shadow: null });
+
+  // 客户自己加的文字：套用同样的发光效果，颜色除非自订否则跟主色
+  fcExtras.forEach(function(o){
+    if (!o || !fc.contains(o)) return;
+    if (!o.__customFill) o.set({ fill: S.fg });
+    o.set({ shadow: nameShadow });
+  });
+
+  /* ── 发光溢到底板上（frontlit 晚上）──
+     实拍里字周围的底板会被照亮一圈，不是只有字本身在发光。 */
+  if (nightMode && S.light === 'frontlit' && fcName && fcName.visible !== false) {
+    var gc = fcName.getCenterPoint();
+    var gw = Math.min(w * 0.95, (fcName.width || w * 0.5) * (fcName.scaleX || 1) * 1.9);
+    var gh = Math.max(h * 0.6, (fcName.fontSize || 30) * 2.4);
+    var bleed = new fabric.Ellipse({
+      left: gc.x, top: gc.y, rx: gw / 2, ry: gh / 2,
+      originX:'center', originY:'center',
+      fill: new fabric.Gradient({
+        type:'radial', gradientUnits:'percentage',
+        coords:{ x1:0.5, y1:0.5, r1:0, x2:0.5, y2:0.5, r2:0.5 },
+        colorStops:[
+          { offset:0,    color:'rgba('+(S.led==='warm'?'255,205,120':'220,235,255')+',0.30)' },
+          { offset:0.45, color:'rgba('+(S.led==='warm'?'255,195,100':'210,228,255')+',0.10)' },
+          { offset:1,    color:'rgba(0,0,0,0)' }
+        ]
+      }),
+      selectable:false, evented:false, __fx:true
+    });
+    fc.add(bleed);
+  }
+
+  /* ── 底板暗角 ──
+     真实灯箱中间亮、四周暗，均匀的纯色看起来很假。 */
+  var vig = new fabric.Rect({
+    left:0, top:0, width:w, height:h,
+    fill: new fabric.Gradient({
+      type:'radial', gradientUnits:'percentage',
+      coords:{ x1:0.5, y1:0.5, r1:0, x2:0.5, y2:0.5, r2:0.75 },
+      colorStops:[
+        { offset:0,   color:'rgba(0,0,0,0)' },
+        { offset:0.6, color:'rgba(0,0,0,0)' },
+        { offset:1,   color:'rgba(0,0,0,' + (nightMode ? 0.34 : 0.16) + ')' }
+      ]
+    }),
+    selectable:false, evented:false, __fx:true
+  });
+  fc.add(vig);
 
   // Push all __fx objects behind text layers
   fc.getObjects().forEach(function(o) {
@@ -1447,6 +1845,8 @@ function updateCanvasAppearance() {
   });
   // Background always lowest
   fc.sendToBack(fcBg);
+
+  buildExtrusion();     // 立体字侧壁（会自己处理层级）
 
   fc.renderAll();
   if (mockupVisible) refreshMockup();
@@ -1458,6 +1858,7 @@ function updateCanvasText(nameVal, sloganVal, bizVal, ssmVal) {
   if (sloganVal !== undefined) fcSlogan.set('text', sloganVal || '');
   if (bizVal !== undefined)    fcBiz.set('text',    bizVal    || '');
   if (ssmVal !== undefined)    fcSsm.set('text',    ssmVal    || '');
+  buildExtrusion();   // 文字变了，侧壁要跟着重建，否则会残留旧字
   fc.renderAll();
   if (mockupVisible) refreshMockup();
 }
@@ -1465,8 +1866,79 @@ function updateCanvasText(nameVal, sloganVal, bizVal, ssmVal) {
 function updateCanvasFont() {
   if (!fc) return;
   var f = document.getElementById('fontFamilyPicker').value;
-  [fcName, fcSlogan, fcBiz, fcSsm].forEach(function(o){ if(o) o.set('fontFamily', f); });
+  var sel = fc.getActiveObject();
+  pushUndo();
+  if (sel && sel.type && sel.type.indexOf('text') !== -1) {
+    // 有选取 → 只改选到的那一个
+    sel.set('fontFamily', f);
+  } else {
+    // 没选取 → 全部一起改（维持原本行为）
+    [fcName, fcSlogan, fcBiz, fcSsm].concat(fcExtras)
+      .forEach(function(o){ if(o && fc.contains(o)) o.set('fontFamily', f); });
+  }
+  buildExtrusion();
   fc.renderAll();
+  if (mockupVisible) refreshMockup();
+}
+
+/* 选到元素时，让工具列反映它目前的设定 */
+function syncToolbarToSelection() {
+  var o = fc && fc.getActiveObject();
+  var picker = document.getElementById('fontFamilyPicker');
+  var colour = document.getElementById('elColour');
+  var sizeSl = document.getElementById('elSizeSlider');
+  var delBtn = document.getElementById('delElBtn');
+  var hint   = document.getElementById('selHint');
+
+  var isText = o && o.type && o.type.indexOf('text') !== -1;
+  if (delBtn) delBtn.style.display = (o && o !== fcBg && !o.__fx) ? 'flex' : 'none';
+  if (hint)   hint.textContent = o
+    ? (isText ? '已选：' + String(o.text || '').slice(0, 14) : '已选：图片')
+    : '未选取任何元素';
+
+  if (isText) {
+    if (picker && o.fontFamily) picker.value = o.fontFamily;
+    if (sizeSl) { sizeSl.value = Math.round(o.fontSize || 20); document.getElementById('elSizeVal').textContent = sizeSl.value; }
+  }
+  if (colour && o && o.fill && typeof o.fill === 'string' && o.fill[0] === '#') colour.value = o.fill;
+}
+
+/* 改选取元素的大小 */
+function updateElSize(v) {
+  document.getElementById('elSizeVal').textContent = v;
+  var o = fc && fc.getActiveObject();
+  if (!o) return;
+  if (o.type && o.type.indexOf('text') !== -1) o.set('fontSize', parseInt(v, 10));
+  buildExtrusion();
+  fc.renderAll();
+  if (mockupVisible) refreshMockup();
+}
+
+/* 改选取元素的颜色 */
+function updateElColour(v) {
+  var o = fc && fc.getActiveObject();
+  if (!o) return;
+  pushUndo();
+  o.set('fill', v);
+  o.__customFill = true;      // 之后换招牌主题色时不覆盖它
+  fc.renderAll();
+  if (mockupVisible) refreshMockup();
+}
+
+/* 删除选取的元素（背景和灯光效果不能删） */
+function deleteSelected() {
+  var o = fc && fc.getActiveObject();
+  if (!o || o === fcBg || o.__fx) return;
+  pushUndo();
+  if (o === fcLogo) { clearLogo(); return; }
+  var i = fcExtras.indexOf(o);
+  if (i !== -1) fcExtras.splice(i, 1);
+  fc.remove(o);
+  fc.discardActiveObject();
+  buildExtrusion();
+  fc.renderAll();
+  syncToolbarToSelection();
+  if (mockupVisible) refreshMockup();
 }
 
 function updateNameSize(v) {
@@ -1489,7 +1961,7 @@ function addLogoToCanvas(input) {
       var maxW = fc.width * 0.25, maxH = fc.height * 0.4;
       var scale = Math.min(maxW / img.width, maxH / img.height, 1);
       img.set({ left: fc.width * 0.12, top: fc.height * 0.5, originX:'center', originY:'center', scaleX:scale, scaleY:scale, cornerColor:'#e63946', cornerSize:8, transparentCorners:false, lockRotation:true });
-      fcLogo = img;
+      fcLogo = tagUid(img);
       fc.add(fcLogo);
       fc.setActiveObject(fcLogo);
       fc.renderAll();
@@ -1502,10 +1974,256 @@ function addLogoToCanvas(input) {
 }
 
 function clearLogo() {
-  if (fcLogo) { fc.remove(fcLogo); fcLogo = null; fc.renderAll(); }
+  if (fcLogo) { fc.remove(fcLogo); fcLogo = null; buildExtrusion();
+  fc.renderAll(); }
   document.getElementById('logoUploadLabel').classList.remove('has-logo');
   document.getElementById('clearLogoBtn').style.display = 'none';
   document.getElementById('logoFileInput').value = '';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   还原（undo）
+   每次「改变前」拍一张快照。只存必要属性，避免快照过大。
+   ═══════════════════════════════════════════════════════════════ */
+function snapshot() {
+  if (!fc) return null;
+  return JSON.stringify(fc.getObjects()
+    .filter(function(o){ return !o.__fx && o !== fcBg; })
+    .map(function(o){
+      return { id:o.__uid, left:o.left, top:o.top, scaleX:o.scaleX, scaleY:o.scaleY,
+               fontSize:o.fontSize, fontFamily:o.fontFamily, fill:(typeof o.fill==='string'?o.fill:null),
+               text:o.text, textAlign:o.textAlign, visible:o.visible };
+    }));
+}
+function pushUndo() {
+  if (undoRestoring) return;
+  var s = snapshot();
+  if (s === null) return;
+  if (undoStack.length && undoStack[undoStack.length-1] === s) return;  // 没变就不存
+  undoStack.push(s);
+  if (undoStack.length > 30) undoStack.shift();
+  var b = document.getElementById('undoBtn');
+  if (b) b.disabled = false;
+}
+function doUndo() {
+  if (!undoStack.length || !fc) return;
+  var state;
+  try { state = JSON.parse(undoStack.pop()); } catch(e){ return; }
+  undoRestoring = true;
+  var byId = {};
+  fc.getObjects().forEach(function(o){ if (o.__uid) byId[o.__uid] = o; });
+  state.forEach(function(s){
+    var o = byId[s.id];
+    if (!o) return;
+    o.set({ left:s.left, top:s.top, scaleX:s.scaleX, scaleY:s.scaleY, visible:s.visible !== false });
+    if (s.fontSize)   o.set('fontSize', s.fontSize);
+    if (s.fontFamily) o.set('fontFamily', s.fontFamily);
+    if (s.fill)       o.set('fill', s.fill);
+    if (s.text !== undefined && o.type && o.type.indexOf('text') !== -1) o.set('text', s.text);
+    o.setCoords();
+  });
+  buildExtrusion();
+  fc.renderAll();
+  undoRestoring = false;
+  var b = document.getElementById('undoBtn');
+  if (b) b.disabled = undoStack.length === 0;
+  syncToolbarToSelection();
+  if (mockupVisible) refreshMockup();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   新增文字
+   ═══════════════════════════════════════════════════════════════ */
+var _uidSeq = 0;
+function tagUid(o){ if(o && !o.__uid) o.__uid = 'o' + (++_uidSeq); return o; }
+
+function addTextToCanvas(preset) {
+  if (!fc) return;
+  pushUndo();
+  var S = window.S || {};
+  var txt = preset || '新文字 New text';
+  var t = new fabric.IText(txt, {
+    left: fc.width / 2,
+    top:  fc.height / 2,
+    originX:'center', originY:'center',
+    fontSize: Math.round(fc.height * 0.16),
+    fontWeight:'600',
+    fill: S.fg || '#ffffff',
+    fontFamily: document.getElementById('fontFamilyPicker').value || 'DM Sans',
+    textAlign:'center', hasControls:true, lockRotation:true,
+    cornerColor:'#e63946', cornerSize:8, transparentCorners:false
+  });
+  tagUid(t);
+  fcExtras.push(t);
+  fc.add(t);
+  fc.setActiveObject(t);
+  fc.renderAll();
+  syncToolbarToSelection();
+  updateCanvasAppearance();   // 让它套上一样的灯光效果
+  if (mockupVisible) refreshMockup();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   版型范本 — 一键排好版，客户不用自己拖
+   ═══════════════════════════════════════════════════════════════ */
+function applyLayout(kind) {
+  if (!fc) return;
+  pushUndo();
+  var w = fc.width, h = fc.height;
+  var hasLogo = !!(fcLogo && fc.contains(fcLogo));
+
+  function show(o, on){ if (o) o.set('visible', on !== false); }
+  [fcName, fcSlogan, fcBiz, fcSsm].forEach(function(o){ show(o, true); });
+
+  if (kind === 'center') {
+    // 置中堆叠：店名在中间，标语在下
+    if (hasLogo) {
+      fcLogo.set({ left:w/2, top:h*0.26, originX:'center', originY:'center' });
+      fcName.set({ left:w/2, top:h*0.62, originX:'center', originY:'center',
+                   fontSize:Math.round(h*0.30), textAlign:'center' });
+      fcSlogan.set({ left:w/2, top:h*0.86, originX:'center', originY:'center',
+                     fontSize:Math.round(h*0.14), textAlign:'center' });
+    } else {
+      fcName.set({ left:w/2, top:h*0.42, originX:'center', originY:'center',
+                   fontSize:Math.round(h*0.38), textAlign:'center' });
+      fcSlogan.set({ left:w/2, top:h*0.76, originX:'center', originY:'center',
+                     fontSize:Math.round(h*0.16), textAlign:'center' });
+    }
+    fcBiz.set({ left:w*0.02, top:h*0.12, originX:'left',  originY:'center' });
+    fcSsm.set({ left:w*0.98, top:h*0.88, originX:'right', originY:'center' });
+
+  } else if (kind === 'logoLeft') {
+    // Logo 左 + 文字右
+    if (hasLogo) {
+      var maxH = h * 0.62;
+      var sc = Math.min(maxH / (fcLogo.height || 1), (w*0.22) / (fcLogo.width || 1));
+      fcLogo.set({ left:w*0.14, top:h*0.5, originX:'center', originY:'center',
+                   scaleX:sc, scaleY:sc });
+    }
+    var tx = hasLogo ? w*0.30 : w*0.06;
+    fcName.set({ left:tx, top:h*0.42, originX:'left', originY:'center',
+                 fontSize:Math.round(h*0.32), textAlign:'left' });
+    fcSlogan.set({ left:tx, top:h*0.72, originX:'left', originY:'center',
+                   fontSize:Math.round(h*0.15), textAlign:'left' });
+    fcBiz.set({ left:tx, top:h*0.14, originX:'left', originY:'center' });
+    fcSsm.set({ left:w*0.98, top:h*0.88, originX:'right', originY:'center' });
+
+  } else if (kind === 'bigName') {
+    // 满版大字：只有店名，撑满整块
+    fcName.set({ left:w/2, top:h*0.52, originX:'center', originY:'center', textAlign:'center' });
+    // 依文字长度自动决定字级，让它尽量撑满但不溢出
+    var target = w * 0.92, fsize = Math.round(h * 0.58);
+    fcName.set('fontSize', fsize);
+    var guard = 0;
+    while (fcName.width > target && fsize > 8 && guard++ < 60) {
+      fsize -= 2; fcName.set('fontSize', fsize);
+    }
+    show(fcSlogan, false);
+    show(fcBiz, false);
+    fcSsm.set({ left:w*0.98, top:h*0.9, originX:'right', originY:'center' });
+  }
+
+  // 范本只排预设元素，客户自己加的文字保持原位不动
+  [fcName, fcSlogan, fcBiz, fcSsm, fcLogo].forEach(function(o){ if(o) o.setCoords(); });
+  fc.discardActiveObject();
+  buildExtrusion();
+  fc.renderAll();
+  document.querySelectorAll('.layout-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.layout === kind);
+  });
+  syncToolbarToSelection();
+  if (mockupVisible) refreshMockup();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   对齐辅助线 + 吸附
+   拖到接近中线／边缘时自动对齐，并显示参考线
+   ═══════════════════════════════════════════════════════════════ */
+var _guides = [];
+function clearGuides() {
+  _guides.forEach(function(g){ fc.remove(g); });
+  _guides = [];
+}
+function drawGuide(x1, y1, x2, y2) {
+  var line = new fabric.Line([x1, y1, x2, y2], {
+    stroke:'#e63946', strokeWidth:1, strokeDashArray:[4,3],
+    selectable:false, evented:false, excludeFromExport:true
+  });
+  line.__fx = true;          // 让 updateCanvasAppearance 会清掉它
+  _guides.push(line);
+  fc.add(line);
+  fc.bringToFront(line);
+}
+
+function setupSnapping() {
+  var SNAP = 6;   // 吸附距离（px）
+
+  fc.on('object:moving', function(e){
+    var o = e.target;
+    if (!o) return;
+    clearGuides();
+    var w = fc.width, h = fc.height;
+    var c = o.getCenterPoint();
+
+    // 垂直中线
+    if (Math.abs(c.x - w/2) < SNAP) {
+      o.setPositionByOrigin(new fabric.Point(w/2, c.y), 'center', 'center');
+      drawGuide(w/2, 0, w/2, h);
+    }
+    // 水平中线
+    var c2 = o.getCenterPoint();
+    if (Math.abs(c2.y - h/2) < SNAP) {
+      o.setPositionByOrigin(new fabric.Point(c2.x, h/2), 'center', 'center');
+      drawGuide(0, h/2, w, h/2);
+    }
+    // 左右安全边界（离边 4%）
+    var pad = w * 0.04;
+    var b = o.getBoundingRect(true);
+    if (Math.abs(b.left - pad) < SNAP) {
+      o.set('left', o.left + (pad - b.left)); drawGuide(pad, 0, pad, h);
+    }
+    if (Math.abs((b.left + b.width) - (w - pad)) < SNAP) {
+      o.set('left', o.left + ((w - pad) - (b.left + b.width))); drawGuide(w-pad, 0, w-pad, h);
+    }
+    o.setCoords();
+  });
+
+  fc.on('object:modified', function(){
+    clearGuides(); resumeExtrusion();       // 放开手 → 补回立体侧壁
+    fc.renderAll(); if (mockupVisible) refreshMockup();
+  });
+  fc.on('mouse:up', function(){ clearGuides(); resumeExtrusion(); fc.renderAll(); });
+
+  // 拖动／缩放「之前」先拍快照，这样 undo 才回得到拖动前
+  fc.on('mouse:down', function(e){
+    if (e.target && e.target !== fcBg) { pushUndo(); suspendExtrusion(); }
+  });
+
+  // 编辑文字时也先收掉侧壁，打字才不会顿
+  fc.on('text:editing:entered', suspendExtrusion);
+  fc.on('text:editing:exited',  function(){ resumeExtrusion(); fc.renderAll(); });
+
+  fc.on('selection:created', syncToolbarToSelection);
+  fc.on('selection:updated', syncToolbarToSelection);
+  fc.on('selection:cleared', syncToolbarToSelection);
+  fc.on('text:changed',      function(){ if (mockupVisible) refreshMockup(); });
+}
+
+/* 快速对齐按钮 */
+function alignSelected(how) {
+  var o = fc && fc.getActiveObject();
+  if (!o) return;
+  pushUndo();
+  var w = fc.width, h = fc.height, pad = w * 0.04;
+  var b = o.getBoundingRect(true);
+  if (how === 'left')   o.set('left', o.left + (pad - b.left));
+  if (how === 'right')  o.set('left', o.left + ((w - pad) - (b.left + b.width)));
+  if (how === 'centerX')o.setPositionByOrigin(new fabric.Point(w/2, o.getCenterPoint().y), 'center', 'center');
+  if (how === 'centerY')o.setPositionByOrigin(new fabric.Point(o.getCenterPoint().x, h/2), 'center', 'center');
+  o.setCoords();
+  buildExtrusion();
+  fc.renderAll();
+  if (mockupVisible) refreshMockup();
 }
 
 function setAlumDir(dir) {
@@ -1527,9 +2245,8 @@ function toggleNight() {
     wrap.style.background = '#060810';
     if (mockupBuilding) mockupBuilding.style.background = '#1a1510';
     if (mockupSky)      mockupSky.style.background = 'linear-gradient(to bottom,#0a0a18,#12121e)';
-    // Darken canvas background to night — keep user's chosen S.bg but dim it
     fc.backgroundColor = '#060810';
-    fc.renderAll();
+    updateCanvasAppearance();   // ← 重算灯光：底板压暗、字发光/变剪影
   } else {
     btn.classList.remove('active');
     btn.textContent = '🌙 Night';
@@ -1537,13 +2254,14 @@ function toggleNight() {
     if (mockupBuilding) mockupBuilding.style.background = '#e8e3da';
     if (mockupSky)      mockupSky.style.background = 'linear-gradient(to bottom,#87ceeb,#b0d8f0)';
     fc.backgroundColor = '';
-    fc.renderAll();
+    updateCanvasAppearance();   // ← 回到白天：底板还原、光晕收掉
   }
   if (mockupVisible) refreshMockup();
 }
 
 function refreshMockup() {
   if (!fc) return;
+  if (typeof clearGuides === 'function') { clearGuides(); fc.renderAll(); }
   var dataUrl = fc.toDataURL({ format:'png', multiplier:2 });
   document.getElementById('mockupPreviewImg').src = dataUrl;
 }
@@ -2327,6 +3045,7 @@ async function captureDesignImage(enqId) {
       return { canvasUrl: '', previewUrl: '' };
     }
 
+    if (typeof clearGuides === 'function') { clearGuides(); fc.renderAll(); }
     const dataURL = fc.toDataURL({ format: 'png', quality: 0.92, multiplier: 2 });
     const blob    = dataURLtoBlob(dataURL);   // more reliable than fetch()
     const canvasRef = sRef(storage, `enquiries/${enqId}/canvas-design.png`);
