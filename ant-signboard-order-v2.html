@@ -3072,8 +3072,20 @@ async function captureDesignImage(enqId) {
   } catch(e) {
     console.error('[Enquiry] Canvas capture failed:', e.code || e.message || e);
     // If permission denied → Firebase Storage rules need to allow writes to enquiries/
-    return { canvasUrl: '', previewUrl: '' };
+    return { canvasUrl: '', previewUrl: '', error: (e && (e.code || e.message)) || 'unknown' };
   }
+}
+
+/* 上传设计图，失败自动重试一次。
+   以前这里失败是静默的 —— 询价单会存进来但没有设计图，你完全不会知道。 */
+async function captureDesignImageWithRetry(enqId) {
+  var r = await captureDesignImage(enqId);
+  if (!r.canvasUrl) {
+    console.warn('[Enquiry] 设计图上传失败，2 秒後重试…');
+    await new Promise(function(res){ setTimeout(res, 2000); });
+    r = await captureDesignImage(enqId);
+  }
+  return r;
 }
 
 /* ══ Sign-in so the enquiry shows up under "My Orders" ══
@@ -3120,6 +3132,79 @@ window._enqEnsureSignIn = async function() {
   }
 };
 
+/* ═══════════════════════════════════════════════════════════════════════
+   生产规格 — 给师傅看着做的那份资料
+
+   为什么需要：以前只存一张合成 PNG，师傅只能凭眼睛猜字体和字高。
+   客户自己加的文字（电话、地址）更是完全没进资料库，只在图片里。
+
+   关键设计：位置用「百分比」，字高同时给「百分比」和「实际英寸」。
+   画布固定 236:48 比例，客户又填了实际尺寸，所以可以直接换算：
+       实际字高(inch) = (字级 / 画布高) × 招牌高(ft) × 12
+   这样 20ft 和 8ft 的招牌都能照同一份规格按比例放大制作。
+   ═══════════════════════════════════════════════════════════════════════ */
+function buildDesignSpec() {
+  if (!fc) return null;
+  var h = fc.height, w = fc.width;
+  var signH = parseFloat(document.getElementById('sizeH')?.value) || 0;   // ft
+  var signW = parseFloat(document.getElementById('sizeW')?.value) || 0;
+
+  function describe(o, role) {
+    if (!o || !fc.contains(o) || o.visible === false) return null;
+    var txt = String(o.text || '').trim();
+    if (!txt && role !== 'logo') return null;
+    var fsize = (o.fontSize || 0) * (o.scaleY || 1);
+    var c = o.getCenterPoint();
+    var spec = {
+      role: role,
+      text: txt,
+      font: o.fontFamily || '',
+      weight: o.fontWeight || '',
+      colour: (typeof o.fill === 'string') ? o.fill : '',
+      align: o.textAlign || '',
+      // 位置与大小都用百分比，跟实际尺寸无关
+      xPct: Math.round(c.x / w * 1000) / 10,
+      yPct: Math.round(c.y / h * 1000) / 10,
+      sizePct: Math.round(fsize / h * 1000) / 10
+    };
+    // 换算成实体英寸，师傅可以直接用
+    if (signH > 0) spec.heightInch = Math.round(fsize / h * signH * 12 * 10) / 10;
+    return spec;
+  }
+
+  var els = [];
+  [[fcName,'name'], [fcSlogan,'slogan'], [fcBiz,'business-type'], [fcSsm,'ssm']]
+    .forEach(function(p){ var d = describe(p[0], p[1]); if (d) els.push(d); });
+  fcExtras.forEach(function(o){ var d = describe(o, 'custom'); if (d) els.push(d); });
+
+  if (fcLogo && fc.contains(fcLogo)) {
+    var lc = fcLogo.getCenterPoint();
+    var lw = (fcLogo.width || 0) * (fcLogo.scaleX || 1);
+    var lh = (fcLogo.height || 0) * (fcLogo.scaleY || 1);
+    var logo = {
+      role:'logo', text:'(客户上传的 logo)',
+      xPct: Math.round(lc.x / w * 1000) / 10,
+      yPct: Math.round(lc.y / h * 1000) / 10,
+      widthPct:  Math.round(lw / w * 1000) / 10,
+      heightPct: Math.round(lh / h * 1000) / 10
+    };
+    if (signH > 0) logo.heightInch = Math.round(lh / h * signH * 12 * 10) / 10;
+    if (signW > 0) logo.widthInch  = Math.round(lw / w * signW * 12 * 10) / 10;
+    els.push(logo);
+  }
+
+  var activeLayout = document.querySelector('.layout-btn.active');
+  return {
+    layout: activeLayout ? (activeLayout.dataset.layout || '') : 'custom',
+    canvasRatio: '236:48',
+    signSizeFt: (signW || '?') + ' × ' + (signH || '?'),
+    board: S.board, lighting: S.light, led: S.led,
+    panelColour: S.bg, textColour: S.fg,
+    elements: els,
+    savedAt: new Date().toISOString()
+  };
+}
+
 window._fbSaveEnquiry = async function(enqId) {
   try {
     const boardLabels = {lightbox:'LED Lightbox Signboard',wall:'Wall Signboard',flat:'Flat Signboard',alum:'Aluminium Signboard'};
@@ -3136,7 +3221,10 @@ window._fbSaveEnquiry = async function(enqId) {
     const _u = await window._enqEnsureSignIn();
 
     // Capture design images (non-blocking upload runs in background)
-    const { canvasUrl, previewUrl } = await captureDesignImage(enqId);
+    // 先把生产规格抓下来（这是纯资料，不会因为网路问题遗失）
+    const designSpec = buildDesignSpec();
+
+    const { canvasUrl, previewUrl, error: imgErr } = await captureDesignImageWithRetry(enqId);
 
     // Document ID = enquiry ID, so track.html can fetch it directly.
     // (With a random doc ID, track.html falls back to a collection query,
@@ -3172,6 +3260,13 @@ window._fbSaveEnquiry = async function(enqId) {
       priceMax:     maxP,
       canvasImageUrl:  canvasUrl,   // Live Designer canvas (text/logo layout)
       previewImageUrl: previewUrl,  // Full signboard CSS preview (if captured)
+
+      // 生产规格：字体、字高（换算成实际英寸）、位置百分比、客户自订的每一段文字
+      design: designSpec,
+
+      // 设计图上传失败时标记起来，admin 会显示警告 —— 不再静默遗失
+      designImageMissing: !canvasUrl,
+      designImageError:   canvasUrl ? '' : (imgErr || 'upload failed'),
       isManual:     false,
       steps: {
         received:   { status: 'done',    note: 'Enquiry submitted via website' },
