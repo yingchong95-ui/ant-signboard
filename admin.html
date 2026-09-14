@@ -833,6 +833,89 @@ function metaDetailHtml(o) {
   return html;
 }
 
+/* ══ 生产规格 — 给师傅照着做 ══
+   客户在 Live Designer 排好的版面，换算成实际英寸。
+   以前只有一张合成图，师傅得凭眼睛猜字体和字高；客户自己加的电话、地址
+   更是只存在图片里，没办法复制。 */
+/* 颜色要严格白名单，不能只靠 escHtml。
+   escHtml 不会转义 ; ( ) —— 客户送的 panelColour 若是
+   "red;background-image:url(//evil.com/x.png)"，塞进 style 属性後
+   你一开订单卡浏览器就会去连那台伺服器（询价单谁都能建）。 */
+function safeColour(v, fallback) {
+  var s = String(v == null ? '' : v).trim();
+  if (/^#[0-9a-f]{3}$/i.test(s) || /^#[0-9a-f]{6}$/i.test(s)) return s;
+  if (/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*(0|1|0?\.\d+)\s*)?\)$/i.test(s)) return s;
+  return fallback || '#ffffff';
+}
+
+function designSpecHtml(o) {
+  var d = o.design;
+  var warn = '';
+
+  // 设计图上传失败 —— 一定要让你看见，不能像以前那样静默遗失
+  if (o.designImageMissing) {
+    warn = '<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:8px;'
+         + 'padding:.6rem .8rem;margin-bottom:.6rem;font-size:.76rem;color:#9a3412;line-height:1.6">'
+         + '<strong>⚠️ 设计图上传失败</strong>'
+         + (o.designImageError ? '（' + escHtml(String(o.designImageError)) + '）' : '')
+         + '<br/>下方规格仍然完整可用。需要图片的话请联络客户重新提交。</div>';
+  }
+
+  if (!d || !d.elements || !d.elements.length) return warn;
+
+  var roleLabel = { 'name':'店名', 'slogan':'标语', 'business-type':'行业别',
+                    'ssm':'SSM 号码', 'custom':'客户自订', 'logo':'Logo' };
+  var layoutLabel = { center:'置中堆叠', logoLeft:'Logo 左 + 文字右',
+                      bigName:'满版大字', custom:'客户自行调整' };
+
+  var html = warn
+    + '<div style="padding:.7rem 1.2rem .9rem;border-bottom:1px solid #f0f0f0">'
+    + '<div style="font-size:.78rem;font-weight:700;color:#555;margin-bottom:.5rem">'
+    + '📐 生产规格 <span style="font-weight:400;color:#9aa3b2">— 客户排的版，已换算成实际尺寸</span></div>';
+
+  html += '<div style="font-size:.73rem;color:#5a6478;margin-bottom:.5rem">'
+        + '版型：<b style="color:#0d1f3c">' + escHtml(layoutLabel[d.layout] || d.layout || '—') + '</b>'
+        + '　·　招牌尺寸：<b style="color:#0d1f3c">' + escHtml(String(d.signSizeFt || '—')) + ' ft</b>'
+        + '　·　底板 <span style="display:inline-block;width:10px;height:10px;border-radius:2px;'
+        + 'vertical-align:middle;border:1px solid #ccc;background:' + safeColour(d.panelColour, '#ffffff') + '"></span>'
+        + '　字色 <span style="display:inline-block;width:10px;height:10px;border-radius:2px;'
+        + 'vertical-align:middle;border:1px solid #ccc;background:' + safeColour(d.textColour, '#ffffff') + '"></span>'
+        + '</div>';
+
+  html += '<table style="width:100%;border-collapse:collapse;font-size:.72rem">'
+        + '<tr style="background:#f6f8fc;color:#5a6478">'
+        + '<th style="text-align:left;padding:4px 6px">元素</th>'
+        + '<th style="text-align:left;padding:4px 6px">内容</th>'
+        + '<th style="text-align:left;padding:4px 6px">字体</th>'
+        + '<th style="text-align:right;padding:4px 6px">字高</th>'
+        + '<th style="text-align:right;padding:4px 6px">位置 X／Y</th></tr>';
+
+  d.elements.forEach(function(e){
+    var isCustom = e.role === 'custom';
+    var size = (e.heightInch ? '<b>' + e.heightInch + '"</b>' : '')
+             + '<span style="color:#9aa3b2"> (' + (e.sizePct || e.heightPct || '?') + '%)</span>';
+    html += '<tr style="border-top:1px solid #f0f0f0'
+          + (isCustom ? ';background:#f0fdf4' : '') + '">'
+          + '<td style="padding:5px 6px;color:#5a6478;white-space:nowrap">'
+          + (isCustom ? '➕ ' : '') + escHtml(roleLabel[e.role] || e.role) + '</td>'
+          + '<td style="padding:5px 6px;font-weight:600;color:#0d1f3c">' + escHtml(e.text || '') + '</td>'
+          + '<td style="padding:5px 6px;color:#5a6478;white-space:nowrap">' + escHtml(e.font || '—') + '</td>'
+          + '<td style="padding:5px 6px;text-align:right;white-space:nowrap">' + size + '</td>'
+          + '<td style="padding:5px 6px;text-align:right;color:#5a6478;white-space:nowrap">'
+          + (e.xPct != null ? e.xPct + '% / ' + e.yPct + '%' : '—') + '</td></tr>';
+  });
+  html += '</table>';
+
+  if (d.elements.some(function(e){ return e.role === 'custom'; })) {
+    html += '<div style="font-size:.7rem;color:#16a34a;margin-top:.4rem">'
+          + '➕ 绿色那几行是客户自己加上去的文字</div>';
+  }
+  html += '<div style="font-size:.68rem;color:#9aa3b2;margin-top:.4rem">'
+        + '字高为换算值（画布 236:48 比例 × 实际尺寸），位置以招牌左上角为原点</div>';
+  html += '</div>';
+  return html;
+}
+
 function designPreviewHtml(o) {
   var html = '<div style="padding:.6rem 1.2rem 1rem;border-bottom:1px solid #f0f0f0">';
   html += '<div style="font-size:.78rem;font-weight:600;color:#555;margin-bottom:.5rem">🎨 Customer Design Preview</div>';
@@ -909,6 +992,7 @@ function orderCardHtml(o) {
       <div class="order-items">${items}</div>
       ${ metaDetailHtml(o) }
       ${ (o.files && o.files.length) ? '<div style="padding:.2rem 1.2rem .6rem;font-size:.78rem">📎 <b>Artwork:</b> ' + o.files.map(function(f){ return '<a href="'+f.url+'" target="_blank" rel="noopener" style="color:#1a73e8;margin-right:10px">'+escHtml(f.name)+'</a>'; }).join('') + '</div>' : '' }
+      ${ designSpecHtml(o) }
       ${ (o.canvasImageUrl || o.previewImageUrl) ? designPreviewHtml(o) : '' }
       <div class="pipeline">${pipeHtml}</div>
       <div class="actions-title">Quick Actions</div>
