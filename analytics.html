@@ -345,6 +345,9 @@ const CATEGORIES = [
   { key:'neon',     label:'Neon Sign',           color:'#e11d48', match:/neon/i },
   { key:'acrylic',  label:'Acrylic Sign',        color:'#16a34a', match:/acrylic/i },
   { key:'bomba',    label:'Bomba Signage',       color:'#dc2626', match:/bomba/i },
+  // ⚠️ 必须排在 display 之前 —— 「LED Banner Display」含有 display 字样，
+  //    放後面会被误算成 Display Set（滚动横幅那类，完全不同的产品）
+  { key:'ledbanner',label:'LED Banner',          color:'#f43f5e', match:/led\s*banner/i },
   { key:'display',  label:'Display Set',         color:'#d97706', match:/display/i },
   { key:'inkjet',   label:'Inkjet Print',        color:'#059669', match:/inkjet/i },
   { key:'foam',     label:'Foam Board',          color:'#9333ea', match:/foam/i },
