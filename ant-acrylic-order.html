@@ -255,19 +255,6 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
 .alert { border-radius:var(--r-sm); padding:10px 14px; font-size:12.5px; margin-top:12px; display:none; position:relative; }
 .alert-warn { background:var(--amber-bg); color:var(--amber); border-left:3px solid #d97706; }
 
-/* ── Upload ── */
-.upload-wrap {
-  border:2px dashed var(--border); border-radius:var(--r-md); padding:2rem;
-  text-align:center; cursor:pointer; transition:all .15s; position:relative;
-}
-.upload-wrap:hover { border-color:var(--red); background:var(--red-bg); }
-.upload-wrap.has-file { border-color:var(--green); background:var(--green-bg); border-style:solid; }
-.upload-wrap input[type="file"] { position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
-.up-icon { width:46px; height:46px; background:var(--off); border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 11px; }
-.up-title { font-size:14px; font-weight:600; color:var(--t1); margin-bottom:3px; }
-.up-sub { font-size:12px; color:var(--t3); }
-.file-chosen { display:none; align-items:center; justify-content:center; gap:7px; font-size:13px; font-weight:600; color:var(--green); margin-top:8px; }
-
 /* ── Buttons ── */
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:13px 22px; border-radius:var(--r-md); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; border:none; transition:all .15s; text-decoration:none; }
 .btn-primary { background:var(--red); color:#fff; width:100%; box-shadow:0 4px 14px rgba(230,57,70,.3); }
@@ -639,14 +626,13 @@ textarea { resize:vertical; min-height:88px; line-height:1.55; }
     <div class="card">
       <div class="card-title">Artwork / Design File</div>
       <p style="font-size:13px;color:var(--t2);margin-bottom:1rem;">Attach your design file if available. AI, PDF, JPG, PNG, PSD or EPS accepted.</p>
-      <div class="upload-wrap" id="upload-zone">
-        <input type="file" id="artwork" accept=".ai,.pdf,.jpg,.jpeg,.png,.psd,.eps" onchange="fileChosen(this)" />
-        <div class="up-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      <div style="border:1.5px dashed #c8d0dc;border-radius:12px;padding:1rem 1.1rem;background:#f7f9fc">
+        <div style="font-size:13.5px;font-weight:700;color:#0d1f3c;margin-bottom:.35rem">📎 Upload your artwork at checkout</div>
+        <div style="font-size:12.5px;color:#6b7688;line-height:1.65">
+          Add this product to your cart first — the checkout page has an upload field, and your file is attached directly to your order number so nothing gets lost.<br>
+          <span style="color:#9aa3b2">AI · PDF · PSD · EPS · JPG · PNG accepted · 50MB per file · Google sign-in required<br>
+          No artwork yet? No problem — you can order now and send it to us later on WhatsApp.</span>
         </div>
-        <div class="up-title">Click to upload file</div>
-        <div class="up-sub">AI · PDF · JPG · PNG — max 50 MB</div>
-        <div class="file-chosen" id="file-chosen-msg"></div>
       </div>
     </div>
     <div class="card">
@@ -940,20 +926,18 @@ function goStep3() {
   document.getElementById('r-name').textContent  = name;
   document.getElementById('r-phone').textContent = phone;
   document.getElementById('r-email').textContent = email;
-  document.getElementById('r-file').textContent  = order.filename || 'Not uploaded';
+  document.getElementById('r-file').textContent  = order.filename || 'To be uploaded at checkout';
   document.getElementById('r-total').textContent = 'RM ' + order.total.toFixed(2);
 
   setStep(3);
 }
 
 function fileChosen(input) {
-  if (input.files && input.files[0]) {
-    var msg = document.getElementById('file-chosen-msg');
-    msg.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> ' + input.files[0].name;
-    msg.style.display = 'flex';
-    document.getElementById('upload-zone').classList.add('has-file');
-    order.filename = input.files[0].name;
-  }
+  // Artwork upload moved to the checkout page (cart.html), which actually
+  // stores the file in Firebase Storage and attaches the link to the order.
+  // This page never had Firebase loaded — it only recorded the FILE NAME and
+  // silently discarded the file, while showing the customer a green tick.
+  // Kept as a no-op so any stale onchange/markup can't throw.
 }
 
 function submitOrder() {

@@ -325,33 +325,6 @@ textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
 .alert { border-radius: var(--r-sm); padding: 10px 14px; font-size: 12.5px; margin-top: 12px; display: none; position: relative; }
 .alert-warn { background: var(--amber-bg); color: var(--amber); border-left: 3px solid #d97706; }
 
-/* ── Upload ── */
-.upload-wrap {
-  border: 2px dashed var(--border);
-  border-radius: var(--r-md); padding: 2rem;
-  text-align: center; cursor: pointer;
-  transition: all .15s; position: relative;
-}
-.upload-wrap:hover { border-color: var(--red); background: var(--red-bg); }
-.upload-wrap.has-file { border-color: var(--green); background: var(--green-bg); border-style: solid; }
-.upload-wrap input[type="file"] {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%; opacity: 0; cursor: pointer;
-}
-.up-icon {
-  width: 46px; height: 46px;
-  background: var(--off); border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 11px;
-}
-.up-title { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 3px; }
-.up-sub { font-size: 12px; color: var(--t3); }
-.file-chosen {
-  display: none; align-items: center; justify-content: center;
-  gap: 7px; font-size: 13px; font-weight: 600;
-  color: var(--green); margin-top: 8px;
-}
-
 /* ── Buttons ── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
@@ -835,14 +808,13 @@ textarea { resize: vertical; min-height: 88px; line-height: 1.55; }
     <div class="card">
       <div class="card-title">Artwork File</div>
       <p style="font-size:13px;color:var(--t2);margin-bottom:1rem;">Ensure your file is print-ready. Recommended: 300 DPI, CMYK colour mode.</p>
-      <div class="upload-wrap" id="upload-zone">
-        <input type="file" id="artwork" accept=".ai,.pdf,.jpg,.jpeg,.png,.psd,.eps" onchange="fileChosen(this)" />
-        <div class="up-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      <div style="border:1.5px dashed #c8d0dc;border-radius:12px;padding:1rem 1.1rem;background:#f7f9fc">
+        <div style="font-size:13.5px;font-weight:700;color:#0d1f3c;margin-bottom:.35rem">📎 Upload your artwork at checkout</div>
+        <div style="font-size:12.5px;color:#6b7688;line-height:1.65">
+          Add this product to your cart first — the checkout page has an upload field, and your file is attached directly to your order number so nothing gets lost.<br>
+          <span style="color:#9aa3b2">AI · PDF · PSD · EPS · JPG · PNG accepted · 50MB per file · Google sign-in required<br>
+          No artwork yet? No problem — you can order now and send it to us later on WhatsApp.</span>
         </div>
-        <div class="up-title">Click to upload artwork</div>
-        <div class="up-sub">AI · PDF · JPG · PNG · PSD · EPS — max 50 MB</div>
-        <div class="file-chosen" id="file-chosen-msg"></div>
       </div>
     </div>
 
@@ -1052,13 +1024,11 @@ document.querySelectorAll('input[name="material"]').forEach(function(el) {
 });
 
 function fileChosen(input) {
-  if (input.files && input.files[0]) {
-    var msg = document.getElementById('file-chosen-msg');
-    msg.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> ' + input.files[0].name;
-    msg.style.display = 'flex';
-    document.getElementById('upload-zone').classList.add('has-file');
-    order.filename = input.files[0].name;
-  }
+  // Artwork upload moved to the checkout page (cart.html), which actually
+  // stores the file in Firebase Storage and attaches the link to the order.
+  // This page never had Firebase loaded — it only recorded the FILE NAME and
+  // silently discarded the file, while showing the customer a green tick.
+  // Kept as a no-op so any stale onchange/markup can't throw.
 }
 
 function setStep(n) {
@@ -1086,11 +1056,9 @@ function goStep3() {
   var name  = document.getElementById('cname').value.trim();
   var phone = document.getElementById('cphone').value.trim();
   var email = document.getElementById('cemail').value.trim();
-  var file  = document.getElementById('artwork').files[0];
   if (!name)                        { alert('Please enter your full name.'); return; }
   if (!phone)                       { alert('Please enter your phone number.'); return; }
   if (!email || !email.includes('@')){ alert('Please enter a valid email address.'); return; }
-  if (!file)                        { alert('Please upload your artwork file.'); return; }
 
   order.name = name; order.phone = phone; order.email = email;
 
@@ -1103,7 +1071,7 @@ function goStep3() {
   document.getElementById('r-name').textContent  = name;
   document.getElementById('r-phone').textContent = phone;
   document.getElementById('r-email').textContent = email;
-  document.getElementById('r-file').textContent  = order.filename || 'Not uploaded';
+  document.getElementById('r-file').textContent  = order.filename || 'To be uploaded at checkout';
   document.getElementById('r-total').textContent = 'RM ' + order.total.toFixed(2);
 
   setStep(3);
@@ -1136,7 +1104,7 @@ function populateSlip(orderNo, dateStr) {
   document.getElementById('sl-name').textContent    = order.name || '—';
   document.getElementById('sl-phone').textContent   = order.phone || '—';
   document.getElementById('sl-email').textContent   = order.email || '—';
-  document.getElementById('sl-file').textContent    = order.filename || 'Not uploaded';
+  document.getElementById('sl-file').textContent    = order.filename || 'To be uploaded at checkout';
   document.getElementById('sl-remarks').textContent = document.getElementById('remarks').value.trim() || '—';
   document.getElementById('sl-total').textContent   = 'RM ' + (order.total || 0).toFixed(2);
 }
@@ -1156,7 +1124,7 @@ function waCompany() {
   lines.push('Name: ' + (order.name || '—'));
   lines.push('Phone: ' + (order.phone || '—'));
   lines.push('Email: ' + (order.email || '—'));
-  lines.push('File: ' + (order.filename || 'Not uploaded'));
+  lines.push('File: ' + (order.filename || 'To be uploaded at checkout'));
   var remarks = document.getElementById('remarks').value.trim();
   if (remarks) lines.push('Remarks: ' + remarks);
   lines.push('');
