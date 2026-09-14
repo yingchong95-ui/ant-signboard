@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LED Banner 点阵预览 — 效果测试</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f6f8fc;color:#0d1f3c;padding:1.5rem;line-height:1.6}
+.wrap{max-width:820px;margin:0 auto}
+h1{font-size:1.15rem;margin-bottom:.3rem}
+.sub{font-size:.82rem;color:#5a6478;margin-bottom:1.2rem}
+.card{background:#fff;border:1px solid #e3e7ef;border-radius:12px;padding:1.1rem 1.2rem;margin-bottom:1rem}
+.card h2{font-size:.85rem;margin-bottom:.8rem;color:#0d1f3c}
+label{display:block;font-size:.75rem;font-weight:600;color:#5a6478;margin-bottom:4px}
+input[type=text],input[type=number],select{width:100%;padding:.55rem .75rem;border:1.5px solid #e3e7ef;
+  border-radius:8px;font-family:inherit;font-size:.88rem;color:#0d1f3c;outline:none}
+input:focus,select:focus{border-color:#0d1f3c}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin-bottom:.8rem}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:.5rem .9rem;border:1.5px solid #e3e7ef;background:#fff;border-radius:8px;
+  font:600 .78rem 'DM Sans',sans-serif;cursor:pointer;min-height:38px}
+.pill.on{background:#0d1f3c;border-color:#0d1f3c;color:#fff}
+/* ── LED 屏本体 ── */
+.led-shell{background:#0b0b0f;border:6px solid #2a2a32;border-radius:8px;padding:10px;
+  box-shadow:0 6px 26px rgba(0,0,0,.35), inset 0 0 40px rgba(0,0,0,.8);overflow:hidden}
+#ledCanvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.spec{font-size:.74rem;color:#5a6478;margin-top:.6rem;line-height:1.7}
+.spec b{color:#0d1f3c}
+.warn{background:#fff7ed;border:1.5px solid #fdba74;color:#9a3412;border-radius:8px;
+  padding:.55rem .75rem;font-size:.76rem;margin-top:.6rem;line-height:1.6}
+.note{font-size:.74rem;color:#5a6478;background:#eef2f9;border-radius:8px;padding:.7rem .9rem;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>LED Banner 点阵预览</h1>
+  <div class="sub">这是效果测试档，还没接上计价和下单 —— 先看点阵和跑动的感觉对不对</div>
+
+  <div class="card">
+    <h2>显示内容</h2>
+    <div class="row">
+      <div style="grid-column:1/-1">
+        <label>要显示的文字</label>
+        <input type="text" id="txt" value="A&T SIGNBOARD  *  012-345 6789  *  WELCOME" oninput="rebuild()">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>颜色</label>
+        <div class="pills">
+          <button class="pill on" id="c-red"   onclick="setColour('red')">🔴 红色</button>
+          <button class="pill"    id="c-white" onclick="setColour('white')">⚪ 白色</button>
+        </div>
+      </div>
+      <div>
+        <label>跑动方式</label>
+        <select id="mode" onchange="setMode()">
+          <option value="scroll">← 向左跑动</option>
+          <option value="static">静止不动</option>
+          <option value="flash">闪烁</option>
+        </select>
+      </div>
+      <div>
+        <label>速度</label>
+        <input type="range" id="speed" min="1" max="10" value="5" oninput="rebuild()" style="padding:0">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>尺寸</h2>
+    <div class="row">
+      <div><label>宽（尺）</label><input type="number" id="w" value="4" min="1" max="30" step="0.1" oninput="rebuild()"></div>
+      <div><label>高（尺）</label><input type="number" id="h" value="1" min="0.5" max="8" step="0.1" oninput="rebuild()"></div>
+      <div>
+        <label>点间距</label>
+        <select id="pitch" onchange="rebuild()">
+          <option value="10">P10（户外最常用）</option>
+          <option value="8">P8</option>
+          <option value="5">P5（室内，较细）</option>
+        </select>
+      </div>
+    </div>
+    <div id="sizeInfo" class="spec"></div>
+    <div id="sizeWarn"></div>
+  </div>
+
+  <div class="card">
+    <h2>预览</h2>
+    <div class="led-shell"><canvas id="ledCanvas"></canvas></div>
+    <div class="spec" id="pxInfo"></div>
+  </div>
+
+  <div class="note">
+    <b>关于「只能做模组整数倍」</b><br/>
+    LED 屏是一片片模组拼起来的，P10 的标准模组是 320 × 160 mm。<br/>
+    所以客户填的尺寸会自动对齐到最接近、且做得出来的尺寸 —— 上面会显示实际会是多大，
+    避免收到订单後还要再跟客户来回确认。
+  </div>
+</div>
+
+<script>
+var COLOUR = 'red', MODE = 'scroll';
+var DOT_COLOURS = {
+  red:   { on:'#ff2b18', glow:'rgba(255,60,40,0.55)', off:'#1c0e0c' },
+  white: { on:'#fff6e0', glow:'rgba(255,246,224,0.5)', off:'#141416' }
+};
+var MODULE_MM = { 10:{w:320,h:160,px:{w:32,h:16}}, 8:{w:320,h:160,px:{w:40,h:20}}, 5:{w:320,h:160,px:{w:64,h:32}} };
+var MM_PER_FT = 304.8;
+
+var cv = document.getElementById('ledCanvas');
+var ctx = cv.getContext('2d');
+var grid = null, gridW = 0, gridH = 0, offset = 0, raf = null, flashOn = true, flashT = 0;
+
+function setColour(c){
+  COLOUR = c;
+  document.getElementById('c-red').classList.toggle('on', c === 'red');
+  document.getElementById('c-white').classList.toggle('on', c === 'white');
+}
+function setMode(){ MODE = document.getElementById('mode').value; offset = 0; }
+
+/* 把尺寸对齐到模组整数倍 —— LED 屏只能这样做 */
+function snapToModules(wFt, hFt, pitch){
+  var m = MODULE_MM[pitch];
+  var wMm = wFt * MM_PER_FT, hMm = hFt * MM_PER_FT;
+  var cols = Math.max(1, Math.round(wMm / m.w));
+  var rows = Math.max(1, Math.round(hMm / m.h));
+  return {
+    cols: cols, rows: rows,
+    actualWmm: cols * m.w, actualHmm: rows * m.h,
+    actualWft: cols * m.w / MM_PER_FT, actualHft: rows * m.h / MM_PER_FT,
+    pxW: cols * m.px.w, pxH: rows * m.px.h,
+    modules: cols * rows
+  };
+}
+
+/* 把文字点阵化：先画到离屏 canvas，再逐点取样 */
+function textToGrid(text, pxH){
+  var off = document.createElement('canvas');
+  var octx = off.getContext('2d');
+  var fontPx = Math.max(6, Math.floor(pxH * 0.78));
+  octx.font = '700 ' + fontPx + 'px "DM Sans", Arial, sans-serif';
+  var wNeeded = Math.ceil(octx.measureText(text).width) + pxH * 2;
+  off.width = Math.max(wNeeded, 1); off.height = pxH;
+  octx.font = '700 ' + fontPx + 'px "DM Sans", Arial, sans-serif';
+  octx.textBaseline = 'middle';
+  octx.fillStyle = '#fff';
+  octx.fillText(text, pxH, pxH / 2 + 1);
+
+  var data = octx.getImageData(0, 0, off.width, off.height).data;
+  var g = new Uint8Array(off.width * pxH);
+  for (var y = 0; y < pxH; y++)
+    for (var x = 0; x < off.width; x++)
+      g[y * off.width + x] = data[(y * off.width + x) * 4 + 3] > 110 ? 1 : 0;
+  return { g: g, w: off.width, h: pxH };
+}
+
+function rebuild(){
+  var wFt = parseFloat(document.getElementById('w').value) || 1;
+  var hFt = parseFloat(document.getElementById('h').value) || 1;
+  var pitch = parseInt(document.getElementById('pitch').value, 10);
+  var snap = snapToModules(wFt, hFt, pitch);
+
+  gridW = snap.pxW; gridH = snap.pxH;
+  var built = textToGrid(document.getElementById('txt').value || ' ', gridH);
+  grid = built;
+
+  // 尺寸说明
+  var exact = Math.abs(snap.actualWft - wFt) < 0.02 && Math.abs(snap.actualHft - hFt) < 0.02;
+  document.getElementById('sizeInfo').innerHTML =
+      '实际可做尺寸：<b>' + snap.actualWft.toFixed(2) + ' × ' + snap.actualHft.toFixed(2) + ' 尺</b>'
+    + '（' + snap.actualWmm + ' × ' + snap.actualHmm + ' mm）<br/>'
+    + '模组：<b>' + snap.cols + ' 列 × ' + snap.rows + ' 行 = ' + snap.modules + ' 片</b>'
+    + '　·　解析度 <b>' + snap.pxW + ' × ' + snap.pxH + '</b> 点'
+    + '　·　面积 <b>' + (snap.actualWft * snap.actualHft).toFixed(2) + ' 平方尺</b>';
+  document.getElementById('sizeWarn').innerHTML = exact ? '' :
+      '<div class="warn">你填的是 ' + wFt + ' × ' + hFt + ' 尺，但 LED 屏只能做模组的整数倍，'
+    + '所以实际会是 <b>' + snap.actualWft.toFixed(2) + ' × ' + snap.actualHft.toFixed(2) + ' 尺</b>。</div>';
+  document.getElementById('pxInfo').textContent =
+    '每一颗点代表一颗实体 LED 灯珠 · 共 ' + (snap.pxW * snap.pxH).toLocaleString() + ' 颗';
+
+  // 画布大小：一颗点画 6px
+  var dot = 6;
+  cv.width = gridW * dot; cv.height = gridH * dot;
+  offset = 0;
+  if (!raf) loop();
+}
+
+function draw(){
+  var dot = 6, r = dot * 0.36;
+  var col = DOT_COLOURS[COLOUR];
+  ctx.fillStyle = '#0b0b0f';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+
+  var show = (MODE !== 'flash') || flashOn;
+  for (var y = 0; y < gridH; y++){
+    for (var x = 0; x < gridW; x++){
+      var sx = (MODE === 'scroll') ? (x + Math.floor(offset)) % grid.w : x;
+      var on = show && grid.g[y * grid.w + sx] === 1;
+      var cx = x * dot + dot/2, cy = y * dot + dot/2;
+      if (on){
+        ctx.fillStyle = col.glow;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 2.1, 0, 6.284); ctx.fill();
+        ctx.fillStyle = col.on;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.284); ctx.fill();
+      } else {
+        ctx.fillStyle = col.off;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.72, 0, 6.284); ctx.fill();
+      }
+    }
+  }
+}
+
+function loop(){
+  var sp = parseInt(document.getElementById('speed').value, 10) || 5;
+  if (MODE === 'scroll') offset += sp * 0.12;
+  if (MODE === 'flash'){ flashT++; if (flashT > 30 - sp * 2){ flashOn = !flashOn; flashT = 0; } }
+  if (grid) draw();
+  raf = requestAnimationFrame(loop);
+}
+
+rebuild();
+</script>
+</body>
+</html>
