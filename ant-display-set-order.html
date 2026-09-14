@@ -250,19 +250,6 @@ header {
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--red); }
 .form-textarea { min-height: 80px; resize: vertical; }
-
-/* File upload */
-.upload-zone {
-  border: 2px dashed var(--border); border-radius: var(--r-md);
-  padding: 2rem; text-align: center; cursor: pointer;
-  transition: all .2s; background: var(--off);
-}
-.upload-zone:hover { border-color: var(--red); background: var(--red-bg); }
-.upload-zone.has-file { border-color: var(--green); background: var(--green-bg); border-style: solid; }
-.upload-icon { font-size: 2rem; margin-bottom: .5rem; }
-.upload-title { font-size: 0.88rem; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
-.upload-sub { font-size: 0.76rem; color: var(--t2); }
-.upload-name { font-size: 0.82rem; font-weight: 600; color: var(--green); margin-top: .4rem; }
 #fileInput { display: none; }
 
 /* Notice */
@@ -836,13 +823,14 @@ header {
         <!-- File Upload -->
         <div style="margin-top:1.2rem">
           <div class="form-label" style="margin-bottom:.5rem">Artwork / Design File <span style="color:var(--t3);font-weight:400">(optional — you can send later)</span></div>
-          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-            <div class="upload-icon">📁</div>
-            <div class="upload-title">Click to upload artwork</div>
-            <div class="upload-sub">AI, PDF, PSD, PNG, JPG — max 50MB</div>
-            <div class="upload-name" id="uploadName" style="display:none"></div>
-          </div>
-          <input type="file" id="fileInput" accept=".ai,.pdf,.psd,.png,.jpg,.jpeg,.eps" onchange="handleFile(this)" />
+          <div style="border:1.5px dashed #c8d0dc;border-radius:12px;padding:1rem 1.1rem;background:#f7f9fc">
+        <div style="font-size:13.5px;font-weight:700;color:#0d1f3c;margin-bottom:.35rem">📎 Upload your artwork at checkout</div>
+        <div style="font-size:12.5px;color:#6b7688;line-height:1.65">
+          Add this product to your cart first — the checkout page has an upload field, and your file is attached directly to your order number so nothing gets lost.<br>
+          <span style="color:#9aa3b2">AI · PDF · PSD · EPS · JPG · PNG accepted · 50MB per file · Google sign-in required<br>
+          No artwork yet? No problem — you can order now and send it to us later on WhatsApp.</span>
+        </div>
+      </div>
         </div>
 
         <div class="btn-row">
@@ -1074,7 +1062,6 @@ function goToStep3() {
   const grand = Object.values(selections).reduce((a, s) => a + s.price * s.qty, 0);
 
   const deliveryMap = { self: 'Self Collection (Ulu Tiram, JB)', jb: 'Delivery within JB', sg: 'Delivery to Singapore' };
-  const file = document.getElementById('fileInput').files[0];
 
   document.getElementById('sum-product').textContent = prodStr;
   document.getElementById('sum-qty').textContent = qtyStr + ' unit(s)';
@@ -1084,7 +1071,7 @@ function goToStep3() {
   document.getElementById('sum-company').textContent = document.getElementById('f-company').value.trim() || '—';
   document.getElementById('sum-delivery').textContent = deliveryMap[document.getElementById('f-delivery').value];
   document.getElementById('sum-remarks').textContent = document.getElementById('f-remarks').value.trim() || '—';
-  document.getElementById('sum-file').textContent = file ? file.name : 'Not uploaded';
+  document.getElementById('sum-file').textContent = 'To be uploaded at checkout';
   document.getElementById('sum-total').textContent = 'RM ' + grand.toFixed(2);
 
   setStep(3);
@@ -1108,15 +1095,8 @@ function submitOrder() {
 
 // ─── File Upload ──────────────────────────────────────────
 function handleFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const zone = document.getElementById('uploadZone');
-  const name = document.getElementById('uploadName');
-  zone.classList.add('has-file');
-  zone.querySelector('.upload-icon').textContent = '✅';
-  zone.querySelector('.upload-title').textContent = 'File attached';
-  name.textContent = file.name;
-  name.style.display = 'block';
+  // See note in fileChosen() on the other product pages: artwork upload now
+  // happens at checkout (cart.html), which really stores the file. No-op.
 }
 
 /* ── Cart utilities ── */

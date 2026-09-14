@@ -349,12 +349,23 @@
           alert('浏览器挡住了登入视窗，请允许弹出视窗后再试。\n\nPopup was blocked — please allow popups and try again.');
           return;
         }
-        // User closed the popup / cancelled
-        proceedAnyway = confirm(
-          '登入 Google 就能随时查看订单进度。不登入也能下单，但要自己保存订单号码。\n' +
-          'Sign in to track this order anytime. You can still order without it, ' +
-          'but you\'ll need to keep your order number.\n\n' +
-          '确定 OK = 不登入继续　·　取消 Cancel = 回去登入');
+        // User closed the popup / cancelled.
+        // If they picked artwork, say plainly that it will NOT be sent —
+        // Storage rules require auth, so continuing without signing in means
+        // the file is silently dropped and A&T never sees it.
+        proceedAnyway = custFiles.length
+          ? confirm(
+              '⚠️ 你选了 ' + custFiles.length + ' 个设计稿，但未登入无法上传 —— 继续的话档案不会传给我们。\n\n' +
+              '建议：取消 → 登入 Google，档案就会跟订单一起送出。\n' +
+              '或者：继续下单，之后用 WhatsApp 把档案传给我们。\n\n' +
+              'Your artwork CANNOT be uploaded without signing in. ' +
+              'Cancel to sign in, or continue and send the files via WhatsApp instead.\n\n' +
+              '确定 OK = 不上传档案继续　·　取消 Cancel = 回去登入')
+          : confirm(
+              '登入 Google 就能随时查看订单进度。不登入也能下单，但要自己保存订单号码。\n' +
+              'Sign in to track this order anytime. You can still order without it, ' +
+              'but you\'ll need to keep your order number.\n\n' +
+              '确定 OK = 不登入继续　·　取消 Cancel = 回去登入');
         if (!proceedAnyway) return;
       }
     }
@@ -366,20 +377,48 @@
     var trackUrl = 'https://shop.jbsignboard.com/track.html?id=' + orderId;
 
     // ── Upload artwork files (if any) → download links ──
-    var fileLinks = [];
+    // A failure here used to be swallowed into "(no file uploaded)", which is
+    // indistinguishable from the customer never attaching anything. Track the
+    // failures explicitly so the order + owner email say so out loud.
+    var fileLinks  = [];
+    var fileFailed = [];
     if (custFiles.length && window._fbUploadFile) {
       if (btn) btn.textContent = '⏳ Uploading file…';
       for (var fi = 0; fi < custFiles.length; fi++) {
-        try {
-          var fUrl = await window._fbUploadFile(custFiles[fi], orderId);
-          fileLinks.push({ name: custFiles[fi].name, url: fUrl });
-        } catch (e) { console.warn('[Upload] failed:', e); }
+        var fName = custFiles[fi].name;
+        var fUrl  = null;
+        for (var attempt = 0; attempt < 2 && !fUrl; attempt++) {
+          try {
+            fUrl = await window._fbUploadFile(custFiles[fi], orderId);
+          } catch (e) {
+            console.warn('[Upload] attempt ' + (attempt + 1) + ' failed for ' + fName + ':', e);
+            if (attempt === 0) await new Promise(function(r){ setTimeout(r, 800); });
+          }
+        }
+        if (fUrl) fileLinks.push({ name: fName, url: fUrl });
+        else      fileFailed.push(fName);
       }
       if (btn) btn.textContent = '⏳ Saving order…';
     }
-    var fileText = fileLinks.length
-      ? fileLinks.map(function(f){ return f.name + ': ' + f.url; }).join('\n')
-      : '(no file uploaded)';
+
+    var fileText;
+    if (!custFiles.length) {
+      fileText = '(no file uploaded)';
+    } else {
+      var parts = fileLinks.map(function(f){ return f.name + ': ' + f.url; });
+      if (fileFailed.length) {
+        parts.push('⚠️ UPLOAD FAILED — 顾客有传但没成功，请主动向顾客索取：'
+                 + fileFailed.join(', '));
+      }
+      fileText = parts.join('\n');
+    }
+
+    // Tell the customer too, so they don't assume we got the artwork.
+    if (fileFailed.length) {
+      alert('⚠️ ' + fileFailed.length + ' 个设计稿上传失败：\n' + fileFailed.join('\n') +
+            '\n\n订单照常送出，我们会主动 WhatsApp 向你索取档案。\n' +
+            'Your order is still being placed — we\'ll message you for the artwork.');
+    }
 
     // Compute grand total
     var grandTotal = items.reduce(function(s, i) { return s + i.price * i.qty; }, 0);
@@ -546,14 +585,49 @@
     if(e) custInfo.email = e.value;
   };
   // Selected artwork files — kept in JS so they survive cart re-renders
+  //
+  // Firebase Storage rules require an authenticated user, and the free tier is
+  // only 5 GB total. So we cap each file and tell the customer *at selection
+  // time* if their file can't be uploaded — previously an oversized file or a
+  // signed-out customer produced a silent console warning and an order that
+  // said "(no file uploaded)", so A&T never knew artwork had been attempted.
+  var MAX_FILE_MB = 50;
   var custFiles = [];
-  window.onCustFile = function(input) {
-    custFiles = Array.prototype.slice.call(input.files || []);
+
+  function fileListMsg() {
     var el = document.getElementById('cust-file-list');
-    if (el) el.textContent = custFiles.length
-      ? ('✓ 已选 ' + custFiles.length + ' 个文件: ' + custFiles.map(function(f){ return f.name; }).join(', '))
-      : '';
+    if (!el) return;
+    if (!custFiles.length) { el.innerHTML = ''; return; }
+    var names = custFiles.map(function(f){ return escHtml(f.name); }).join(', ');
+    var html  = '<span style="color:#16a34a">✓ 已选 ' + custFiles.length + ' 个文件: ' + names + '</span>';
+    if (!window._fbCurrentUser) {
+      html += '<br><span style="color:#d97706">⚠️ 上传设计稿需要登入 Google（结帐时会请你登入）'
+           +  '<br>Sign-in is required to upload artwork.</span>';
+    }
+    el.innerHTML = html;
+  }
+
+  window.onCustFile = function(input) {
+    var picked = Array.prototype.slice.call(input.files || []);
+    var tooBig = picked.filter(function(f){ return f.size > MAX_FILE_MB * 1024 * 1024; });
+    custFiles  = picked.filter(function(f){ return f.size <= MAX_FILE_MB * 1024 * 1024; });
+
+    if (tooBig.length) {
+      alert('以下档案超过 ' + MAX_FILE_MB + 'MB，无法上传：\n\n'
+          + tooBig.map(function(f){
+              return '• ' + f.name + ' (' + (f.size/1024/1024).toFixed(1) + 'MB)';
+            }).join('\n')
+          + '\n\n请压缩后再试，或直接 WhatsApp 传给我们。\n'
+          + 'Files over ' + MAX_FILE_MB + 'MB can\'t be uploaded — please compress, '
+          + 'or send them to us on WhatsApp.');
+    }
+    fileListMsg();
   };
+
+  // Exposed so the auth handler below can refresh the sign-in warning the
+  // moment the customer signs in. (Assigning window._onAuthChange here would
+  // be silently overwritten — the real handler is defined further down.)
+  window._refreshFileHint = fileListMsg;
 
   function render() {
     var items = getCart();
@@ -633,7 +707,7 @@
       '  <div style="font-size:12px;font-weight:600;color:#0d1f3c;margin:.8rem 0 .3rem">📎 上传设计稿 Upload artwork (optional)</div>',
       '  <input id="cust-file" type="file" multiple accept=".pdf,.ai,.psd,.eps,.svg,.jpg,.jpeg,.png,.tif,.tiff,image/*,application/pdf,application/postscript" onchange="onCustFile(this)" style="' + inStyle + ';padding:8px" />',
       '  <div id="cust-file-list" style="font-size:11.5px;color:#16a34a;margin-top:.35rem;word-break:break-word">' + (custFiles.length ? ('✓ 已选 ' + custFiles.length + ' 个文件: ' + custFiles.map(function(f){ return escHtml(f.name); }).join(', ')) : '') + '</div>',
-      '  <div style="font-size:11px;color:#9aa3b2;margin-top:.2rem">PDF / AI / PSD / JPEG 等 · 可多选 · 单个最大 200MB</div>',
+      '  <div style="font-size:11px;color:#9aa3b2;margin-top:.2rem">PDF / AI / PSD / JPEG 等 · 可多选 · 单个最大 ' + MAX_FILE_MB + 'MB · 需登入 Google<br>超过 ' + MAX_FILE_MB + 'MB 请用 WhatsApp 传给我们</div>',
       '</div>'
     ].join('');
 
@@ -705,6 +779,11 @@
 
   /* ── Google Auth ── */
   window._onAuthChange = function(user) {
+    // Clear/show the "sign-in required to upload" warning under the file picker.
+    // Must run before the early return below, which fires on pages/states where
+    // the header buttons aren't rendered.
+    if (window._refreshFileHint) { try { window._refreshFileHint(); } catch(e){} }
+
     var btn  = document.getElementById('btn-signin');
     var pill = document.getElementById('user-pill');
     var tabs = document.getElementById('tab-bar');

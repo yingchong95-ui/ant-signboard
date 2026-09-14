@@ -3054,20 +3054,18 @@ async function captureDesignImage(enqId) {
     const canvasUrl = await getDownloadURL(canvasRef);
     console.log('[Enquiry] Canvas uploaded:', canvasUrl);
 
-    // 2. Also capture the CSS signboard preview using html2canvas (if available)
-    let previewUrl = '';
-    if (window.html2canvas) {
-      try {
-        const scene = document.getElementById('sbScene');
-        if (scene) {
-          const previewCanvas = await window.html2canvas(scene, { scale: 2, useCORS: true, logging: false });
-          const pBlob = await new Promise(r => previewCanvas.toBlob(r, 'image/png', 0.9));
-          const previewRef = sRef(storage, `enquiries/${enqId}/signboard-preview.png`);
-          await uploadBytes(previewRef, pBlob, { contentType: 'image/png' });
-          previewUrl = await getDownloadURL(previewRef);
-        }
-      } catch(e) { console.warn('[Enquiry] Preview capture failed:', e); }
-    }
+    // NOTE: there used to be a second capture here, of #sbScene via html2canvas.
+    // It never ran — html2canvas was never loaded, and #sbScene is display:none
+    // with nothing in the codebase ever showing it. Both facts were harmless
+    // only because they cancelled out; loading the library would have started
+    // uploading blank images.
+    //
+    // It also isn't needed: the lighting model (lightingFor) writes straight
+    // onto the Fabric canvas — panel fill, letter fill, glow shadows, lightbox
+    // edge — so canvas-design.png above IS the lit frontlit/backlit/night
+    // render, not a flat layout. previewUrl stays empty; admin.html already
+    // renders fine without it.
+    const previewUrl = '';
 
     return { canvasUrl, previewUrl };
   } catch(e) {
