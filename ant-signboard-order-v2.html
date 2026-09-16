@@ -3022,7 +3022,15 @@ const firebaseConfig = {
   messagingSenderId: "63683429806",
   appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
 };
-const app     = initializeApp(firebaseConfig, 'sb-enquiry');
+// ONE Firebase app for Firestore, Storage and Auth.
+//
+// This used to be initializeApp(firebaseConfig, 'sb-enquiry') while Auth below
+// used the '[DEFAULT]' app. Firebase Storage takes its ID token from the app
+// instance it was created on, so every uploadBytes() went out with NO auth
+// token even when the customer was signed in — Storage rules rejected it with
+// storage/unauthorized and the design image was never saved. Sharing the
+// default app also keeps the sign-in session shared with cart.html/track.html.
+const app     = getApps().find(a => a.name === '[DEFAULT]') || initializeApp(firebaseConfig);
 const db      = getFirestore(app);
 const storage = getStorage(app);
 
@@ -3098,11 +3106,11 @@ async function captureDesignImageWithRetry(enqId) {
    who dismisses the popup would see "success" while the enquiry silently
    fails to save. Worst case we save with userId:null and they track by ID.
 
-   Auth uses the DEFAULT Firebase app (not the 'sb-enquiry' named one), so
-   the session is shared with cart.html and track.html — a customer already
-   signed in there is not asked to sign in again. */
-const _authApp  = getApps().find(a => a.name === '[DEFAULT]') || initializeApp(firebaseConfig);
-const _auth     = getAuth(_authApp);
+   Auth runs on the same `app` as Firestore and Storage (see the note where it
+   is created). That is what lets uploadBytes() carry the signed-in user's
+   token, and it keeps the session shared with cart.html and track.html — a
+   customer already signed in there is not asked to sign in again. */
+const _auth     = getAuth(app);
 const _provider = new GoogleAuthProvider();
 _provider.setCustomParameters({ prompt: 'select_account' });
 
