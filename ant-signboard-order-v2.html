@@ -3005,6 +3005,11 @@ document.addEventListener('click', function(e) {
     <div class="eg-modal-cap" id="egModalCap"></div>
   </div>
 </div>
+<!-- EmailJS — same account/template cart.html uses, so signboard enquiries land
+     in the same owner inbox. Without this the enquiry only reached Firestore:
+     no owner email, no Google Sheets row. -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init('Hx5zC7ceOGI-5G4ON');</script>
 <!-- Firebase: save signboard enquiry to Firestore + Storage -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -3285,12 +3290,118 @@ window._fbSaveEnquiry = async function(enqId) {
       createdAt: new Date().toISOString()
     });
     console.log('[Enquiry] Saved to Firestore with design image:', enqId);
+
+    // ── Mirror to Google Sheets + owner email ──
+    // Both are best-effort: the enquiry is already safely in Firestore, so a
+    // failure here must never turn a saved enquiry into a reported failure.
+    try {
+      _notifyEnquiry({
+        enqId: enqId,
+        board: boardLabels[S.board] || 'Custom Signboard',
+        w: w, h: h, priceDesc: priceDesc, minP: minP, maxP: maxP,
+        light: S.light || '', led: S.led || '',
+        businessName: document.getElementById('fName')?.value.trim()   || '',
+        slogan:       document.getElementById('fSlogan')?.value.trim() || '',
+        ssm:          document.getElementById('fSSM')?.value.trim()    || '',
+        location:     document.getElementById('location')?.value.trim()|| '',
+        remarks:      document.getElementById('remarks')?.value.trim() || '',
+        contactName:  document.getElementById('f-name')?.value.trim()  || '',
+        phone:        document.getElementById('f-phone')?.value.trim() || '',
+        email:        document.getElementById('f-email')?.value.trim() || (_u ? _u.email : ''),
+        company:      document.getElementById('f-company')?.value.trim()|| '',
+        canvasUrl: canvasUrl, imgErr: imgErr, spec: designSpec
+      });
+    } catch(e) { console.warn('[Enquiry] notify failed:', e); }
+
     return true;
   } catch(e) {
     console.warn('[Enquiry] Firebase save failed:', e);
     return false;
   }
 };
+
+/* Send the enquiry to the owner's Google Sheet and inbox — the same two places
+   cart.html posts to, so shop orders and signboard enquiries sit side by side.
+   Previously an enquiry only reached Firestore, so it showed up in the admin
+   panel but was invisible in the Sheet and never triggered an email.
+
+   Money column: enquiries are quotes, not sales, so grand_total is sent as 0
+   and the estimate goes in the items text. analytics.html sums the Sheet's
+   total column without filtering by status, so sending the estimate here would
+   quietly count un-won quotes as revenue. */
+function _notifyEnquiry(d) {
+  // analytics.html's parseItems() treats every line as a product line item, but
+  // it cuts the string at the first 📎. So: one real product line, then 📎, then
+  // all the detail. Without the marker the detail lines get counted as extra
+  // products and junk categories like "估价 Estimate: RM 3" appear in the
+  // product breakdown.
+  var lines = [
+    '• ' + d.board + ' ' + d.w + 'ft × ' + d.h + 'ft x1 = RM 0',
+    '📎 估价 Estimate: ' + d.priceDesc + '（未成交 not yet confirmed）',
+    '  灯光 Lighting: ' + (d.light || '—') + (d.led ? ' · LED ' + d.led : '')
+  ];
+  if (d.businessName) lines.push('  店名 Business: ' + d.businessName);
+  if (d.slogan)       lines.push('  标语 Slogan: '   + d.slogan);
+  if (d.ssm)          lines.push('  SSM: '           + d.ssm);
+  if (d.location)     lines.push('  地点 Location: ' + d.location);
+  if (d.remarks)      lines.push('  备注 Remarks: '  + d.remarks);
+
+  // Font sizes converted to real inches — what the workshop actually needs
+  if (d.spec && d.spec.elements && d.spec.elements.length) {
+    lines.push('  📐 生产规格:');
+    d.spec.elements.forEach(function(e) {
+      lines.push('     - ' + (e.role || '') + ': "' + (e.text || '') + '"'
+               + (e.font ? ' · ' + e.font : '')
+               + (e.heightInch ? ' · 字高 ' + e.heightInch + '"' : ''));
+    });
+  }
+  lines.push(d.canvasUrl
+    ? '  🎨 设计图 Design: ' + d.canvasUrl
+    : '  ⚠️ 设计图上传失败 design image upload FAILED'
+      + (d.imgErr ? ' (' + d.imgErr + ')' : ''));
+
+  var itemsText = lines.join('\n');
+  var when      = new Date().toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' });
+  var trackUrl  = 'https://shop.jbsignboard.com/track.html?id=' + d.enqId;
+  var who       = d.contactName || d.company || d.businessName || 'Signboard Enquiry';
+
+  // 1) Google Sheets — same Apps Script webhook cart.html posts to
+  try {
+    fetch('https://script.google.com/macros/s/AKfycbxjwqhvhO4HmdKIz8Dg2xbpnyZXKRnnVyWZ6bQ30-6xoon5sq-0ZGq2RNSRX0uQ4d0/exec', {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        order_time:     when,
+        order_id:       d.enqId,
+        customer_name:  who,
+        customer_phone: d.phone,
+        customer_email: d.email,
+        order_items:    itemsText,
+        grand_total:    '0',                 // quote, not revenue — see note above
+        status:         'Enquiry',
+        source:         'signboard-enquiry',
+        track_url:      trackUrl
+      })
+    }).catch(function(){});
+  } catch(e) { console.warn('[Enquiry][Sheets]', e); }
+
+  // 2) Owner email — same EmailJS service/template as cart.html
+  try {
+    if (window.emailjs) {
+      emailjs.send('service_A01', 'template_fj72ou4', {
+        order_id:       d.enqId,
+        grand_total:    '0.00 (估价 ' + d.priceDesc + ')',
+        order_items:    itemsText,
+        track_url:      trackUrl,
+        order_time:     when,
+        customer_name:  who,
+        customer_email: d.email  || '(not provided)',
+        customer_phone: d.phone  || '(not provided)',
+        order_files:    d.canvasUrl || '(design image upload failed)'
+      }).catch(function(e){ console.warn('[Enquiry][EmailJS]', e); });
+    }
+  } catch(e) { console.warn('[Enquiry][EmailJS]', e); }
+}
 
 /* Save with one retry, and tell the customer if it truly failed.
    Previously a failed save was swallowed and the success screen still
