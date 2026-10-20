@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>生产进度 — A&T Signboard</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&family=DM+Mono:wght@500&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet"/>
+<!--
+  生产区大屏幕 Production Board
+  ─────────────────────────────
+  · 只读：这一页没有任何修改订单的功能
+  · 用管理员 Google 账号登入（Firestore 规定只有管理员能列出全部订单）
+  · 不显示电话、价钱、地址 —— 生产区的其他客户也看得到这个屏幕
+  · 资料即时更新；每天凌晨 4 点自动重新整理一次，拿到最新版程式
+-->
+<style>
+:root{
+  --bg:#070b16;--panel:#0e1526;--card:#141d33;--line:#22304f;
+  --t1:#f2f5fb;--t2:#a6b1c8;--t3:#6b7894;
+  --red:#ff3b4e;--blue:#3d9bff;--green:#2fd27a;--amber:#ffb020;--violet:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans','Noto Sans SC',sans-serif;
+  font-size:clamp(14px,1.02vw,30px);overflow:hidden;-webkit-font-smoothing:antialiased}
+
+/* ── 登入 ── */
+.login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:50}
+.login-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2.4em 2.6em;text-align:center;max-width:30em}
+.login-box h1{font-size:1.6em;margin-bottom:.3em}
+.login-box p{color:var(--t2);font-size:.9em;line-height:1.6}
+.login-btn{margin-top:1.4em;background:#fff;color:#1f1f1f;border:none;border-radius:10px;padding:.8em 1.6em;font-size:1em;font-weight:700;cursor:pointer;font-family:inherit}
+.login-err{color:var(--red);font-size:.85em;margin-top:1em;display:none}
+
+/* ── 版面 ── */
+.board{display:none;height:100vh;flex-direction:column;padding:1.1em 1.4em 0}
+.top{display:flex;align-items:center;gap:1.2em;padding-bottom:.9em}
+.brand{font-size:1.9em;font-weight:900;letter-spacing:-.01em}
+.brand b{color:var(--red)}
+.title{font-size:1.15em;color:var(--t2);font-weight:500;border-left:2px solid var(--line);padding-left:1em}
+.live{display:flex;align-items:center;gap:.45em;font-size:.8em;color:var(--t2);margin-left:auto}
+.live i{width:.7em;height:.7em;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(47,210,122,.6);animation:pulse 2s infinite}
+.live.off i{background:var(--red);animation:none}
+@keyframes pulse{70%{box-shadow:0 0 0 .6em rgba(47,210,122,0)}100%{box-shadow:0 0 0 0 rgba(47,210,122,0)}}
+.clock{text-align:right;line-height:1.1}
+.clock .t{font-family:'DM Mono',monospace;font-size:2em;font-weight:500}
+.clock .d{font-size:.78em;color:var(--t2)}
+.fs-btn{background:none;border:1px solid var(--line);color:var(--t2);border-radius:8px;padding:.35em .7em;font-size:.75em;cursor:pointer;font-family:inherit}
+
+.cols{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1em;min-height:0}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-height:0}
+.col-h{display:flex;align-items:center;gap:.6em;padding:.85em 1em;border-bottom:1px solid var(--line)}
+.col-h .dot{width:.75em;height:.75em;border-radius:50%}
+.col-h .name{font-size:1.15em;font-weight:800}
+.col-h .en{font-size:.72em;color:var(--t3);text-transform:uppercase;letter-spacing:.08em}
+.col-h .n{margin-left:auto;font-family:'DM Mono',monospace;font-size:1.3em;font-weight:500;color:var(--t2)}
+.col-b{flex:1;overflow:hidden;padding:.8em;position:relative}
+.col-scroll{display:flex;flex-direction:column;gap:.75em}
+.empty{color:var(--t3);text-align:center;font-size:.9em;padding:2em 0}
+
+/* ── 订单卡 ── */
+.card{background:var(--card);border:1px solid var(--line);border-left:.32em solid var(--c,var(--blue));border-radius:12px;padding:.8em .95em}
+.c-top{display:flex;align-items:baseline;gap:.6em}
+.c-id{font-family:'DM Mono',monospace;font-size:.78em;color:var(--t3)}
+.c-age{margin-left:auto;font-size:.72em;color:var(--t2);white-space:nowrap}
+.c-age.late{color:var(--amber);font-weight:700}
+.c-name{font-size:1.32em;font-weight:800;line-height:1.2;margin:.15em 0 .2em;word-break:break-word}
+.c-prod{font-size:.8em;color:var(--t2);line-height:1.35}
+.c-now{display:inline-flex;align-items:center;gap:.4em;margin-top:.55em;font-size:.9em;font-weight:700;color:var(--c,var(--blue))}
+.c-steps{display:flex;gap:.3em;margin-top:.55em}
+.c-steps span{flex:1;height:.42em;border-radius:1em;background:#26324f}
+.c-steps span.done{background:var(--green)}
+.c-steps span.now{background:var(--c,var(--amber));animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{50%{opacity:.45}}
+.c-eta{font-size:.74em;color:var(--violet);margin-top:.45em}
+
+/* ── 底部 ── */
+.foot{display:flex;align-items:center;gap:1em;padding:.7em 0 .8em;color:var(--t3);font-size:.78em}
+.foot b{color:var(--t2)}
+.qr{background:#fff;border-radius:6px;padding:4px;line-height:0}
+.qr img,.qr canvas{width:3.6em!important;height:3.6em!important}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+  <div class="login-box">
+    <h1>📺 生产进度屏幕</h1>
+    <p>A&amp;T Production Board<br/>请用管理员 Google 账号登入一次，之后电视会记住。</p>
+    <button class="login-btn" onclick="signIn()">Sign in with Google</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<div class="board" id="board">
+  <div class="top">
+    <div class="brand"><b>A&amp;T</b> Signboard</div>
+    <div class="title">生产进度 Production Board</div>
+    <div class="live" id="live"><i></i><span id="live-txt">即时更新 Live</span></div>
+    <button class="fs-btn" id="fs-btn" onclick="goFullscreen()">⛶ 全屏</button>
+    <div class="clock"><div class="t" id="clk-t">--:--</div><div class="d" id="clk-d"></div></div>
+  </div>
+
+  <div class="cols">
+    <div class="col"><div class="col-h"><span class="dot" style="background:var(--amber)"></span><div><div class="name">准备中</div><div class="en">Confirmed</div></div><span class="n" id="n-prep">0</span></div><div class="col-b"><div class="col-scroll" id="c-prep"></div></div></div>
+    <div class="col"><div class="col-h"><span class="dot" style="background:var(--blue)"></span><div><div class="name">生产中</div><div class="en">In Production</div></div><span class="n" id="n-prod">0</span></div><div class="col-b"><div class="col-scroll" id="c-prod"></div></div></div>
+    <div class="col"><div class="col-h"><span class="dot" style="background:var(--violet)"></span><div><div class="name">安装 / 送货</div><div class="en">Install · Delivery</div></div><span class="n" id="n-inst">0</span></div><div class="col-b"><div class="col-scroll" id="c-inst"></div></div></div>
+    <div class="col"><div class="col-h"><span class="dot" style="background:var(--green)"></span><div><div class="name">今日完成</div><div class="en">Completed</div></div><span class="n" id="n-done">0</span></div><div class="col-b"><div class="col-scroll" id="c-done"></div></div></div>
+  </div>
+
+  <div class="foot">
+    <div class="qr" id="qr"></div>
+    <div>扫描查看你的订单进度 · Scan to track your order<br/><b>shop.jbsignboard.com/track.html</b></div>
+    <div style="margin-left:auto" id="upd">—</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+        integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyD787ofMHEFjr6D_W1PsMjBV2SPP7qycX4",
+  authDomain: "sign-track-ff7f3.firebaseapp.com",
+  projectId: "sign-track-ff7f3",
+  storageBucket: "sign-track-ff7f3.firebasestorage.app",
+  messagingSenderId: "63683429806",
+  appId: "1:63683429806:web:6c75bfaf4f851157bc743f"
+});
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// 必须跟 admin.html 和 firestore.rules 的管理员名单一致
+const ADMIN_EMAILS = ['antsign.shop@gmail.com', 'yingchong95@gmail.com'];
+
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
+window.signIn = async function () {
+  try { await signInWithPopup(auth, provider); }
+  catch (err) {
+    // 电视浏览器常挡弹出视窗 → 改用整页跳转
+    if (err && /popup|not-supported|storage/.test(err.code || '')) return signInWithRedirect(auth, provider);
+    showErr('登入失败 (' + (err.code || err.message) + ')');
+  }
+};
+getRedirectResult(auth).catch(err => showErr('登入失败 (' + (err.code || '') + ')'));
+
+function showErr(msg) { const e = document.getElementById('login-err'); e.textContent = msg; e.style.display = 'block'; }
+
+let unsub = null;
+onAuthStateChanged(auth, async user => {
+  if (!user) { document.getElementById('login').style.display = 'flex'; document.getElementById('board').style.display = 'none'; return; }
+  if (!ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
+    await signOut(auth);
+    return showErr('这个 Google 账号没有权限。请用管理员账号登入。');
+  }
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('board').style.display = 'flex';
+  if (unsub) unsub();
+  const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+  unsub = onSnapshot(q,
+    snap => { window.setLive(true); window.renderBoard(snap.docs.map(d => ({ ...d.data(), _docId: d.id }))); },
+    err  => { console.error(err); window.setLive(false, err.code); });
+});
+</script>
+
+<script>
+/* ══ 生产步骤（跟 admin.html 一样） ══ */
+const PROD = [
+  ['ironframe', 'Frame',    '铁架'],
+  ['sticker',   'Sticker',  '贴纸'],
+  ['cutting',   'Cutting',  '切割'],
+  ['edging',    'Edging',   '包边'],
+  ['painting',  'Painting', '喷漆'],
+  ['assembly',  'Assembly', '组装']
+];
+const BOARD_LABEL = { flat:'Flat Panel', alum:'Alum Strip', lightbox:'Lightbox', wall:'Wall Lettering' };
+const LIGHT_LABEL = { frontlit:'Frontlit', backlit:'Backlit', nonlit:'Non-lit' };
+const DAY = 86400000;
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+const st = (o, id) => (o.steps && o.steps[id] && o.steps[id].status) || 'pending';
+
+/* 生产区其他人也看得到 → 拿掉价钱、电话、长串数字 */
+function scrub(s) {
+  return String(s || '')
+    .replace(/(estimated\s*)?RM\s?[\d,.]+(\s*[-—–]\s*RM\s?[\d,.]+)?/gi, '')
+    .replace(/\+?\d[\d\s\-()]{6,}\d/g, '')
+    .replace(/\s*·\s*(·\s*)+/g, ' · ')
+    .replace(/^[\s·,]+|[\s·,]+$/g, '');
+}
+
+function shopName(o) {
+  return o.businessName || (o.meta && o.meta.signName) || o.company || o.customer || o.contactName || '—';
+}
+function productLine(o) {
+  if (o.type === 'signboard-enquiry') {
+    const bits = [BOARD_LABEL[o.boardType] || o.boardType, LIGHT_LABEL[o.lighting] || o.lighting,
+                  o.letterMaterial ? String(o.letterMaterial).split(' · ')[0] : '', (o.sizeW && o.sizeH) ? o.sizeW + '×' + o.sizeH + ' ft' : ''];
+    return bits.filter(Boolean).join(' · ');
+  }
+  const items = (o.items || o.products || []).map(i => i.name).filter(Boolean);
+  const size = o.meta && o.meta.size ? o.meta.size : '';
+  const base = o.product || items.slice(0, 2).join(', ') || o.desc || '';
+  return scrub([base, size].filter(Boolean).join(' · ')).slice(0, 90);
+}
+
+/* 哪一栏 */
+function stage(o) {
+  if (st(o, 'jobdone') === 'done') return 'done';
+  if (st(o, 'delivery') !== 'pending') return 'inst';
+  const used = PROD.filter(p => st(o, p[0]) !== 'skipped');
+  const started = used.some(p => ['done', 'inprogress'].includes(st(o, p[0])));
+  const allDone = used.length && used.every(p => st(o, p[0]) === 'done');
+  if (allDone) return 'inst';
+  if (started) return 'prod';
+  return 'prep';
+}
+/* 已确认的单才上屏幕：Confirm、或已经要求付款／付了款、或已经开工 */
+function isOnBoard(o) {
+  const confirmed = st(o, 'proceed') === 'done' || st(o, 'payment') !== 'pending'
+                 || PROD.some(p => ['done', 'inprogress'].includes(st(o, p[0])));
+  if (!confirmed) return false;
+  if (st(o, 'jobdone') === 'done') {
+    const t = o.steps.jobdone.completedAt ? new Date(o.steps.jobdone.completedAt).getTime() : 0;
+    return Date.now() - t < DAY;   // 完成的单留 24 小时
+  }
+  return true;
+}
+
+function cardHtml(o, col) {
+  const colour = { prep:'var(--amber)', prod:'var(--blue)', inst:'var(--violet)', done:'var(--green)' }[col];
+  const used = PROD.filter(p => st(o, p[0]) !== 'skipped');
+  const doneN = used.filter(p => st(o, p[0]) === 'done').length;
+  // 正在做的那一步优先；没有标「进行中」就显示下一个还没完成的
+  const next = used.find(p => st(o, p[0]) === 'inprogress') || used.find(p => st(o, p[0]) !== 'done');
+
+  let now = '';
+  if (col === 'prep') now = st(o, 'payment') === 'done' ? '✓ 已付款 · 排队开工' : '⏳ 等付款 Awaiting payment';
+  if (col === 'prod') now = next ? '▶ ' + next[2] + ' ' + next[1] + '　' + doneN + '/' + used.length : '';
+  if (col === 'inst') now = st(o, 'delivery') === 'inprogress' ? '🚚 安装 / 送货中' : '📦 完成生产 · 等安装';
+  if (col === 'done') now = '🏁 完成 Completed';
+
+  // 第几天：从确认那天算起
+  const start = (o.steps && o.steps.proceed && o.steps.proceed.completedAt) || o.paymentRequestedAt || o.createdAt;
+  const days = start ? Math.max(1, Math.ceil((Date.now() - new Date(start).getTime()) / DAY)) : 0;
+  const age = col === 'done' ? '' : days ? `<span class="c-age${days > 10 ? ' late' : ''}">第 ${days} 天</span>` : '';
+
+  let bar = '';
+  if (col === 'prod' || col === 'inst' || col === 'done') {
+    bar = '<div class="c-steps">' + used.map(p => {
+      const s = st(o, p[0]);
+      return `<span class="${s === 'done' ? 'done' : (next && p[0] === next[0] && col === 'prod') ? 'now' : ''}" title="${p[1]}"></span>`;
+    }).join('') + '</div>';
+  }
+  const eta = o.eta ? `<div class="c-eta">📅 安装 ${esc(scrub(o.eta))}</div>` : '';
+
+  return `<div class="card" style="--c:${colour}">
+    <div class="c-top"><span class="c-id">${esc(o.id || o._docId)}</span>${age}</div>
+    <div class="c-name">${esc(shopName(o))}</div>
+    <div class="c-prod">${esc(productLine(o))}</div>
+    ${now ? `<div class="c-now">${esc(now)}</div>` : ''}
+    ${bar}${eta}
+  </div>`;
+}
+
+window.renderBoard = function (orders) {
+  const cols = { prep: [], prod: [], inst: [], done: [] };
+  orders.filter(isOnBoard).forEach(o => cols[stage(o)].push(o));
+  // 最久的放最上面（最需要注意）；完成的最新的在上
+  const t = o => new Date(o.createdAt || 0).getTime();
+  ['prep', 'prod', 'inst'].forEach(k => cols[k].sort((a, b) => t(a) - t(b)));
+  cols.done.sort((a, b) => t(b) - t(a));
+  Object.keys(cols).forEach(k => {
+    document.getElementById('n-' + k).textContent = cols[k].length;
+    document.getElementById('c-' + k).innerHTML = cols[k].length
+      ? cols[k].map(o => cardHtml(o, k)).join('')
+      : '<div class="empty">—</div>';
+  });
+  document.getElementById('upd').textContent = '最后更新 ' + new Date().toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit' });
+};
+
+window.setLive = function (ok, code) {
+  document.getElementById('live').classList.toggle('off', !ok);
+  document.getElementById('live-txt').textContent = ok ? '即时更新 Live' : '连线中断，重新连线中… ' + (code || '');
+};
+
+/* ── 时钟 ── */
+function tick() {
+  const d = new Date();
+  document.getElementById('clk-t').textContent = d.toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit', hour12:false });
+  document.getElementById('clk-d').textContent = d.toLocaleDateString('zh-CN', { month:'long', day:'numeric', weekday:'long' });
+  // 凌晨 4 点自动重新整理：拿到最新版程式、清掉长时间运行的累积
+  if (d.getHours() === 4 && d.getMinutes() === 0 && d.getSeconds() < 2) location.reload();
+}
+setInterval(tick, 1000); tick();
+
+/* ── 单子太多放不下 → 每一栏慢慢自动上下卷动 ── */
+(function autoScroll() {
+  const state = {};
+  setInterval(() => {
+    document.querySelectorAll('.col-b').forEach((box, i) => {
+      const inner = box.firstElementChild;
+      const max = inner.scrollHeight - box.clientHeight;
+      const s = state[i] || (state[i] = { y: 0, dir: 1, wait: 120 });
+      if (max <= 0) { s.y = 0; inner.style.transform = ''; return; }
+      if (s.wait > 0) { s.wait--; return; }
+      s.y += s.dir * 0.6;
+      if (s.y >= max) { s.y = max; s.dir = -1; s.wait = 160; }
+      if (s.y <= 0)   { s.y = 0;   s.dir = 1;  s.wait = 160; }
+      inner.style.transform = 'translateY(' + (-s.y) + 'px)';
+    });
+  }, 30);
+})();
+
+/* ── 客户扫码查单 ── */
+try { new QRCode(document.getElementById('qr'), { text:'https://shop.jbsignboard.com/track.html', width:128, height:128, correctLevel:QRCode.CorrectLevel.M }); } catch (e) {}
+
+/* ── 全屏 + 不让电视进入休眠 ── */
+function goFullscreen() {
+  const el = document.documentElement;
+  (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+}
+document.addEventListener('fullscreenchange', () => {
+  document.getElementById('fs-btn').style.display = document.fullscreenElement ? 'none' : '';
+});
+let lock = null;
+async function keepAwake() {
+  try { if ('wakeLock' in navigator && document.visibilityState === 'visible') lock = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+document.addEventListener('visibilitychange', keepAwake);
+keepAwake();
+</script>
+</body>
+</html>

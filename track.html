@@ -431,12 +431,14 @@ function renderOrder(data) {
   document.getElementById('ord-meta').textContent = [created, desc].filter(Boolean).join(' · ');
 
   const steps    = data.steps || {};
-  const doneN    = STEPS.filter(s => steps[s.id]?.status === 'done').length;
-  const progress = Math.round(doneN / STEPS.length * 100);
+  // 后台标成「这单不需要」(skipped) 的生产步骤，客户这边不显示
+  const VIS      = STEPS.filter(s => steps[s.id]?.status !== 'skipped');
+  const doneN    = VIS.filter(s => steps[s.id]?.status === 'done').length;
+  const progress = Math.round(doneN / VIS.length * 100);
   document.getElementById('ord-prog').style.width = progress + '%';
 
   // Steps
-  document.getElementById('step-list').innerHTML = STEPS.map((step, i) => {
+  document.getElementById('step-list').innerHTML = VIS.map((step, i) => {
     const s   = steps[step.id] || { status: 'pending' };
     const cls = s.status === 'done' ? 'done' : s.status === 'inprogress' ? 'inprogress' : 'pending';
     const dot = s.status === 'done' ? '✓' : s.status === 'inprogress' ? step.icon : String(i + 1);
@@ -554,12 +556,13 @@ async function loadMyOrders(user) {
 
     listEl.innerHTML = orders.map(o => {
       const steps  = o.steps || {};
-      const doneN  = STEPS.filter(s => steps[s.id]?.status === 'done').length;
-      const pct    = Math.round(doneN / STEPS.length * 100);
-      const isDone = doneN === STEPS.length;
+      const VIS    = STEPS.filter(s => steps[s.id]?.status !== 'skipped');
+      const doneN  = VIS.filter(s => steps[s.id]?.status === 'done').length;
+      const pct    = Math.round(doneN / VIS.length * 100);
+      const isDone = doneN === VIS.length;
       const prog   = isDone
         ? `<span style="color:var(--green);font-size:11px;font-weight:700">✅ Completed</span>`
-        : `<span style="color:var(--t2);font-size:11px">${doneN}/${STEPS.length} steps</span>`;
+        : `<span style="color:var(--t2);font-size:11px">${doneN}/${VIS.length} steps</span>`;
       return `
         <div class="mo-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
