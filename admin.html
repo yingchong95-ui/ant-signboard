@@ -93,6 +93,30 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
 
 /* ── Status pipeline ── */
 .pipeline{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+/* 搜索栏 */
+.search-bar{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border);border-radius:10px;
+  padding:.55rem .9rem;margin-bottom:.8rem}
+.search-bar:focus-within{border-color:var(--navy)}
+.search-bar input{flex:1;border:none;outline:none;font-size:.88rem;font-family:inherit;background:none;min-width:0}
+.search-clear{background:none;border:none;font-size:1rem;color:#9aa3b2;cursor:pointer;display:none;padding:0 2px}
+.search-note{font-size:.76rem;color:var(--t2);margin:-.3rem 0 .8rem}
+/* 等待天数 */
+.wait-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:.67rem;font-weight:700;margin-left:4px}
+.wait-1{background:#fef3c7;color:#92400e}
+.wait-3{background:#fee2e2;color:#b91c1c}
+.order-mat{font-size:.72rem;color:#5a6478;margin-top:2px}
+/* 生产步骤：点一下完成，可跳过，不用照顺序 */
+.prod-title{font-size:.74rem;font-weight:700;color:#5a6478;margin:.2rem 0 .45rem}
+.prod-title span{font-weight:400;color:#9aa3b2}
+.prod-row{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1rem}
+.prod-chip{display:inline-flex;align-items:center;gap:6px;padding:.5rem .75rem;border-radius:9px;border:1.5px solid var(--border);
+  background:#fff;font-size:.8rem;font-weight:600;color:var(--navy);cursor:pointer;user-select:none;transition:all .15s;min-height:40px}
+.prod-chip:hover{border-color:var(--navy)}
+.prod-chip.done{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.prod-chip.skipped{background:#f6f7f9;border-style:dashed;color:#9aa3b2;text-decoration:line-through}
+.prod-skip{border:none;background:none;color:#9aa3b2;font-size:.85rem;cursor:pointer;padding:0 0 0 4px;line-height:1}
+.prod-skip:hover{color:var(--red)}
+.stat-card{cursor:pointer}
 .pipe-step{display:flex;flex-direction:column;align-items:center;gap:2px;padding:.4rem .6rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;min-width:70px;text-align:center;cursor:pointer;transition:all .15s;user-select:none;position:relative}
 .pipe-step:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
 .pipe-step.done{border-color:var(--green);background:var(--green-bg)}
@@ -135,6 +159,13 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
   .order-desc{max-width:180px}
   .tabs{gap:3px}
   .tab-btn{font-size:.72rem}
+  /* 手机：标题列按钮太多 → 允许换行，高度自动，不再被裁掉 */
+  header{height:auto;padding:.55rem .9rem;flex-wrap:wrap;gap:.5rem}
+  header>div:last-child{gap:6px!important}
+  header>div:last-child>*{padding:5px 9px!important;font-size:.72rem!important}
+  .header-badge{display:none}
+  .tabs{overflow-x:auto;scrollbar-width:none}
+  .tab-btn{flex-shrink:0}
 }
 
 /* ── New Order Modal ── */
@@ -184,6 +215,7 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button onclick="openNewOrderModal()" style="background:#16a34a;border:none;color:#fff;font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer">➕ 新增工单</button>
       <a href="job-form.html" style="background:#2563eb;border:none;color:#fff;font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">📋 Job Form</a>
+      <a href="board.html" target="_blank" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">📺 Board</a>
       <a href="analytics.html" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">📊 Analytics</a>
       <a href="warranty.html" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;text-decoration:none">🛡 Warranty</a>
       <button class="logout-btn" onclick="doLogout()">Sign Out</button>
@@ -193,10 +225,17 @@ header{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-it
   <div class="main">
     <!-- Stats -->
     <div class="stats">
-      <div class="stat-card"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total Orders</div></div>
-      <div class="stat-card"><div class="stat-val" id="stat-new" style="color:var(--orange)">—</div><div class="stat-label">New Orders</div></div>
-      <div class="stat-card"><div class="stat-val" id="stat-payment" style="color:var(--red)">—</div><div class="stat-label">Awaiting Payment</div></div>
-      <div class="stat-card"><div class="stat-val" id="stat-production" style="color:var(--blue)">—</div><div class="stat-label">In Production</div></div>
+      <div class="stat-card" onclick="switchTab('all')"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total Orders</div></div>
+      <div class="stat-card" onclick="switchTab('new')"><div class="stat-val" id="stat-new" style="color:var(--orange)">—</div><div class="stat-label">New Orders</div></div>
+      <div class="stat-card" onclick="switchTab('payment')"><div class="stat-val" id="stat-payment" style="color:var(--red)">—</div><div class="stat-label">Awaiting Payment</div></div>
+      <div class="stat-card" onclick="switchTab('production')"><div class="stat-val" id="stat-production" style="color:var(--blue)">—</div><div class="stat-label">In Production</div></div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <span>🔍</span>
+      <input id="order-search" type="search" placeholder="搜名字 / 电话 / 单号 / 店名… Search orders" autocomplete="off" oninput="onSearch(this.value)"/>
+      <button class="search-clear" id="search-clear" onclick="clearSearch()" title="清除">✕</button>
     </div>
 
     <!-- Tabs -->
@@ -694,6 +733,12 @@ async function submitNewOrder() {
 // ── State ──────────────────────────────────────────────
 let allOrders = [];
 let currentTab = 'all';
+// 资料更新时整个列表会重画 —— 记住哪些卡片是打开的、AI 结果是什么，重画后放回去
+const openCards = new Set();
+const aiOutputs = {};
+let searchQ = '';
+const PROD_STEPS = ['ironframe','sticker','cutting','edging','painting','assembly'];
+function stepLabel(id){ const d = STEP_DEFS.find(x => x.id === id); return d ? d.label : id; }
 
 // ── Order helpers ──────────────────────────────────────
 const STEP_DEFS = [
@@ -767,16 +812,61 @@ function updateStats(orders) {
   setCount('cnt-delivery',   counts.delivery);
 }
 
+function orderMatches(o, q) {
+  const hay = [o.id, o._docId, o.enquiryId, o.customer, o.contactName, o.company, o.businessName,
+               o.desc, o.product, o.phone, o.f_phone, o.contactPhone, o.meta && o.meta.signName]
+    .filter(Boolean).join(' ').toLowerCase();
+  if (hay.includes(q)) return true;
+  // 电话：忽略空格、横线、+60/0 开头的差别
+  const qd = q.replace(/\D/g, '');
+  if (qd.length >= 4) {
+    const phones = [o.phone, o.f_phone, o.contactPhone].filter(Boolean)
+      .map(p => String(p).replace(/\D/g, '').replace(/^60/, '0'));
+    const qn = qd.replace(/^60/, '0');
+    if (phones.some(p => p.includes(qn) || p.includes(qd))) return true;
+  }
+  return false;
+}
+
 function renderOrders() {
-  const filtered = currentTab === 'all' ? allOrders :
+  const q = searchQ.trim().toLowerCase();
+  // 有搜索字 → 搜全部订单（客户来电问进度时，不用先猜他在哪个分类）
+  const filtered = q ? allOrders.filter(o => orderMatches(o, q)) :
+                   currentTab === 'all' ? allOrders :
                    allOrders.filter(o => getOrderStatus(o) === currentTab);
 
   const wrap = document.getElementById('orders-wrap');
+  const note = q ? `<div class="search-note">🔍 在全部订单里找到 <b>${filtered.length}</b> 笔符合「${escHtml(searchQ.trim())}」</div>` : '';
   if (!filtered.length) {
-    wrap.innerHTML = `<div class="empty-wrap"><div class="empty-icon">📭</div><div class="empty-text">No orders in this category</div></div>`;
+    wrap.innerHTML = note + `<div class="empty-wrap"><div class="empty-icon">📭</div><div class="empty-text">${q ? '找不到符合的订单' : 'No orders in this category'}</div></div>`;
     return;
   }
-  wrap.innerHTML = filtered.map(o => orderCardHtml(o)).join('');
+  // 只搜到一笔 → 直接展开
+  if (q && filtered.length === 1) openCards.add(filtered[0]._docId);
+  wrap.innerHTML = note + filtered.map(o => orderCardHtml(o)).join('');
+}
+
+function onSearch(v) {
+  searchQ = v || '';
+  document.getElementById('search-clear').style.display = searchQ ? 'block' : 'none';
+  renderOrders();
+}
+function clearSearch() {
+  const el = document.getElementById('order-search');
+  if (el) el.value = '';
+  onSearch('');
+  if (el) el.focus();
+}
+
+/* 新单 / 等付款放了几天 —— 放太久的要跟进 */
+function waitBadgeHtml(o, status) {
+  let since = null, label = '';
+  if (status === 'new')     { since = o.createdAt; label = '等了'; }
+  if (status === 'payment') { since = o.paymentRequestedAt || o.createdAt; label = '等付款'; }
+  if (!since) return '';
+  const days = Math.floor((Date.now() - new Date(since).getTime()) / 86400000);
+  if (!(days >= 1)) return '';
+  return `<span class="wait-badge ${days >= 3 ? 'wait-3' : 'wait-1'}">⏰ ${label} ${days} 天</span>`;
 }
 
 /* ══ Job Form meta details (for orders created via job-form.html) ══ */
@@ -876,6 +966,7 @@ function designSpecHtml(o) {
   html += '<div style="font-size:.73rem;color:#5a6478;margin-bottom:.5rem">'
         + '版型：<b style="color:#0d1f3c">' + escHtml(layoutLabel[d.layout] || d.layout || '—') + '</b>'
         + '　·　招牌尺寸：<b style="color:#0d1f3c">' + escHtml(String(d.signSizeFt || '—')) + ' ft</b>'
+        + (d.letterMaterial ? '　·　材质：<b style="color:#0d1f3c">' + escHtml(String(d.letterMaterial)) + '</b>' : '')
         + '　·　底板 <span style="display:inline-block;width:10px;height:10px;border-radius:2px;'
         + 'vertical-align:middle;border:1px solid #ccc;background:' + safeColour(d.panelColour, '#ffffff') + '"></span>'
         + '　字色 <span style="display:inline-block;width:10px;height:10px;border-radius:2px;'
@@ -911,7 +1002,7 @@ function designSpecHtml(o) {
           + '➕ 绿色那几行是客户自己加上去的文字</div>';
   }
   html += '<div style="font-size:.68rem;color:#9aa3b2;margin-top:.4rem">'
-        + '字高为换算值（画布 236:48 比例 × 实际尺寸），位置以招牌左上角为原点</div>';
+        + '字高为换算值（画布 ' + escHtml(String(d.canvasRatio || '236:48')) + ' 比例 × 实际尺寸），位置以招牌左上角为原点</div>';
   html += '</div>';
   return html;
 }
@@ -938,6 +1029,7 @@ function designPreviewHtml(o) {
   if (o.boardType) {
     html += '<div style="font-size:.72rem;color:#666;margin-top:.5rem">Type: <b>' + escHtml(o.boardType) + '</b>';
     html += ' &middot; Lighting: <b>' + escHtml(o.lighting || '—') + '</b>';
+    if (o.letterMaterial) html += ' &middot; Material: <b>' + escHtml(o.letterMaterial) + '</b>';
     html += ' &middot; Panel: <b>' + escHtml(o.panelColour || '—') + '</b>';
     html += ' &middot; Letters: <b>' + escHtml(o.textColour || '—') + '</b></div>';
   }
@@ -955,7 +1047,7 @@ function orderCardHtml(o) {
   const steps   = o.steps || {};
   const _tot    = o.total || o.grandTotal;
   const total   = _tot ? 'RM ' + Number(_tot).toFixed(2) : '—';
-  const pipeHtml = STEP_DEFS.map(d => {
+  const pipeHtml = STEP_DEFS.filter(d => !PROD_STEPS.includes(d.id)).map(d => {
     const s   = steps[d.id]?.status || 'pending';
     const cls = s === 'done' ? 'done' : s === 'inprogress' ? 'inprogress' : '';
     const icon = s === 'done' ? '✅' : s === 'inprogress' ? '⏳' : d.icon;
@@ -969,6 +1061,18 @@ function orderCardHtml(o) {
 
   const actionsHtml = buildActions(o, steps, status);
 
+  const prodDone = PROD_STEPS.filter(id => ['done','skipped'].includes(steps[id]?.status)).length;
+  const prodHtml = PROD_STEPS.map(id => {
+    const d  = STEP_DEFS.find(x => x.id === id);
+    const st = steps[id]?.status || 'pending';
+    const cls = st === 'done' ? 'done' : st === 'skipped' ? 'skipped' : '';
+    const icon = st === 'done' ? '✅' : d.icon;
+    const skipBtn = (st === 'done' || st === 'skipped') ? ''
+      : `<button class="prod-skip" title="这单不需要这一步" onclick="event.stopPropagation();setProd('${o._docId}','${id}','skipped')">✕</button>`;
+    return `<div class="prod-chip ${cls}" onclick="tapProd('${o._docId}','${id}','${st}')"
+              title="${st === 'skipped' ? '点一下恢复' : st === 'done' ? '点一下改回未完成' : '点一下标记完成'}">${icon} ${d.label}${skipBtn}</div>`;
+  }).join('');
+
   const items = (o.items || o.products || []).map(i =>
     `<div class="order-item-row"><span>${escHtml(i.name)} ×${i.qty}</span><span>RM ${(i.price*i.qty).toFixed(2)}</span></div>`
   ).join('') + `<div class="order-item-row"><span>Grand Total</span><span>${total}</span></div>`;
@@ -980,7 +1084,8 @@ function orderCardHtml(o) {
         <div class="order-id">${escHtml(o.id||o._docId)}${o.isManual ? ' <span class="badge-manual">MANUAL</span>' : ''}</div>
         <div class="order-name">${escHtml(o.customer||'Customer')}${o.phone ? ' · ' + escHtml(o.phone) : ''}</div>
         <div class="order-desc">${escHtml(o.product ? '['+o.product+'] ' : '') + escHtml(o.desc||'')}</div>
-        <div style="margin-top:4px">${chipHtml(status)}</div>
+        ${o.letterMaterial ? `<div class="order-mat">🔤 ${escHtml(o.letterMaterial)}</div>` : ''}
+        <div style="margin-top:4px">${chipHtml(status)}${waitBadgeHtml(o, status)}</div>
       </div>
       <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
         <button onclick="event.stopPropagation();openEditModal('${o._docId}')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:.7rem;cursor:pointer;color:var(--t2)">✏️ Edit</button>
@@ -988,13 +1093,15 @@ function orderCardHtml(o) {
         <div class="order-date">${fmtDate(o.createdAt)}</div>
       </div>
     </div>
-    <div class="order-body" id="body-${o._docId}">
+    <div class="order-body${openCards.has(o._docId) ? ' open' : ''}" id="body-${o._docId}">
       <div class="order-items">${items}</div>
       ${ metaDetailHtml(o) }
       ${ (o.files && o.files.length) ? '<div style="padding:.2rem 1.2rem .6rem;font-size:.78rem">📎 <b>Artwork:</b> ' + o.files.map(function(f){ return '<a href="'+f.url+'" target="_blank" rel="noopener" style="color:#1a73e8;margin-right:10px">'+escHtml(f.name)+'</a>'; }).join('') + '</div>' : '' }
       ${ designSpecHtml(o) }
       ${ (o.canvasImageUrl || o.previewImageUrl) ? designPreviewHtml(o) : '' }
       <div class="pipeline">${pipeHtml}</div>
+      <div class="prod-title">🔧 生产 Production ${prodDone}/${PROD_STEPS.length} <span>— 点一下完成 · ✕ = 这单不需要 · 不用照顺序</span></div>
+      <div class="prod-row">${prodHtml}</div>
       <div class="actions-title">Quick Actions</div>
       <div class="actions-grid">${actionsHtml}</div>
       <div class="actions-title" style="margin-top:.8rem">🤖 AI Tools</div>
@@ -1003,7 +1110,7 @@ function orderCardHtml(o) {
         <button class="action-btn" onclick="aiProduce('${o._docId}')">🤖 AI 生产单</button>
         <button class="action-btn" onclick="aiFollowUp('${o._docId}')">💬 跟进话术 Follow-up</button>
       </div>
-      <div class="ai-out" id="ai-out-${o._docId}" style="display:none"></div>
+      <div class="ai-out" id="ai-out-${o._docId}" style="${aiOutputs['ai-out-' + o._docId] ? '' : 'display:none'}">${aiOutputs['ai-out-' + o._docId] || ''}</div>
     </div>
   </div>`;
 }
@@ -1036,21 +1143,10 @@ function buildActions(o, steps, status) {
     btns.push(`<button class="action-btn success" onclick="markStep('${id}','payment','done')">✅ Payment Received</button>`);
   }
 
-  // Production steps (show next pending one)
-  const prodSteps = ['ironframe','sticker','cutting','edging','painting','assembly'];
-  const nextProd = prodSteps.find(pid => s[pid]?.status !== 'done');
-  if (s.payment?.status === 'done' && nextProd) {
-    const def = STEP_DEFS.find(d=>d.id===nextProd);
-    const curr = s[nextProd]?.status || 'pending';
-    if (curr === 'pending') {
-      btns.push(`<button class="action-btn primary" onclick="markStep('${id}','${nextProd}','inprogress')">${def.icon} Start ${def.label}</button>`);
-    } else if (curr === 'inprogress') {
-      btns.push(`<button class="action-btn success" onclick="markStep('${id}','${nextProd}','done')">✅ Done: ${def.label}</button>`);
-    }
-  }
+  // 生产步骤改在卡片里的「🔧 生产」那一排直接点
 
-  // Delivery / Install (after all production done)
-  const allProdDone = prodSteps.every(pid => s[pid]?.status === 'done');
+  // Delivery / Install (after all production done or skipped)
+  const allProdDone = PROD_STEPS.every(pid => ['done','skipped'].includes(s[pid]?.status));
   if (allProdDone) {
     const dSt = s.delivery?.status || 'pending';
     if (dSt === 'pending') {
@@ -1197,7 +1293,7 @@ async function confirmRequestPayment() {
 async function markStep(docId, stepId, status, toast=true) {
   try {
     await window._updateStep(docId, stepId, status);
-    if (toast) showToast('✅ Updated: ' + stepId);
+    if (toast) showToast('✅ ' + stepLabel(stepId) + (status === 'done' ? ' 完成' : ' 进行中'));
 
     // When job is marked complete → sync warranty to Google Sheets
     if (stepId === 'jobdone' && status === 'done') {
@@ -1231,6 +1327,7 @@ async function cycleStep(docId, stepId, currentStatus) {
   const def = STEP_DEFS.find(d => d.id === stepId);
   const label = def ? def.label : stepId;
   const tag = next === 'done' ? '✅ Done' : next === 'inprogress' ? '⏳ In Progress' : '⬜ Pending';
+  if (currentStatus === 'done' && !confirm('「' + label + '」已经完成，确定改回 Pending？')) return;
   try {
     await window._updateStep(docId, stepId, next);
     showToast(`${tag}: ${label}`);
@@ -1262,12 +1359,37 @@ function waNotify(elOrOrderId, customer, phone) {
 // ── Toggle card ──────────────────────────────────────────
 function toggleOrder(docId) {
   const body = document.getElementById('body-' + docId);
-  if (body) body.classList.toggle('open');
+  if (!body) return;
+  const open = body.classList.toggle('open');
+  if (open) openCards.add(docId); else openCards.delete(docId);
+}
+
+/* 生产步骤：未完成 → 点一下完成；已完成 → 确认后改回；已跳过 → 恢复 */
+async function tapProd(docId, stepId, st) {
+  if (st === 'done') {
+    if (!confirm('把「' + stepLabel(stepId) + '」改回未完成？')) return;
+    return setProd(docId, stepId, 'pending');
+  }
+  if (st === 'skipped') return setProd(docId, stepId, 'pending');
+  return setProd(docId, stepId, 'done');
+}
+async function setProd(docId, stepId, status) {
+  try {
+    await window._updateStep(docId, stepId, status);
+    const msg = status === 'done' ? '✅ ' + stepLabel(stepId) + ' 完成'
+              : status === 'skipped' ? '➖ ' + stepLabel(stepId) + '：这单不需要'
+              : '↩ ' + stepLabel(stepId) + ' 改回未完成';
+    showToast(msg);
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
 }
 
 // ── Tabs ──────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
+  if (searchQ) { searchQ = ''; const el = document.getElementById('order-search'); if (el) el.value = '';
+                 const c = document.getElementById('search-clear'); if (c) c.style.display = 'none'; }
   ['all','new','payment','production','delivery','done','warranty'].forEach(t => {
     const el = document.getElementById('tab-' + t);
     if (el) el.classList.toggle('active', t === tab);
@@ -1513,6 +1635,8 @@ function _renderAiOut(outId, title, text, extraBtn){
     + '<div style="display:flex;gap:6px;margin-top:.6rem;flex-wrap:wrap">'
     + '<button class="action-btn" onclick="_copyAi(\''+outId+'-txt\')">📋 复制</button>'+(extraBtn||'')
     + '</div></div>';
+  out.style.display = 'block';
+  aiOutputs[outId] = out.innerHTML;
 }
 function _copyAi(id){ var t=document.getElementById(id); if(t){ navigator.clipboard.writeText(t.textContent).then(function(){ if(typeof showToast==='function') showToast('📋 已复制'); }); } }
 </script>
