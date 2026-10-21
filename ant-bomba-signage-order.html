@@ -274,6 +274,18 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
   ]
 }
 </script>
+<style>
+/* 手机版顶部：logo 小字收起、WhatsApp 只留图标，按钮不再超出画面 */
+@media(max-width:480px){
+  header{padding-left:.8rem!important;padding-right:.8rem!important;gap:8px}
+  header .logo-tagline,header .logo-tag{display:none!important}
+  header .logo-icon{width:36px!important;height:36px!important}
+  header .cat-nav-btn{padding:7px 10px!important}
+  header .cat-nav-arrow{display:none}
+  header a[href*="wa.me"]{font-size:0!important;padding:8px 10px!important;gap:0!important}
+  header a[href*="wa.me"] svg{width:18px!important;height:18px!important}
+}
+</style>
 </head>
 <body>
 
@@ -285,7 +297,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
       <span class="logo-name">A&T Signboard</span>
       <span class="logo-tagline">Printing & Signage</span>
     </div>
-  </div>
+  </a>
   <div class="header-right">
     <div class="cat-nav">
       <button class="cat-nav-btn" id="cat-nav-btn" onclick="toggleCatNav()">
