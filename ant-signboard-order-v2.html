@@ -478,7 +478,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 .order-id-box{display:inline-block;background:var(--off);border:1px solid var(--border);border-radius:var(--r-sm);padding:.5rem 1.2rem;font-family:'DM Mono',monospace;font-size:.88rem;font-weight:600;color:var(--navy);margin-bottom:1.5rem}
 
 @media(max-width:860px){
-  .design-layout{grid-template-columns:1fr;gap:1rem}
+  .design-layout{grid-template-columns:minmax(0,1fr);gap:1rem}
   .design-layout>.form-panel{grid-column:1;grid-row:2}
   /* 手机：设计图固定在画面上方，打字时随时看得到 */
   .design-layout>.prev-col{grid-column:1;grid-row:1;top:68px;z-index:60;max-height:none;overflow:visible;
@@ -616,6 +616,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
 .sg-skip{background:none;border:1px solid var(--border);color:var(--t2);font-size:.73rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
 .sg-skip:hover{border-color:var(--red);color:var(--red)}
 .sg-cards{display:grid;grid-template-columns:repeat(8,1fr);gap:9px}
+.sg-card{min-width:0}
 @media(max-width:1020px){.sg-cards{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:520px){.sg-cards{grid-template-columns:repeat(3,1fr)}}
 .sg-card{border:2px solid var(--border);border-radius:10px;padding:10px 7px 9px;cursor:pointer;text-align:center;transition:all .2s;background:#fff;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -663,6 +664,18 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
   ]
 }
 </script>
+<style>
+/* 手机版顶部：logo 小字收起、WhatsApp 只留图标，按钮不再超出画面 */
+@media(max-width:480px){
+  header{padding-left:.8rem!important;padding-right:.8rem!important;gap:8px}
+  header .logo-tagline,header .logo-tag{display:none!important}
+  header .logo-icon{width:36px!important;height:36px!important}
+  header .cat-nav-btn{padding:7px 10px!important}
+  header .cat-nav-arrow{display:none}
+  header a[href*="wa.me"]{font-size:0!important;padding:8px 10px!important;gap:0!important}
+  header a[href*="wa.me"] svg{width:18px!important;height:18px!important}
+}
+</style>
 </head>
 <body>
 
@@ -674,7 +687,7 @@ header{background:var(--navy);padding:0 2rem;height:68px;display:flex;align-item
       <span class="logo-name">A&T Signboard</span>
       <span class="logo-tagline">Printing & Signage</span>
     </div>
-  </div>
+  </a>
   <div class="header-right">
     <div class="cat-nav">
       <button class="cat-nav-btn" id="cat-nav-btn" onclick="toggleCatNav()">

@@ -124,6 +124,18 @@ header{background:var(--navy);padding:0 1.2rem;height:64px;display:flex;align-it
 .cat-nav-item.active{background:var(--red-bg);color:var(--red);font-weight:600}
 .cat-icon{font-size:16px;width:22px;text-align:center}
 </style>
+<style>
+/* 手机版顶部：logo 小字收起、WhatsApp 只留图标，按钮不再超出画面 */
+@media(max-width:480px){
+  header{padding-left:.8rem!important;padding-right:.8rem!important;gap:8px}
+  header .logo-tagline,header .logo-tag{display:none!important}
+  header .logo-icon{width:36px!important;height:36px!important}
+  header .cat-nav-btn{padding:7px 10px!important}
+  header .cat-nav-arrow{display:none}
+  header a[href*="wa.me"]{font-size:0!important;padding:8px 10px!important;gap:0!important}
+  header a[href*="wa.me"] svg{width:18px!important;height:18px!important}
+}
+</style>
 </head>
 <body>
 
