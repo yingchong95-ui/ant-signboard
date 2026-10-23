@@ -5,6 +5,14 @@
 [functions]
   directory = "netlify/functions"
 
+# ── 旧网址整站转到正式网域（避免两个网域重复内容）──
+# 只比对这个确切的网域；Netlify 的 deploy preview 网址不受影响。
+[[redirects]]
+  from = "https://ant-signboard.netlify.app/*"
+  to = "https://shop.jbsignboard.com/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/api/gemini"
   to = "/.netlify/functions/gemini"
