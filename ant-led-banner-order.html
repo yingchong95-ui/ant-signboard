@@ -173,61 +173,61 @@ header{background:var(--navy);padding:0 1.2rem;height:64px;display:flex;align-it
 
   <div class="hero">
     <div class="hero-badge">🔴 LED Display</div>
-    <h1>LED Banner 显示屏</h1>
-    <p>P10 跑马灯显示屏 · 红色或白色 · 内容随时用手机改</p>
+    <h1>LED Banner Display</h1>
+    <p>P10 scrolling LED display · Red or white · Change the message anytime from your phone</p>
   </div>
 
   <!-- ① 尺寸与颜色 -->
   <div class="card">
-    <div class="card-title">① 尺寸与颜色</div>
+    <div class="card-title">① Size &amp; Colour</div>
 
     <div class="row">
       <div>
-        <label class="form-label" for="w">宽度（尺）</label>
+        <label class="form-label" for="w">Width (ft)</label>
         <input class="form-input" type="number" id="w" value="4" min="0.5" max="40" step="0.1" oninput="recalc()"/>
       </div>
       <div>
-        <label class="form-label" for="h">高度（尺）</label>
+        <label class="form-label" for="h">Height (ft)</label>
         <input class="form-input" type="number" id="h" value="1" min="0.5" max="10" step="0.1" oninput="recalc()"/>
       </div>
     </div>
 
-    <label class="form-label">颜色</label>
+    <label class="form-label">Colour</label>
     <div class="opt-row" style="margin-bottom:.5rem">
       <button class="opt on" id="c-red" onclick="setColour('red')">
-        <span class="swatch sw-red"></span> 红色 Red</button>
+        <span class="swatch sw-red"></span> Red</button>
       <button class="opt" id="c-white" onclick="setColour('white')">
-        <span class="swatch sw-white"></span> 白色 White</button>
+        <span class="swatch sw-white"></span> White</button>
     </div>
-    <div class="hint">红色和白色是不同的模组，价格相同。</div>
+    <div class="hint">Red and white use different modules — same price.</div>
 
     <div id="specBox" class="spec-box"></div>
     <div id="snapNote"></div>
     <div class="frame-note">
-      📏 <b>尺寸说明</b>：以上是<b>面板尺寸</b>，不含外框。
-      成品加上铝框後会比面板再大一些，安装前请预留空间。
+      📏 <b>About the size</b>: the size above is the <b>panel size</b>, excluding the frame.
+      The finished display with its aluminium frame will be slightly larger — please leave some extra space for installation.
     </div>
   </div>
 
   <!-- ② 显示内容 + 预览 -->
   <div class="card">
-    <div class="card-title">② 显示内容（可先试打，之后随时能改）</div>
-    <label class="form-label" for="txt">要显示的文字</label>
+    <div class="card-title">② Display Message (try it now — you can change it anytime later)</div>
+    <label class="form-label" for="txt">Text to display</label>
     <input class="form-input" type="text" id="txt" maxlength="120"
            value="A&amp;T SIGNBOARD  *  012-345 6789  *  WELCOME" oninput="rebuild()"/>
-    <div class="hint">中英文都可以。多段讯息用 <b>*</b> 隔开。</div>
+    <div class="hint">English and Chinese both supported. Separate multiple messages with <b>*</b>.</div>
 
     <div class="row" style="margin-top:.9rem">
       <div>
-        <label class="form-label" for="mode">显示方式</label>
+        <label class="form-label" for="mode">Display mode</label>
         <select class="form-input" id="mode" onchange="setMode()">
-          <option value="scroll">← 向左跑动</option>
-          <option value="static">静止不动</option>
-          <option value="flash">闪烁</option>
+          <option value="scroll">← Scroll left</option>
+          <option value="static">Static</option>
+          <option value="flash">Flashing</option>
         </select>
       </div>
       <div>
-        <label class="form-label" for="speed">速度</label>
+        <label class="form-label" for="speed">Speed</label>
         <input class="form-input" type="range" id="speed" min="1" max="10" value="5" style="padding:0;min-height:44px"/>
       </div>
     </div>
@@ -238,22 +238,22 @@ header{background:var(--navy);padding:0 1.2rem;height:64px;display:flex;align-it
 
   <!-- ③ 报价 -->
   <div class="price-box">
-    <div class="price-row"><span>面板面积</span><span id="pArea">—</span></div>
-    <div class="price-row"><span>模组数量</span><span id="pMods">—</span></div>
-    <div class="price-row"><span>单价</span><span>RM 120 / 平方尺</span></div>
-    <div class="price-total"><span>预估总价</span><b id="pTotal">RM —</b></div>
+    <div class="price-row"><span>Panel area</span><span id="pArea">—</span></div>
+    <div class="price-row"><span>Modules</span><span id="pMods">—</span></div>
+    <div class="price-row"><span>Rate</span><span>RM 120 / sq ft</span></div>
+    <div class="price-total"><span>Estimated total</span><b id="pTotal">RM —</b></div>
     <div style="font-size:11.5px;color:rgba(255,255,255,.55);margin-top:.5rem;line-height:1.6">
-      含控制器与显示屏本体 · <b style="color:rgba(255,255,255,.8)">安装另行报价</b>（视现场electrical与高度而定）
+      Includes controller &amp; display unit · <b style="color:rgba(255,255,255,.8)">Installation quoted separately</b> (depends on site electrical &amp; height)
     </div>
   </div>
 
-  <button class="btn btn-primary" onclick="addToCart()">🛒 加入购物车</button>
-  <button class="btn btn-ghost" onclick="addAndCheckout()">立即下单 →</button>
+  <button class="btn btn-primary" onclick="addToCart()">🛒 Add to Cart</button>
+  <button class="btn btn-ghost" onclick="addAndCheckout()">Order Now →</button>
 
 </div>
 
-<div class="toast" id="toast">✅ 已加入购物车</div>
-<a href="cart.html" class="cart-fab" title="购物车">🛒<span class="cart-fab-count" id="cart-fab-count">0</span></a>
+<div class="toast" id="toast">✅ Added to cart</div>
+<a href="cart.html" class="cart-fab" title="View Cart">🛒<span class="cart-fab-count" id="cart-fab-count">0</span></a>
 <a href="https://wa.me/60197901150" class="wa-fab" target="_blank" rel="noopener noreferrer" title="WhatsApp">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.114.554 4.1 1.523 5.826L.057 23.428a.5.5 0 0 0 .515.572l5.764-1.427A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.52-5.187-1.427l-.372-.222-3.421.847.875-3.317-.244-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
 </a>
@@ -337,19 +337,19 @@ function recalc(){
             wMm:s.wMm, hMm:s.hMm, sqft:sqft, total:total };
 
   document.getElementById('specBox').innerHTML =
-      '面板尺寸：<b>' + s.wFt.toFixed(2) + ' × ' + s.hFt.toFixed(2) + ' 尺</b>'
-    + '（' + s.wMm + ' × ' + s.hMm + ' mm）<br/>'
-    + '模组：<b>' + s.cols + ' 列 × ' + s.rows + ' 行 = ' + s.mods + ' 片</b>'
-    + '　·　解析度 <b>' + s.pxW + ' × ' + s.pxH + '</b> 点';
+      'Panel size: <b>' + s.wFt.toFixed(2) + ' × ' + s.hFt.toFixed(2) + ' ft</b>'
+    + ' (' + s.wMm + ' × ' + s.hMm + ' mm)<br/>'
+    + 'Modules: <b>' + s.cols + ' cols × ' + s.rows + ' rows = ' + s.mods + ' panels</b>'
+    + ' · Resolution <b>' + s.pxW + ' × ' + s.pxH + '</b> dots';
 
   var exact = Math.abs(s.wFt - wFt) < 0.02 && Math.abs(s.hFt - hFt) < 0.02;
   document.getElementById('snapNote').innerHTML = exact ? '' :
-      '<div class="snap-note">你填的是 ' + wFt + ' × ' + hFt + ' 尺。LED 屏是一片片面板拼成的，'
-    + '所以实际会做成最接近的 <b>' + s.wFt.toFixed(2) + ' × ' + s.hFt.toFixed(2) + ' 尺</b>'
-    + '（' + s.mods + ' 片面板）。</div>';
+      '<div class="snap-note">You entered ' + wFt + ' × ' + hFt + ' ft. LED displays are built from individual panels, '
+    + 'so it will be made at the closest size: <b>' + s.wFt.toFixed(2) + ' × ' + s.hFt.toFixed(2) + ' ft</b>'
+    + ' (' + s.mods + ' panels).</div>';
 
-  document.getElementById('pArea').textContent  = sqft.toFixed(2) + ' 平方尺';
-  document.getElementById('pMods').textContent  = s.mods + ' 片（' + s.cols + '×' + s.rows + '）';
+  document.getElementById('pArea').textContent  = sqft.toFixed(2) + ' sq ft';
+  document.getElementById('pMods').textContent  = s.mods + ' panels (' + s.cols + '×' + s.rows + ')';
   document.getElementById('pTotal').textContent = 'RM ' + Math.round(total).toLocaleString('en-MY');
 
   gridW = s.pxW; gridH = s.pxH;
@@ -363,7 +363,7 @@ function rebuild(){
   cv.width = gridW * dot; cv.height = gridH * dot;
   offset = 0;
   document.getElementById('ledMeta').textContent =
-    '每一颗点 = 一颗实体 LED 灯珠 · 共 ' + (gridW * gridH).toLocaleString() + ' 颗';
+    'Each dot = one real LED · ' + (gridW * gridH).toLocaleString() + ' LEDs in total';
   if (!raf) loop();
 }
 
@@ -409,18 +409,18 @@ function updateCartBadge(){
 
 function addToCart(){
   if (!quote.total) return;
-  var modeLabel = { scroll:'向左跑动', static:'静止', flash:'闪烁' }[MODE] || MODE;
+  var modeLabel = { scroll:'Scroll left', static:'Static', flash:'Flashing' }[MODE] || MODE;
   var items = getCart();
   items.push({
     id: 'item-' + Date.now(),
     name: 'LED Banner Display',
     desc: [
-      (COLOUR === 'red' ? '红色 Red' : '白色 White'),
-      '面板 ' + quote.wFt.toFixed(2) + '×' + quote.hFt.toFixed(2) + ' 尺 (' + quote.wMm + '×' + quote.hMm + 'mm)',
-      quote.mods + ' 片 P10 面板',
+      (COLOUR === 'red' ? 'Red' : 'White'),
+      'Panel ' + quote.wFt.toFixed(2) + '×' + quote.hFt.toFixed(2) + ' ft (' + quote.wMm + '×' + quote.hMm + 'mm)',
+      quote.mods + ' x P10 panels',
       quote.sqft.toFixed(2) + ' sqft',
-      '显示方式: ' + modeLabel,
-      '显示内容: ' + (document.getElementById('txt').value || '').slice(0, 80)
+      'Mode: ' + modeLabel,
+      'Message: ' + (document.getElementById('txt').value || '').slice(0, 80)
     ].join(', '),
     price: Math.round(quote.total),
     qty: 1,
