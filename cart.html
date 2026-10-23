@@ -517,6 +517,11 @@
         }
       } catch(e) { console.warn('[Sheets] error:', e); }
 
+      // GA4：下单成功（付款之后用 DuitNow 另外处理，这里记录的是「下了单」）
+      if (window.atTrack) window.atTrack('purchase', {
+        transaction_id: orderId, currency: 'MYR', value: grandTotal,
+        items: items.map(function (i) { return { item_name: i.name, price: Number(i.price) || 0, quantity: i.qty || 1 }; })
+      });
       window.open(waUrl, '_blank');
       showOrderConfirmation(orderId, trackUrl, grandTotal);
     }

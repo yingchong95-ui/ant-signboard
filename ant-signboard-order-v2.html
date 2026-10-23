@@ -3659,6 +3659,11 @@ function submitOrder() {
   // Save to Firebase (async — non-blocking; shows a warning if it fails)
   if(typeof window._fbSaveEnquiryWithRetry === 'function') window._fbSaveEnquiryWithRetry(enqId);
   else if(typeof window._fbSaveEnquiry === 'function')     window._fbSaveEnquiry(enqId);
+  // GA4：送出招牌询价（价值用估价的下限）
+  if (window.atTrack) window.atTrack('generate_lead', {
+    currency: 'MYR', value: Number(window._sbMinPrice) || 0,
+    lead_source: 'signboard_designer', enquiry_id: enqId
+  });
   // Show success immediately
   document.getElementById('success-id').textContent = 'Enquiry ID: ' + enqId;
   ['step1','step2','step3','step4'].forEach(function(id){
