@@ -9,16 +9,19 @@ const r2 = (n) => Math.round(n * 100) / 100;
 
 // ── 费率表 ────────────────────────────────────────────────────────────────
 const INKJET_MATERIALS = {
-  'white-vinyl-matt':   { name: 'White vinyl sticker + matt lam',          rate: 8 },
-  'white-vinyl-gloss':  { name: 'White vinyl sticker + gloss lam',         rate: 8 },
-  'transparent-matt':   { name: 'Transparent sticker + matt lam',          rate: 8 },
-  'transparent-gloss':  { name: 'Transparent sticker + gloss lam',         rate: 8 },
-  'transparent-reverse':{ name: 'Transparent reverse print + white lam',   rate: 10 },
-  'lightbox-sticker':   { name: 'Lightbox sticker + matt lam',             rate: 12 },
-  'synthetic-paper':    { name: 'Synthetic paper printing',                rate: 15 },
+  'white-vinyl-matt':   { name: 'White vinyl sticker + matt lam',          rate: 5 },
+  'white-vinyl-gloss':  { name: 'White vinyl sticker + gloss lam',         rate: 5 },
+  'transparent-matt':   { name: 'Transparent sticker + matt lam',          rate: 5 },
+  'transparent-gloss':  { name: 'Transparent sticker + gloss lam',         rate: 5 },
+  'transparent-reverse':{ name: 'Transparent reverse print + white lam',   rate: 8 },
+  'lightbox-sticker':   { name: 'Lightbox sticker + matt lam',             rate: 8 },
+  'synthetic-paper':    { name: 'Synthetic paper printing',                rate: 5 },
   'frosted':            { name: 'Frosted sticker printing',                rate: 8 },
-  'wall-sticker':       { name: 'Wall sticker + matt lam',                 rate: 12 },
-  'grey-base':          { name: 'Grey base sticker + matt lam',            rate: 10 },
+  'wall-sticker':       { name: 'Wall sticker + matt lam',                 rate: 10 },
+  'grey-base':          { name: 'Grey base sticker + matt lam',            rate: 6 },
+  'tarpaulin-300':      { name: 'Tarpaulin 300gsm',                        rate: 3 },
+  'tarpaulin-380':      { name: 'Tarpaulin 380gsm',                        rate: 5 },
+  'canvas':             { name: 'Canvas printing',                         rate: 8 },
 };
 
 const FOAMBOARD = {
@@ -52,9 +55,10 @@ const DISPLAY_SET = { // group → variant → price/unit
 };
 
 const SIGNBOARD_PRICING = { // [min,max] at 80 sqft (20ft×4ft) reference
-  'flat-nonlit': [2300, 3500], 'flat-frontlit': [3300, 5500], 'flat-backlit': [2800, 4000],
-  'alum-nonlit': [2800, 4000], 'alum-frontlit': [4000, 6000], 'alum-backlit': [3500, 4800],
-  lightbox: [2500, 2500], wall: [1300, 2400],
+  panel: [1400, 1400],
+  'flat-nonlit': [3000, 4600], 'flat-frontlit': [4300, 7200], 'flat-backlit': [3700, 5200],
+  'alum-nonlit': [3500, 5000], 'alum-frontlit': [5000, 7500], 'alum-backlit': [4400, 6000],
+  lightbox: [2600, 2600], wall: [1500, 2800],
 };
 
 // ── 给 AI 的产品指南（注入工具说明 + 系统提示）────────────────────────────
@@ -102,8 +106,8 @@ product 取值及所需 params：
 
 10) "signboard" 定制招牌（给出价格区间，按面积缩放）
    params: { board, light, width_ft, height_ft }
-   board: flat / alum / lightbox / wall
-   light: frontlit / backlit / nonlit （lightbox 和 wall 不需要 light）
+   board: panel / flat / alum / lightbox / wall （panel = Flat Panel 平面印字，无立体字）
+   light: frontlit / backlit / nonlit （panel、lightbox 和 wall 不需要 light）
 
 得到结果后，用自然语言把单价、面积、明细和总价讲清楚，并提醒这是估价、最终以 WhatsApp (+60 19-790 1150) 确认为准。`;
 
@@ -248,8 +252,9 @@ function calculatePrice(product, params) {
         let key;
         if (board === 'lightbox') key = 'lightbox';
         else if (board === 'wall') key = 'wall';
+        else if (board === 'panel') key = 'panel';
         else if (board === 'flat' || board === 'alum') key = board + '-' + String(params.light || '').toLowerCase();
-        else return err('board 无效', ['board(flat/alum/lightbox/wall)']);
+        else return err('board 无效', ['board(panel/flat/alum/lightbox/wall)']);
         const base = SIGNBOARD_PRICING[key];
         if (!base) return err('需要 light（frontlit/backlit/nonlit）', ['light']);
         const w = num(params.width_ft), h = num(params.height_ft);
