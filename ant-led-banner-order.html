@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LED Banner Display — A&T Signboard &amp; Printing | Order Online</title>
-<meta name="description" content="Programmable P10 LED banner displays in red or white — scrolling text for shopfronts. Instant quote by size, order online. Johor Bahru, KL &amp; Singapore."/>
+<title>LED Scrolling Banner Display JB — P10 from RM120/sq ft | A&T Signboard</title>
+<meta name="description" content="Programmable P10 LED scrolling banner displays made in Johor Bahru — red or white, RM120 per sq ft. Preview your message live, see your price instantly and order online."/>
 <meta name="theme-color" content="#0d1f3c"/>
 <link rel="canonical" href="https://shop.jbsignboard.com/ant-led-banner-order"/>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"/>
 <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="A&T Signboard & Printing"/>
-<meta property="og:title" content="LED Banner Display — A&T Signboard & Printing"/>
-<meta property="og:description" content="P10 programmable LED banner in red or white. Instant quote by size, order online."/>
+<meta property="og:title" content="LED Scrolling Banner Display JB — A&T Signboard & Printing"/>
+<meta property="og:description" content="P10 LED scrolling banner in red or white — preview your message live. Order online."/>
 <meta property="og:url" content="https://shop.jbsignboard.com/ant-led-banner-order"/>
 <meta property="og:image" content="https://shop.jbsignboard.com/og-image.png"/>
 <meta property="og:image:width" content="1200"/>
@@ -23,12 +23,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<script src="analytics.js"></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Product",
-  "name": "LED Banner Display",
-  "description": "Programmable P10 LED banner displays in red or white — scrolling text for shopfronts. Instant quote by size, order online. Johor Bahru, KL & Singapore.",
+  "name": "LED Scrolling Banner Display",
+  "description": "Programmable P10 LED scrolling banner displays made in Johor Bahru — red or white, RM120 per sq ft. Preview your message live, see your price instantly and order online.",
   "image": "https://shop.jbsignboard.com/og-image.png",
   "category": "LED Display",
   "brand": { "@type": "Brand", "name": "A&T Signboard & Printing" },
@@ -38,7 +39,13 @@
     "priceCurrency": "MYR",
     "price": "66",
     "availability": "https://schema.org/InStock",
-    "seller": { "@type": "Organization", "name": "A&T Signboard & Printing" }
+    "seller": { "@type": "Organization", "name": "A&T Signboard & Printing" },
+    "priceSpecification": {
+      "@type": "UnitPriceSpecification",
+      "price": "120",
+      "priceCurrency": "MYR",
+      "unitText": "per square foot"
+    }
   },
   "areaServed": ["Johor Bahru", "Kuala Lumpur", "Singapore"]
 }
@@ -123,6 +130,26 @@ header{background:var(--navy);padding:0 1.2rem;height:64px;display:flex;align-it
 .cat-nav-item:hover{background:var(--off)}
 .cat-nav-item.active{background:var(--red-bg);color:var(--red);font-weight:600}
 .cat-icon{font-size:16px;width:22px;text-align:center}
+
+/* ── 产品说明 + FAQ（与其他产品页相同） ── */
+.info-sec{margin-top:2.5rem}
+.info-sec h2{font-size:18px;font-weight:700;color:var(--t1);margin-bottom:.6rem;line-height:1.35}
+.info-sec > p{font-size:14px;color:var(--t2);margin-bottom:1rem}
+.info-table{width:100%;border-collapse:collapse;font-size:13px}
+.info-table th{text-align:left;font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;padding:0 8px 8px 0;border-bottom:1px solid var(--border)}
+.info-table td{padding:10px 8px 10px 0;border-bottom:1px solid var(--off);vertical-align:top;color:var(--t2)}
+.info-table td:first-child{color:var(--t1);font-weight:600}
+.info-table td:last-child{white-space:nowrap;font-weight:600;color:var(--t1)}
+.info-table tr:last-child td{border-bottom:none}
+.info-table.spec td:last-child{white-space:normal}
+.faq-item{background:var(--white);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:.6rem;box-shadow:var(--sh-sm);overflow:hidden}
+.faq-item summary{list-style:none;cursor:pointer;padding:.9rem 1.1rem;font-size:14px;font-weight:600;color:var(--t1);display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';font-size:20px;line-height:1;color:var(--red);font-weight:400;transition:transform .2s;flex-shrink:0}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-a{padding:0 1.1rem 1rem;font-size:13.5px;color:var(--t2);line-height:1.65}
+.faq-a a{color:var(--red);font-weight:600;text-decoration:none}
+mark.todo{background:#fef08a;color:inherit;padding:0 2px;border-radius:3px}
 </style>
 <style>
 /* 手机版顶部：logo 小字收起、WhatsApp 只留图标，按钮不再超出画面 */
@@ -173,7 +200,7 @@ header{background:var(--navy);padding:0 1.2rem;height:64px;display:flex;align-it
 
   <div class="hero">
     <div class="hero-badge">🔴 LED Display</div>
-    <h1>LED Banner Display</h1>
+    <h1>LED Scrolling Banner Display</h1>
     <p>P10 scrolling LED display · Red or white · Change the message anytime from your phone</p>
   </div>
 
@@ -249,6 +276,78 @@ header{background:var(--navy);padding:0 1.2rem;height:64px;display:flex;align-it
 
   <button class="btn btn-primary" onclick="addToCart()">🛒 Add to Cart</button>
   <button class="btn btn-ghost" onclick="addAndCheckout()">Order Now →</button>
+
+
+  <!-- ══ 产品说明 + FAQ ══ -->
+  <section class="info-sec" aria-labelledby="about-h">
+    <h2 id="about-h">Programmable LED Scrolling Banners in Johor Bahru</h2>
+    <p>A&amp;T Signboard builds P10 LED banner displays for shop fronts, counters, clinics, restaurants and offices — a bright, eye-catching way to show your promotions, opening hours or welcome message. Enter your size above, type your message and see exactly how it scrolls before you order. Change the message anytime from your phone.</p>
+    <div class="card">
+      <div class="card-title">Specifications</div>
+      <table class="info-table spec">
+        <tr><th>Item</th><th>Detail</th></tr>
+        <tr><td>Module</td><td>P10 panel, 320 × 160 mm (32 × 16 LEDs per panel)</td></tr>
+        <tr><td>Colours</td><td>Red or white — same price</td></tr>
+        <tr><td>Display modes</td><td>Scroll left, static or flashing · English &amp; Chinese</td></tr>
+        <tr><td>Price</td><td>RM 120 per sq ft of panel size (excluding frame)</td></tr>
+        <tr><td>Included</td><td>Controller &amp; display unit</td></tr>
+        <tr><td>Installation</td><td>Within Johor Bahru — quoted separately (depends on site electrical &amp; height)</td></tr>
+        <tr><td>Lead time</td><td>5–7 working days</td></tr>
+        <tr><td>Warranty</td><td>12 months, whole display</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Example sizes &amp; prices</div>
+      <table class="info-table">
+        <tr><th>Panel size</th><th>Panels</th><th>Price</th></tr>
+        <tr><td>1.05 × 0.52 ft</td><td>1 (smallest)</td><td>RM 66</td></tr>
+        <tr><td>4.20 × 1.05 ft</td><td>8 (4 × 2)</td><td>RM 529</td></tr>
+        <tr><td>6.30 × 1.05 ft</td><td>12 (6 × 2)</td><td>RM 794</td></tr>
+        <tr><td>8.40 × 1.57 ft</td><td>24 (8 × 3)</td><td>RM 1,587</td></tr>
+        <tr><td>10.50 × 2.10 ft</td><td>40 (10 × 4)</td><td>RM 2,645</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="info-sec" aria-labelledby="faq-h">
+    <h2 id="faq-h">LED Banner Display FAQ</h2>
+  <details class="faq-item">
+    <summary>How is the price calculated?</summary>
+    <div class="faq-a">Price is <strong>RM 120 per square foot</strong>, based on the panel size (excluding the frame). Red and white are the same price. The price includes the controller and display unit; installation is quoted separately. Enter your size above for an instant estimate. Prices exclude SST.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Why is the size slightly different from what I entered?</summary>
+    <div class="faq-a">LED displays are built from individual P10 panels, each 320 × 160 mm. Your size is rounded to the closest number of whole panels — for example, 4 × 1 ft becomes 4.20 × 1.05 ft (8 panels). The size and price above always show what will actually be made.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Does the size include the frame?</summary>
+    <div class="faq-a">No. The size is the panel size only. The finished display with its aluminium frame will be slightly larger, so please leave some extra space for installation.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Can I change the message later?</summary>
+    <div class="faq-a">Yes. You can change the message anytime from your phone. English and Chinese are both supported, and you can choose scroll left, static or flashing. Try your message in the live preview above.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Red or white — which should I choose?</summary>
+    <div class="faq-a">Both are the same price — they just use different LED modules. Switch between red and white above to see how your message looks in each colour.</div>
+  </details>
+  <details class="faq-item">
+    <summary>How long does it take to make?</summary>
+    <div class="faq-a">Usually 5–7 working days. Need it by a certain date? Tell us in the remarks.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Is installation included?</summary>
+    <div class="faq-a">We install within Johor Bahru. Installation is quoted separately, because it depends on the site's electrical point and the mounting height. WhatsApp us a photo of your site for a quick quote.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Is there a warranty?</summary>
+    <div class="faq-a">Yes. Every LED banner display comes with a 12-month warranty covering the whole display.</div>
+  </details>
+  <details class="faq-item">
+    <summary>Where are you located?</summary>
+    <div class="faq-a">Our workshop is at 6, Jalan Puncak, Taman Perindustrian Puncak, 81800 Ulu Tiram, Johor — open Monday–Saturday, 9:00am–6:00pm. We serve Johor Bahru, Kuala Lumpur and Singapore. <a href="https://maps.app.goo.gl/qQHrYFrb7GpRwXY9A" target="_blank" rel="noopener noreferrer">Open in Google Maps</a></div>
+  </details>
+  </section>
 
 </div>
 
@@ -449,6 +548,86 @@ document.addEventListener('click', function(e){
 
 updateCartBadge();
 recalc();
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How is the price calculated?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Price is RM 120 per square foot, based on the panel size (excluding the frame). Red and white are the same price. The price includes the controller and display unit; installation is quoted separately. Enter your size above for an instant estimate. Prices exclude SST."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why is the size slightly different from what I entered?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "LED displays are built from individual P10 panels, each 320 × 160 mm. Your size is rounded to the closest number of whole panels — for example, 4 × 1 ft becomes 4.20 × 1.05 ft (8 panels). The size and price above always show what will actually be made."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does the size include the frame?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. The size is the panel size only. The finished display with its aluminium frame will be slightly larger, so please leave some extra space for installation."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can I change the message later?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. You can change the message anytime from your phone. English and Chinese are both supported, and you can choose scroll left, static or flashing. Try your message in the live preview above."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Red or white — which should I choose?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Both are the same price — they just use different LED modules. Switch between red and white above to see how your message looks in each colour."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How long does it take to make?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Usually 5–7 working days. Need it by a certain date? Tell us in the remarks."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is installation included?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "We install within Johor Bahru. Installation is quoted separately, because it depends on the site's electrical point and the mounting height. WhatsApp us a photo of your site for a quick quote."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is there a warranty?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. Every LED banner display comes with a 12-month warranty covering the whole display."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Where are you located?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Our workshop is at 6, Jalan Puncak, Taman Perindustrian Puncak, 81800 Ulu Tiram, Johor — open Monday–Saturday, 9:00am–6:00pm. We serve Johor Bahru, Kuala Lumpur and Singapore. Open in Google Maps"
+   }
+  }
+ ]
+}
 </script>
 </body>
 </html>
